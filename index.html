@@ -3,32 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0d1d18">
+<meta name="theme-color" content="#7cc8ff">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>ジョッキーロード</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: ナイター開催の競馬場。1カラムの「騎手手帳」から出馬表、レース画面へ進む */
+/* Layout: 昼間の競馬場。空色の地に、紺のふち取りの白いパネルが並ぶポップな「騎手手帳」。メニューから出馬表・ショップ・成績へ */
 :root{
-  --ground:#0d1d18;
-  --panel:#14291f;
-  --panel-2:#1a3428;
-  --line:#2b4a3b;
-  --ivory:#efe8d2;
-  --muted:#9fb1a2;
-  --silk:#d8473a;
-  --gold:#dcad42;
-  --good:#6cc28a;
-  --warn:#e6a23c;
+  --ground:#bfe6ff;
+  --panel:#ffffff;
+  --panel-2:#eaf3ff;
+  --line:#c9d8f0;
+  --frame:#1d3b8b;
+  --ivory:#1b2a4a;
+  --muted:#56688c;
+  --silk:#e8443a;
+  --gold:#e39400;
+  --sun:#ffd23f;
+  --good:#22a04b;
+  --warn:#e07b00;
   --display:"Dela Gothic One","Hiragino Sans","Noto Sans JP",sans-serif;
-  --body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
+  --body:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
-  color-scheme:dark;
+  color-scheme:light;
 }
 *{box-sizing:border-box}
 html,body{background:var(--ground);color:var(--ivory)}
+body{background:linear-gradient(180deg,#7cc8ff 0,#bfe6ff 320px,#e6f6ff 900px) var(--ground);font-weight:500}
+[hidden]{display:none!important}
 body{font-family:var(--body);font-size:15px;line-height:1.6;padding-inline:16px;padding-block:20px 48px}
 .wrap{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
 h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance;letter-spacing:.02em}
@@ -102,7 +106,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .ev{display:flex;flex-direction:column;gap:12px}
 .ev-head{display:flex;gap:16px;align-items:center}
 .ev-grade{font-family:var(--display);font-size:56px;line-height:1;width:72px;text-align:center}
-.g-S{color:#ff8a7a}.g-A{color:var(--gold)}.g-B{color:#e7d38a}.g-C{color:var(--good)}.g-D{color:var(--muted)}
+.g-S{color:#d93a2f}.g-A{color:var(--gold)}.g-B{color:#b58d00}.g-C{color:var(--good)}.g-D{color:var(--muted)}
 .ev-sum{display:flex;flex-direction:column;gap:2px;min-width:0}
 .ev-sum b{font-family:var(--mono);font-size:20px}
 .ev-sum span:last-child{font-size:12px;color:var(--muted)}
@@ -113,6 +117,74 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .mk3{color:var(--gold)}.mk2{color:var(--good)}.mk1{color:var(--warn)}.mk0{color:var(--silk)}
 .ev-advice{font-size:14px;line-height:1.8;border-left:3px solid var(--gold);padding-left:12px}
 .ev-advice b{display:inline-block;margin-right:8px;color:var(--gold)}
+
+/* title */
+#title{margin-inline:-16px;margin-top:-20px}
+.title-stage{position:relative;min-height:min(92vh,760px);display:flex;align-items:flex-end;overflow:hidden;background:#07120e}
+#tcv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.title-over{position:relative;width:100%;padding:24px 20px 36px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
+  background:linear-gradient(180deg,transparent,rgba(7,18,14,.85) 38%)}
+.t-logo{white-space:nowrap;font-size:clamp(30px,9vw,76px);line-height:1;color:var(--ivory);text-shadow:0 2px 0 #000,0 0 24px rgba(220,173,66,.35)}
+.t-sub{margin:0;color:var(--ivory);font-weight:700;font-size:16px}
+.t-sub em{font-style:normal;color:var(--gold)}
+.t-start{font-family:var(--display);font-weight:400;font-size:22px;padding:14px 56px;border-radius:999px;margin-top:10px;background:var(--gold);color:#1b1404;box-shadow:0 0 0 0 rgba(220,173,66,.6);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(220,173,66,.55)}70%{box-shadow:0 0 0 18px rgba(220,173,66,0)}100%{box-shadow:0 0 0 0 rgba(220,173,66,0)}}
+.t-music{background:transparent;border:1px solid var(--line);border-radius:999px;padding:4px 14px;font-size:13px;color:var(--ivory)}
+.t-hint{font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.t-start{animation:none}}
+
+/* menu */
+.panel{display:flex;flex-direction:column;gap:20px}
+.me-strip{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+.lvbadge.sm{width:54px;height:54px;border-width:2px}
+.lvbadge.sm b{font-size:22px}
+.me-name{display:block;font-size:17px;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me-money{display:flex;flex-direction:column;align-items:flex-end}
+.me-money b{font-size:18px;color:var(--gold)}
+.me-money b.debt{color:#d93a2f}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tile{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 16px;display:grid;grid-template-columns:44px 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center}
+.tile svg{grid-row:span 2;width:40px;height:40px;fill:none;stroke:var(--gold);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tile b{font-family:var(--display);font-weight:400;font-size:20px}
+.tile span{font-size:12px;color:var(--muted);min-width:0}
+.tile.go{background:var(--silk);border-color:var(--silk)}
+.tile.go svg{stroke:#fff}.tile.go span{color:#ffe1dc}
+.tile:hover{filter:brightness(1.08)}
+.menu-foot{display:flex;gap:8px;flex-wrap:wrap}
+.back{padding:6px 12px;font-size:13px}
+
+/* shop */
+.equip-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;min-width:0}
+.eq span{font-size:11px;color:var(--muted)}
+.eq b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.item{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.item.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.item.locked{opacity:.55}
+.item .ih{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.item .ih b{font-size:16px}
+.weird{font-size:11px;font-weight:700;color:#fff;background:#7d62c4;border-radius:4px;padding:1px 6px;white-space:nowrap}
+.item .fx{display:flex;flex-wrap:wrap;gap:4px}
+.item .fx i{font-style:normal;font-size:12px;border-radius:4px;padding:1px 6px;background:var(--panel-2)}
+.item .fx i.up{color:var(--good)}.item .fx i.down{color:#d93a2f}
+.item .desc{font-size:12px;color:var(--muted)}
+.item .ib{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px dashed var(--line);padding-top:8px}
+.item .ib .btn{padding:6px 12px;font-size:13px}
+.item .price{font-family:var(--mono);font-weight:600}
+.item .need{font-size:12px;color:var(--warn)}
+
+/* gate meter */
+.gmeter{width:min(320px,80%);display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.gm-bar{position:relative;display:flex;height:14px;border-radius:7px;overflow:hidden;border:1px solid rgba(255,255,255,.25)}
+.gm-bar i{display:block;height:100%}
+.gm-early{background:#8f80b8}.gm-good{background:var(--gold)}.gm-ok{background:var(--good)}.gm-late{background:var(--silk)}
+.gm-lab{display:flex;font-family:var(--body);font-size:11px;color:var(--ivory)}
+.gm-lab span{text-align:center;overflow:hidden;white-space:nowrap}
+.gm-mark{position:absolute;top:-4px;width:4px;height:22px;background:#fff;border-radius:2px;box-shadow:0 0 0 2px #000;transform:translateX(-2px)}
+.gate .gbig{font-size:40px;line-height:1}
+.gate.open .gm-lab{color:#1b1404}
+.gate.fall{background:rgba(216,71,58,.85)}
 
 /* accounts */
 .acct-box{display:flex;flex-direction:column;gap:8px}
@@ -155,7 +227,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .srow{display:grid;grid-template-columns:4.5em 1fr 1.6em;gap:8px;align-items:center;font-size:13px}
 .srow .rank{font-family:var(--display);text-align:center}
 .lockmsg{position:absolute;inset:auto 14px 14px 14px;background:var(--ground);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12px;text-align:center}
-.r-S{color:#ff8a7a}.r-A{color:var(--gold)}.r-B{color:#e7d38a}.r-C{color:var(--good)}.r-D{color:#7fb6d6}.r-E,.r-F,.r-G{color:var(--muted)}
+.r-S{color:#d93a2f}.r-A{color:var(--gold)}.r-B{color:#b58d00}.r-C{color:var(--good)}.r-D{color:#7fb6d6}.r-E,.r-F,.r-G{color:var(--muted)}
 .howto{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;font-size:13px;color:var(--muted)}
 .howto b{color:var(--ivory);display:block}
 .rc-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -174,11 +246,11 @@ canvas{display:block;width:100%;height:280px;border-radius:10px;background:var(-
 .call{min-height:3.2em;background:var(--panel);border-left:3px solid var(--silk);padding:8px 12px;border-radius:0 6px 6px 0;font-weight:700}
 .status{display:flex;gap:6px;flex-wrap:wrap;min-height:24px}
 .status .chip.mood-good{border-color:var(--gold);color:var(--gold);font-weight:700}
-.status .chip.mood-bad{border-color:#8f80b8;color:#c3b4e6;font-weight:700}
+.status .chip.mood-bad{border-color:#8f80b8;color:#7d62c4;font-weight:700}
 .status .chip.alert{border-color:var(--silk);color:#fff;background:var(--silk)}
 .controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .ctl b{white-space:nowrap}
-@media (max-width:440px){.ctl b{font-size:16px}.ctl{padding:12px 4px}}
+@media (max-width:440px){.ctl b{font-size:14px}.ctl{padding:12px 2px}.ctl span{font-size:10px}}
 .ctl{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .ctl b{font-family:var(--display);font-weight:400;font-size:20px}
 .ctl span{font-size:11px;color:var(--muted)}
@@ -187,17 +259,18 @@ canvas{display:block;width:100%;height:280px;border-radius:10px;background:var(-
 .ctl.whip span{color:#ffe1dc}
 .ctl:active{transform:translateY(1px)}
 .rs-bottom{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
-.gate{position:absolute;inset:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-family:var(--display);font-size:34px;background:rgba(13,29,24,.72);border:0;border-radius:10px;color:var(--ivory);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.gate{position:absolute;inset:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-family:var(--display);font-size:34px;background:rgba(29,59,139,.78);border:0;border-radius:10px;color:var(--ivory);touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .gate small{font-family:var(--body);font-size:14px;color:var(--muted)}
 .gate.open{background:rgba(220,173,66,.82);color:#1b1404}
 .gate.open small{color:#1b1404}
-.gate.result{background:rgba(13,29,24,.55)}
+.gate.result{background:rgba(29,59,139,.6)}
 .cv-box{position:relative}
 
 /* result */
 .res-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
 .res-head .place{font-family:var(--display);font-size:clamp(56px,14vw,96px);line-height:1}
 .res-head .place.win{color:var(--gold)}
+.res-head .place.fell{color:#d93a2f}
 .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
 table{border-collapse:collapse;width:100%;min-width:520px;font-size:13px}
 th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -210,94 +283,239 @@ tr.me td{background:rgba(220,173,66,.12);font-weight:700}
 .banner h2{font-size:clamp(28px,7vw,44px);color:var(--gold)}
 .reset-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ===== ポップな見た目（上書き） ===== */
+h1,h2,h3{color:var(--frame)}
+.label{color:var(--muted);font-weight:700}
+.card,.tile,.horse,.item,.eq,.gslot,.tbl,.races{border:3px solid var(--frame);box-shadow:0 4px 0 var(--frame);border-radius:14px;background:#fff}
+.races{padding:0 12px}
+.race{border-bottom:2px dashed var(--line)}
+.race:last-child{border-bottom:0}
+.race-info b{color:var(--frame)}
+.btn{border:3px solid var(--frame);box-shadow:0 3px 0 var(--frame);border-radius:10px;color:#fff;font-weight:800}
+.btn.ghost{background:#fff;color:var(--frame)}
+.btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--frame)}
+.btn:disabled{background:#c9d2e3;color:#56688c}
+.hero h1{color:var(--frame);text-shadow:3px 3px 0 #fff}
+.hero h1 em{color:var(--silk)}
+.hero p{color:var(--ivory);font-weight:700}
+.tile b{color:var(--frame)}
+.tile svg{stroke:var(--frame)}
+.tile.go{background:var(--silk)}
+.tile.go b,.tile.go span{color:#fff}
+.tile.go svg{stroke:#fff}
+.tab{background:#fff;border:2px solid var(--frame);color:var(--frame);font-weight:700}
+.tab[aria-selected="true"]{background:var(--frame);color:#fff;border-color:var(--frame)}
+.chip{background:#fff;border:2px solid var(--line);color:var(--muted);font-weight:700}
+.chip.on{border-color:var(--gold);color:var(--frame)}
+.grade{border:2px solid var(--frame);color:var(--frame);background:#fff}
+.grade.g1{background:var(--sun);border-color:var(--frame);color:var(--frame)}
+.grade.g2{background:#fff;border-color:var(--silk);color:var(--silk)}
+.lvbadge{background:#fff;border:4px solid var(--sun);box-shadow:0 0 0 3px var(--frame)}
+.lvbadge b{color:var(--frame)}
+.bar{background:#dfe8f5;border:2px solid var(--frame);height:12px;border-radius:6px}
+.bar i{background:linear-gradient(90deg,var(--sun),#ffa600)}
+.stam .bar{height:14px}
+.road .dot{background:#fff;border:3px solid var(--frame)}
+.road .node.done .dot{background:var(--sun);border-color:var(--frame)}
+.road .seg{background:#a9bbd9;height:4px}
+.road .seg.done{background:var(--sun)}
+.road .node{color:var(--muted);font-weight:700}
+.road .node.now{color:var(--frame)}
+.tbl{overflow:auto}
+th{background:var(--frame);color:#fff;letter-spacing:.04em}
+td{border-bottom:1px solid var(--line)}
+tr.me td{background:#fff3c4}
+input,.namefield input,.newacct input{background:#fff!important;border:2px solid var(--frame)!important;color:var(--ivory)!important}
+.call{background:#fff;border:3px solid var(--frame);border-left:8px solid var(--silk);border-radius:12px;color:var(--ivory)}
+.ctl{background:#fff;border:3px solid var(--frame);box-shadow:0 4px 0 var(--frame);border-radius:14px}
+.ctl b{color:var(--frame)}
+.ctl[aria-pressed="true"]{background:#fff3c4;border-color:var(--frame)}
+.ctl.whip{background:var(--silk);border-color:var(--frame)}
+.ctl.whip b{color:#fff}
+.ctl:active{transform:translateY(3px);box-shadow:0 1px 0 var(--frame)}
+canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
+.gate{color:#fff;border-radius:12px}
+.gate.open{background:rgba(255,210,63,.92);color:var(--frame)}
+.gate.open small,.gate.open .gm-lab{color:var(--frame)}
+.status .chip.alert{background:var(--silk);border-color:var(--silk);color:#fff}
+.status .chip.mood-good{background:#fff8d6;border-color:var(--gold);color:#b26b00}
+.status .chip.mood-bad{background:#f1ecff;border-color:#7d62c4;color:#5b43a8}
+.acct{background:#fff;border:2px solid var(--frame);color:var(--frame)}
+.acct.on{background:var(--sun);border-color:var(--frame)}
+.acct span{color:var(--ivory)}
+.me-money b{color:var(--gold)}
+.lvup{color:var(--silk)}
+.banner{background:linear-gradient(180deg,#fff3c4,#fff);border:3px solid var(--frame);box-shadow:0 4px 0 var(--frame)}
+.banner h2{color:var(--silk)}
+.res-head .place{color:var(--frame);text-shadow:3px 3px 0 #fff}
+.res-head .place.win{color:var(--silk)}
+.style{background:var(--panel-2);color:var(--frame)}
+.horse.sel{background:#fff8d6;border-color:var(--frame);box-shadow:0 0 0 3px var(--sun),0 4px 0 var(--frame)}
+.item.on{background:#fff8d6;box-shadow:0 0 0 3px var(--sun),0 4px 0 var(--frame)}
+.lockmsg{background:#fff;border:2px solid var(--frame)}
+.ev-advice{background:#fff;border:3px solid var(--frame);border-left:8px solid var(--sun);border-radius:12px;padding:10px 14px}
+.ev-advice b{color:var(--silk)}
+.mk3{color:var(--gold)}
+.gm-bar{border:2px solid #fff}
+/* タイトル */
+.title-stage{background:#7cc8ff}
+.title-over{background:linear-gradient(180deg,transparent,rgba(29,59,139,.55) 45%)}
+.t-logo{color:#fff;text-shadow:-3px -3px 0 var(--frame),3px -3px 0 var(--frame),-3px 3px 0 var(--frame),3px 3px 0 var(--frame),0 6px 0 var(--frame)}
+.t-sub{color:#fff;text-shadow:0 2px 0 var(--frame)}
+.t-sub em{color:var(--sun)}
+.t-start{background:var(--sun);color:var(--frame);border:4px solid var(--frame);box-shadow:0 5px 0 var(--frame)}
+.t-music{color:#fff;border:2px solid #fff;background:rgba(29,59,139,.45)}
+.t-hint{color:#e6f4ff}
+.title-over .label{color:#fff}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<!-- HOME -->
-<section id="home">
-  <div class="wrap">
-    <header class="hero">
-      <span class="label" id="heroLabel">若手騎手 — 地方競馬からの挑戦</span>
-      <h1>ジョッキーロード<br><em>凱旋門</em>への道</h1>
-      <p id="heroGoal">次の目標を読み込み中</p>
-    </header>
+<!-- TITLE -->
+<section id="title">
+  <div class="title-stage">
+    <canvas id="tcv" aria-label="ナイター競馬場を馬が駆け抜ける映像"></canvas>
+    <div class="title-over">
+      <span class="label">JOCKEY ROAD</span>
+      <h1 class="t-logo">ジョッキーロード</h1>
+      <p class="t-sub">地方競馬から、<em>凱旋門</em>へ。</p>
+      <button class="btn t-start" id="btnStart" type="button">スタート</button>
+      <button class="t-music" id="btnMusicT" type="button" aria-pressed="true">♪ 音楽 ON</button>
+      <span class="t-hint" id="tHint">画面をタップすると音楽が流れます</span>
+    </div>
+  </div>
+</section>
 
-    <div class="acct-box">
-      <span class="label">騎手を選ぶ</span>
-      <div class="accts" id="accts"></div>
-      <form class="newacct" id="newAcct" hidden>
-        <label for="newName" class="label">新しい騎手の名前</label>
-        <input id="newName" maxlength="12" placeholder="例：パパ">
-        <button class="btn" type="submit">登録</button>
-        <button class="btn ghost" type="button" id="btnCancelAcct">やめる</button>
-      </form>
+<!-- HOME -->
+<section id="home" hidden>
+  <div class="wrap">
+
+    <!-- メニュー -->
+    <div class="panel" data-panel="menu">
+      <header class="hero">
+        <span class="label" id="heroLabel">若手騎手 — 地方競馬からの挑戦</span>
+        <h1>ジョッキーロード<br><em>凱旋門</em>への道</h1>
+        <p id="heroGoal">次の目標を読み込み中</p>
+      </header>
+      <div class="card me-strip">
+        <div class="lvbadge sm"><div><small>LV</small><b id="lvMini">1</b></div></div>
+        <div style="min-width:0">
+          <b id="nameMini" class="me-name">若手騎手</b>
+          <div class="bar"><i id="expBarMini" style="width:0%"></i></div>
+        </div>
+        <div class="me-money"><span class="label">所持金</span><b class="num" id="walletMini">0円</b></div>
+      </div>
+      <div class="tiles">
+        <button type="button" class="tile go" data-go="races">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>
+          <b>レースに出る</b><span id="tileRaces">出走できるレースを選ぶ</span>
+        </button>
+        <button type="button" class="tile" data-go="shop">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16l-1.5 12h-13zM9 8V6a3 3 0 0 1 6 0v2"/></svg>
+          <b>アイテムを買う</b><span id="tileShop">装備を整える</span>
+        </button>
+        <button type="button" class="tile" data-go="profile">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8"/></svg>
+          <b>自分の成績</b><span id="tileProfile">成績・ランキング・騎手の切り替え</span>
+        </button>
+      </div>
+      <div class="menu-foot">
+        <button class="btn ghost" id="btnMusicM" type="button" aria-pressed="true">♪ 音楽 ON</button>
+        <button class="btn ghost" id="btnToTitle" type="button">タイトルへ</button>
+      </div>
     </div>
 
-    <div class="card jockey">
-      <div class="lvbadge"><div><small>LEVEL</small><b id="lv">1</b></div></div>
-      <div class="jk-main">
-        <div class="namefield">
-          <label for="jockeyName" class="label">騎手名</label>
-          <input id="jockeyName" maxlength="12" value="若手騎手">
-        </div>
-        <div>
-          <div class="bar"><i id="expBar" style="width:0%"></i></div>
-          <div style="font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
-            <span>経験値 <span class="num" id="expTxt">0 / 0</span></span>
-            <span>騎乗できる馬の総合：<b class="num" id="capTxt" style="color:var(--ivory)">33</b> 以下</span>
+    <!-- 自分の成績 -->
+    <div class="panel" data-panel="profile" hidden>
+      <div><button class="btn ghost back" type="button" data-go="menu">← メニュー</button></div>
+      <div class="stage-h"><span class="label">PROFILE</span><h2>自分の成績</h2></div>
+      <div class="acct-box">
+        <span class="label">騎手を選ぶ</span>
+        <div class="accts" id="accts"></div>
+        <form class="newacct" id="newAcct" hidden>
+          <label for="newName" class="label">新しい騎手の名前</label>
+          <input id="newName" maxlength="12" placeholder="例：パパ">
+          <button class="btn" type="submit">登録</button>
+          <button class="btn ghost" type="button" id="btnCancelAcct">やめる</button>
+        </form>
+      </div>
+
+      <div class="card jockey">
+        <div class="lvbadge"><div><small>LEVEL</small><b id="lv">1</b></div></div>
+        <div class="jk-main">
+          <div class="namefield">
+            <label for="jockeyName" class="label">騎手名</label>
+            <input id="jockeyName" maxlength="12" value="若手騎手">
+          </div>
+          <div>
+            <div class="bar"><i id="expBar" style="width:0%"></i></div>
+            <div style="font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+              <span>経験値 <span class="num" id="expTxt">0 / 0</span></span>
+              <span>騎乗できる馬の総合：<b class="num" id="capTxt" style="color:var(--ivory)">33</b> 以下</span>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><b id="stStarts">0</b><span>騎乗数</span></div>
+            <div class="stat"><b id="stWins">0</b><span>勝利（勝率 <span id="stRate">0</span>%）</span></div>
+            <div class="stat"><b id="stGrade">0</b><span>重賞勝利</span></div>
+            <div class="stat"><b id="stIncome">0万</b><span>騎手収入（進上金5%）</span></div>
+            <div class="stat"><b id="stFalls">0</b><span>落馬</span></div>
+            <div class="stat"><b id="stMedical">0円</b><span>治療費の合計</span></div>
           </div>
         </div>
-        <div class="stats">
-          <div class="stat"><b id="stStarts">0</b><span>騎乗数</span></div>
-          <div class="stat"><b id="stWins">0</b><span>勝利（勝率 <span id="stRate">0</span>%）</span></div>
-          <div class="stat"><b id="stGrade">0</b><span>重賞勝利</span></div>
-          <div class="stat"><b id="stIncome">0万</b><span>騎手収入（進上金5%）</span></div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-h" style="justify-content:space-between">
+          <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span class="label">LEADING</span><h2>騎手ランキング</h2></div>
+          <button class="btn ghost" id="btnBrag" type="button" style="padding:4px 12px;font-size:13px">成績をコピー</button>
         </div>
+        <div class="tabs" id="scopeTabs" hidden>
+          <button type="button" class="tab" data-scope="local" aria-selected="true">この端末</button>
+          <button type="button" class="tab" data-scope="online" aria-selected="false">みんな</button>
+        </div>
+        <form class="newacct" id="groupForm" hidden>
+          <label for="groupCode" class="label">合言葉</label>
+          <input id="groupCode" maxlength="32">
+          <button class="btn" type="submit">参加</button>
+        </form>
+        <div class="tabs" id="rankTabs" role="tablist"></div>
+        <div class="tbl"><table class="rank-tbl">
+          <thead><tr><th>順位</th><th>騎手</th><th id="rankCol">レベル</th><th>勝利</th><th>重賞</th><th>到達</th></tr></thead>
+          <tbody id="rankBody"></tbody>
+        </table></div>
+        <span id="rankNote" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+
+      <div class="reset-row">
+        <button class="btn ghost" id="btnReset" type="button">データを消して最初から</button>
+        <button class="btn" id="btnResetYes" type="button" hidden>本当に消す</button>
+        <span id="resetNote" hidden>騎手レベル・成績がすべて消えます</span>
       </div>
     </div>
 
-    <div class="road" id="road" aria-label="キャリアの道のり"></div>
-
-    <div class="stage">
-      <div class="stage-h" style="justify-content:space-between">
-        <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span class="label">LEADING</span><h2>騎手ランキング</h2></div>
-        <button class="btn ghost" id="btnBrag" type="button" style="padding:4px 12px;font-size:13px">成績をコピー</button>
-      </div>
-      <div class="tabs" id="scopeTabs" hidden>
-        <button type="button" class="tab" data-scope="local" aria-selected="true">この端末</button>
-        <button type="button" class="tab" data-scope="online" aria-selected="false">みんな</button>
-      </div>
-      <form class="newacct" id="groupForm" hidden>
-        <label for="groupCode" class="label">合言葉</label>
-        <input id="groupCode" maxlength="32" placeholder="例：おがわ家">
-        <button class="btn" type="submit">参加</button>
-        <span style="font-size:12px;color:var(--muted)">同じ合言葉の人どうしで順位を競います</span>
-      </form>
-      <div class="tabs" id="rankTabs" role="tablist"></div>
-      <div class="tbl"><table class="rank-tbl">
-        <thead><tr><th>順位</th><th>騎手</th><th id="rankCol">レベル</th><th>勝利</th><th>重賞</th><th>到達</th></tr></thead>
-        <tbody id="rankBody"></tbody>
-      </table></div>
-      <span id="rankNote" style="font-size:12px;color:var(--muted)"></span>
+    <!-- レースに出る -->
+    <div class="panel" data-panel="races" hidden>
+      <div><button class="btn ghost back" type="button" data-go="menu">← メニュー</button></div>
+      <div class="stage-h"><span class="label">RACES</span><h2>レースに出る</h2></div>
+      <div class="road" id="road" aria-label="キャリアの道のり"></div>
+      <div id="raceList" class="wrap" style="gap:24px"></div>
     </div>
 
-    <div class="stage">
+    <!-- アイテムを買う -->
+    <div class="panel" data-panel="shop" hidden>
+      <div><button class="btn ghost back" type="button" data-go="menu">← メニュー</button></div>
       <div class="stage-h" style="justify-content:space-between">
-        <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span class="label">TACK SHOP</span><h2>装備</h2></div>
+        <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span class="label">TACK SHOP</span><h2>アイテムを買う</h2></div>
         <span>所持金 <b class="num" id="wallet" style="color:var(--gold);font-size:18px">0円</b></span>
       </div>
-      <div class="gear" id="gear"></div>
+      <div class="equip-row" id="equipRow"></div>
+      <div class="tabs" id="shopTabs" role="tablist"></div>
+      <div class="items" id="items"></div>
     </div>
 
-    <div id="raceList" class="wrap" style="gap:24px"></div>
-
-    <div class="reset-row">
-      <button class="btn ghost" id="btnReset" type="button">データを消して最初から</button>
-      <button class="btn" id="btnResetYes" type="button" hidden>本当に消す</button>
-      <span id="resetNote" hidden>騎手レベル・成績がすべて消えます</span>
-    </div>
   </div>
 </section>
 
@@ -341,7 +559,7 @@ tr.me td{background:rgba(220,173,66,.12);font-weight:700}
     </div>
     <div class="cv-box">
       <canvas id="cv" aria-label="レース映像"></canvas>
-      <button class="gate" id="gate" type="button" hidden><span id="gateTxt">ゲートイン</span><small id="gateSub">ゲートが開いた瞬間にタップ</small></button>
+      <button class="gate" id="gate" type="button" hidden><span id="gateTxt">ゲートイン</span><small id="gateSub">ゲートが開いた瞬間にタップ</small><div class="gmeter" id="gmeter"></div></button>
     </div>
     <div class="hud">
       <div class="big num" id="hRank">-<small>番手</small></div>
@@ -429,8 +647,9 @@ function createRaceState(race,playerHorse,lv,going,gear){
   }
   const gm=GOING[going];
   if(gear){
-    const p=runners[pnum-1],gg=gear.goggle;
-    p.gSuit=gear.suit;p.gKakari=gear.helmet;p.gWhip=gear.whip;p.gHand=gear.shoes;
+    const p=runners[pnum-1],gg=gear.going;
+    p.gSuit=gear.speed;p.gKakari=gear.kakari;p.gWhip=gear.whip;p.gHand=gear.hand;
+    p.gKick=gear.kick;p.gYore=gear.yore;p.maxS*=1+gear.stam/100;p.S=p.maxS;
     p.gSpeed=(1-(gm-1)*0.25*gg)/(1-(gm-1)*0.25);
     p.gDrain=(1+(gm-1)*gg)/gm;
   }
@@ -483,7 +702,7 @@ function step(st,dt){
         if(r.S>0){
           const lateW=remain<spurtAt+150;
           const fade=r.whips>22?0.8:1;
-          v+=kick*(lateW?1.0:0.35)*(1+st.lv*0.012)*fade*(r.gWhip||1)*(0.65+0.7*r.S/r.maxS);
+          v+=kick*(lateW?1.0:0.35)*(1+st.lv*0.012)*fade*(r.gWhip||1)*(r.gKick||1)*(0.65+0.7*r.S/r.maxS);
           dm*=lateW?1.3:2.2;
         }
       }
@@ -505,7 +724,7 @@ function step(st,dt){
 }
 
 function playerAct(st,act){
-  const p=st.player;if(p.fin)return;
+  const p=st.player;if(p.fin||p.fell)return;
   const remain=st.race.dist-p.d;
   if(act==='hold'){p.hold=!p.hold;return p.hold?'hold_on':'hold_off';}
   if(act==='rein'){
@@ -528,7 +747,7 @@ function playerAct(st,act){
     if(p.whipCd>0)return null;
     p.whipCd=0.55;p.whipT=1.4;p.whips++;
     if(p.kakari>0)p.kakari+=1.5;
-    const yoreP=Math.max(0,100-p.hand-(p.gHand||0))/1400*(p.whips>22?2:1);
+    const yoreP=Math.max(0,100-p.hand-(p.gHand||0))/1400*(p.whips>22?2:1)*(p.gYore||1);
     if(Math.random()<yoreP){p.yore=0.8;return 'yore';}
     return remain<Math.max(300,st.race.straight+120)+150?'whip':'whip_early';
   }
@@ -609,26 +828,110 @@ const rankOf=x=>x>=100?'S':x>=90?'A':x>=80?'B':x>=70?'C':x>=60?'D':x>=50?'E':x>=
 const capOf=lv=>30+lv*3;
 const needExp=lv=>40+lv*25;
 
-/* ------------ gear ------------ */
-const PRICES=[0,3,40,600,4000];
-const GEAR=[
-  {key:'whip',slot:'鞭',stat:'鞭の伸び',items:['ネギ','竹の物差し','革の鞭','競走用ステッキ','カーボン製ステッキ'],val:[0.88,0.95,1.0,1.07,1.14],fmt:v=>`×${v.toFixed(2)}`},
-  {key:'helmet',slot:'ヘルメット',stat:'掛かりにくさ',items:['ザル','工事用ヘルメット','乗馬用ヘルメット','競走用ヘルメット','特注カーボンヘルメット'],val:[1.15,1.0,0.88,0.77,0.66],fmt:v=>`掛かり率 ×${v.toFixed(2)}`},
-  {key:'goggle',slot:'ゴーグル',stat:'悪い馬場への強さ',items:['サングラス','水泳ゴーグル','乗馬ゴーグル','競走用ゴーグル（3枚重ね）','曇り止め特注ゴーグル'],val:[1,0.85,0.7,0.55,0.4],fmt:v=>`重馬場の影響 ${Math.round(v*100)}%`},
-  {key:'shoes',slot:'靴',stat:'踏ん張り',items:['草履','長靴','乗馬ブーツ','競走用ブーツ','特注軽量ブーツ'],val:[-6,0,4,8,12],fmt:v=>`操縦性 ${v>=0?'+':''}${v}`},
-  {key:'suit',slot:'服',stat:'風の抜け',items:['端切れ','作業着','ジャージ','勝負服','空力勝負服'],val:[0.994,1,1.004,1.008,1.012],fmt:v=>`巡航速度 ${v>=1?'+':''}${((v-1)*100).toFixed(1)}%`}
+/* ------------ items ------------ */
+const SLOTS=[{k:'whip',n:'鞭'},{k:'helmet',n:'ヘルメット'},{k:'goggle',n:'ゴーグル'},{k:'shoes',n:'靴'},{k:'suit',n:'服'},{k:'acc',n:'小物'}];
+/* fx: whip 鞭の伸び× / kakari 掛かり× / going 重馬場の影響× / hand 操縦性+ / speed 巡航速度× / stam スタミナ+% / kick 末脚× / start スタート判定+秒 / fall 落馬リスク× / yore ヨレやすさ× / cost 治療費× */
+const ITEMS=[
+  {id:'negi',slot:'whip',name:'ネギ',price:0,lv:1,fx:{whip:.88},desc:'台所から持ってきた。いい匂いはする。'},
+  {id:'monosashi',slot:'whip',name:'竹の物差し',price:3,lv:1,fx:{whip:.95},desc:'30cm。目盛り付き。'},
+  {id:'haetataki',slot:'whip',name:'蝿たたき',price:8,lv:2,fx:{whip:.97,kakari:.95},desc:'虫を追い払うので馬も落ち着く。',weird:1},
+  {id:'harisen',slot:'whip',name:'ハリセン',price:15,lv:3,fx:{whip:1.05,yore:2},desc:'スパーン！といい音。驚いてヨレやすい。',weird:1},
+  {id:'kawa',slot:'whip',name:'革の鞭',price:40,lv:4,fx:{whip:1},desc:'ようやく普通の鞭。'},
+  {id:'stick',slot:'whip',name:'競走用ステッキ',price:600,lv:10,fx:{whip:1.07},desc:'プロ仕様の軽量ステッキ。'},
+  {id:'carbon',slot:'whip',name:'カーボン製ステッキ',price:4000,lv:16,fx:{whip:1.14},desc:'しなりが違う。'},
+  {id:'golden',slot:'whip',name:'黄金のステッキ',price:15000,lv:22,fx:{whip:1.2,kick:1.05},desc:'凱旋門を目指す者だけが持てる。'},
+
+  {id:'zaru',slot:'helmet',name:'ザル',price:0,lv:1,fx:{kakari:1.15},desc:'そうめんを茹でるやつ。風通しは最高。'},
+  {id:'nabe',slot:'helmet',name:'片手鍋',price:5,lv:1,fx:{kakari:1.05,speed:.998},desc:'取っ手が邪魔。',weird:1},
+  {id:'koji',slot:'helmet',name:'工事用ヘルメット',price:3,lv:1,fx:{kakari:1},desc:'安全第一。'},
+  {id:'joba_h',slot:'helmet',name:'乗馬用ヘルメット',price:40,lv:4,fx:{kakari:.88},desc:'乗馬クラブの払い下げ。'},
+  {id:'chonmage',slot:'helmet',name:'ちょんまげカツラ',price:120,lv:6,fx:{kakari:.9,start:.03},desc:'気合いが入る。いざ出陣。',weird:1},
+  {id:'race_h',slot:'helmet',name:'競走用ヘルメット',price:600,lv:10,fx:{kakari:.77},desc:'公式戦の標準装備。'},
+  {id:'carbon_h',slot:'helmet',name:'特注カーボンヘルメット',price:4000,lv:16,fx:{kakari:.66,fall:.85},desc:'軽くて丈夫。'},
+
+  {id:'sun',slot:'goggle',name:'サングラス',price:0,lv:1,fx:{going:1},desc:'雰囲気だけは一流。'},
+  {id:'swim',slot:'goggle',name:'水泳ゴーグル',price:3,lv:1,fx:{going:.85},desc:'泥はね対策。'},
+  {id:'hanamegane',slot:'goggle',name:'鼻メガネ',price:10,lv:2,fx:{going:1,cost:.5},desc:'笑いで場が和み、治療費が半額に。',weird:1},
+  {id:'joba_g',slot:'goggle',name:'乗馬ゴーグル',price:40,lv:4,fx:{going:.7},desc:'視界良好。'},
+  {id:'race_g',slot:'goggle',name:'競走用ゴーグル（3枚重ね）',price:600,lv:10,fx:{going:.55},desc:'汚れたら1枚ずつ下ろす。'},
+  {id:'anti_g',slot:'goggle',name:'曇り止め特注ゴーグル',price:4000,lv:16,fx:{going:.4},desc:'不良馬場でも視界くっきり。'},
+
+  {id:'zori',slot:'shoes',name:'草履',price:0,lv:1,fx:{hand:-6},desc:'すぐ脱げる。'},
+  {id:'nagagutsu',slot:'shoes',name:'長靴',price:3,lv:1,fx:{hand:0},desc:'田んぼでも平気。'},
+  {id:'geta',slot:'shoes',name:'一本歯下駄',price:6,lv:2,fx:{hand:-3,start:.02},desc:'体幹が鍛えられ、反応が少し速くなる。',weird:1},
+  {id:'joba_b',slot:'shoes',name:'乗馬ブーツ',price:40,lv:4,fx:{hand:4},desc:'あぶみにしっかり掛かる。'},
+  {id:'spike',slot:'shoes',name:'陸上スパイク',price:200,lv:7,fx:{hand:4,start:.04},desc:'スタートダッシュ用。',weird:1},
+  {id:'race_b',slot:'shoes',name:'競走用ブーツ',price:600,lv:10,fx:{hand:8},desc:'薄くて軽い。'},
+  {id:'light_b',slot:'shoes',name:'特注軽量ブーツ',price:4000,lv:16,fx:{hand:12},desc:'足の一部になる。'},
+
+  {id:'hagire',slot:'suit',name:'端切れ',price:0,lv:1,fx:{speed:.994},desc:'布を巻いただけ。風でバタバタ。'},
+  {id:'sagyo',slot:'suit',name:'作業着',price:3,lv:1,fx:{speed:1},desc:'ポケットが多い。'},
+  {id:'jersey',slot:'suit',name:'ジャージ',price:40,lv:4,fx:{speed:1.004},desc:'学校指定。'},
+  {id:'kigurumi',slot:'suit',name:'馬の着ぐるみ',price:300,lv:8,fx:{speed:.998,kakari:.85},desc:'馬が仲間だと思って安心する。',weird:1},
+  {id:'shobu',slot:'suit',name:'勝負服',price:600,lv:10,fx:{speed:1.008},desc:'馬主の色をまとう。'},
+  {id:'aero',slot:'suit',name:'空力勝負服',price:4000,lv:16,fx:{speed:1.012},desc:'風洞実験済み。'},
+
+  {id:'acc_none',slot:'acc',name:'なし',price:0,lv:1,fx:{},desc:'手ぶら。'},
+  {id:'kaeru',slot:'acc',name:'カエルの置物',price:1,lv:1,fx:{fall:.75},desc:'無事カエル。落馬しにくい。',weird:1},
+  {id:'socks',slot:'acc',name:'五本指靴下',price:2,lv:1,fx:{hand:2},desc:'指先まで踏ん張れる。',weird:1},
+  {id:'haramaki',slot:'acc',name:'毛糸の腹巻き',price:5,lv:1,fx:{going:.9},desc:'お腹が冷えないので雨の日に強い。',weird:1},
+  {id:'ireba',slot:'acc',name:'入れ歯',price:8,lv:2,fx:{whip:1.04},desc:'しっかり食いしばれる。',weird:1},
+  {id:'omamori',slot:'acc',name:'交通安全のお守り',price:20,lv:3,fx:{fall:.5},desc:'落馬リスク半減。'},
+  {id:'radio',slot:'acc',name:'携帯ラジオ',price:30,lv:4,fx:{kakari:.88},desc:'演歌を聴かせると馬がリラックス。',weird:1},
+  {id:'ninjin',slot:'acc',name:'高級にんじん',price:60,lv:5,fx:{stam:5,kakari:1.05},desc:'目の前にぶら下げる。元気は出るが興奮もする。',weird:1},
+  {id:'belt',slot:'acc',name:'筋肉増強ベルト',price:150,lv:6,fx:{stam:8,hand:-4},desc:'お腹に巻くとビリビリ。馬も鍛えられた気がする。',weird:1},
+  {id:'tengu',slot:'acc',name:'天狗のお面',price:500,lv:9,fx:{start:.05},desc:'鼻が高くなり、ゲートの反応が冴える。',weird:1},
+  {id:'sauna',slot:'acc',name:'サウナスーツ',price:900,lv:12,fx:{stam:10,speed:.996},desc:'汗だくで減量。体は軽いが暑い。',weird:1},
+  {id:'teitetsu',slot:'acc',name:'金の蹄鉄',price:9000,lv:20,fx:{kick:1.1,fall:.7},desc:'伝説の名馬が履いていたらしい。'}
 ];
-function gearFx(){const o={};for(const g of GEAR)o[g.key]=g.val[S.gear[g.key]||0];return o;}
+const itemById=id=>ITEMS.find(x=>x.id===id);
+const OLD_TIERS={whip:['negi','monosashi','kawa','stick','carbon'],helmet:['zaru','koji','joba_h','race_h','carbon_h'],goggle:['sun','swim','joba_g','race_g','anti_g'],shoes:['zori','nagagutsu','joba_b','race_b','light_b'],suit:['hagire','sagyo','jersey','shobu','aero']};
+const DEFAULT_EQUIP={whip:'negi',helmet:'zaru',goggle:'sun',shoes:'zori',suit:'hagire',acc:'acc_none'};
+const MULT_KEYS=['whip','kakari','going','speed','kick','fall','yore','cost'],ADD_KEYS=['hand','stam','start'];
+function gearFx(){
+  const o={};MULT_KEYS.forEach(k=>o[k]=1);ADD_KEYS.forEach(k=>o[k]=0);
+  for(const sl of SLOTS){const it=itemById(S.equip[sl.k])||itemById(DEFAULT_EQUIP[sl.k]);
+    for(const [k,v] of Object.entries(it.fx)){if(MULT_KEYS.includes(k))o[k]*=v;else o[k]+=v;}}
+  return o;
+}
+function fxChips(fx){
+  const out=[];const pct=v=>Math.round(Math.abs(v-1)*100);
+  for(const [k,v] of Object.entries(fx)){
+    if(k==='whip'&&v!==1)out.push([v>1,`鞭の伸び ${v>1?'+':'-'}${pct(v)}%`]);
+    if(k==='kakari'&&v!==1)out.push([v<1,`掛かり ${v<1?'-':'+'}${pct(v)}%`]);
+    if(k==='going'&&v!==1)out.push([v<1,`雨・重馬場に${v<1?'強い':'弱い'}`]);
+    if(k==='speed'&&v!==1)out.push([v>1,`巡航速度 ${v>1?'+':'-'}${(Math.abs(v-1)*100).toFixed(1)}%`]);
+    if(k==='kick'&&v!==1)out.push([v>1,`末脚 +${pct(v)}%`]);
+    if(k==='fall'&&v!==1)out.push([v<1,`落馬 ${v<1?'-':'+'}${pct(v)}%`]);
+    if(k==='yore')out.push([false,`ヨレやすさ ×${v}`]);
+    if(k==='cost')out.push([true,`治療費 -${pct(v)}%`]);
+    if(k==='hand'&&v!==0)out.push([v>0,`操縦性 ${v>0?'+':''}${v}`]);
+    if(k==='stam')out.push([v>0,`スタミナ +${v}%`]);
+    if(k==='start')out.push([true,`好スタート判定 +${v.toFixed(2)}秒`]);
+  }
+  if(!out.length)out.push([null,'効果なし']);
+  return out.map(([up,t])=>`<i class="${up===null?'':up?'up':'down'}">${t}</i>`).join('');
+}
 
 /* ------------ save ------------ */
 const KEY='jockey-road-v1';
-function fresh(){return {v:1,name:'若手騎手',lv:1,exp:0,starts:0,wins:0,gradeWins:0,income:0,money:0,gear:{whip:0,helmet:0,goggle:0,shoes:0,suit:0},won:{},best:{},arc:false};}
+function fresh(){return {v:1,name:'若手騎手',lv:1,exp:0,starts:0,wins:0,gradeWins:0,income:0,money:0,owned:Object.values(DEFAULT_EQUIP),equip:Object.assign({},DEFAULT_EQUIP),falls:0,medical:0,won:{},best:{},arc:false};}
 let S=fresh();
 const KEY2='jockey-road-v2';
 /* 騎手アカウント：この端末のブラウザに複数の騎手データを保存 */
 let STORE={current:null,list:[]};
 const newId=()=>'j'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
-function norm(s){const o=Object.assign(fresh(),s||{});if(o.money==null)o.money=o.income||0;o.gear=Object.assign(fresh().gear,o.gear||{});return o;}
+function norm(s){
+  const o=Object.assign(fresh(),s||{});if(o.money==null)o.money=o.income||0;
+  if(s&&s.gear&&!s.owned){ // 旧データ（段階制の装備）を新しい持ち物に移す
+    const owned=new Set(Object.values(DEFAULT_EQUIP));const eq=Object.assign({},DEFAULT_EQUIP);
+    for(const [k,ids] of Object.entries(OLD_TIERS)){const t=Math.min(4,s.gear[k]||0);for(let i=0;i<=t;i++)owned.add(ids[i]);eq[k]=ids[t];}
+    o.owned=[...owned];o.equip=eq;
+  }
+  o.equip=Object.assign({},DEFAULT_EQUIP,o.equip||{});
+  for(const id of Object.values(DEFAULT_EQUIP))if(!o.owned.includes(id))o.owned.push(id);
+  delete o.gear;return o;
+}
 function load(){
   try{
     const st=JSON.parse(localStorage.getItem(KEY2)||'null');
@@ -755,7 +1058,30 @@ const money=x=>x>=10000?`${(x/10000).toFixed(x%10000?1:0)}億円`:x>=1?`${(Math.
 
 /* ------------ screens ------------ */
 const $=id=>document.getElementById(id);
-function show(id){if(id==='home'||id==='card')stopVoice();renderVoiceBtn();for(const s of ['home','card','raceScr','result'])$(s).hidden=s!==id;window.scrollTo(0,0);}
+let homePanel='menu';
+function show(id){
+  if(id==='home'||id==='card'||id==='title')stopVoice();renderVoiceBtn();
+  for(const s of ['title','home','card','raceScr','result'])$(s).hidden=s!==id;
+  if(id==='raceScr')Music.stop();else if(id==='title'||id==='home')Music.resume();
+  if(id==='title')Title.start();else Title.stop();
+  window.scrollTo(0,0);
+}
+function showPanel(name){
+  homePanel=name;
+  for(const el of document.querySelectorAll('#home .panel'))el.hidden=el.dataset.panel!==name;
+  renderHome();show('home');
+  if(name==='profile'&&rankScope==='online')fetchOnline();
+}
+function renderMenu(){
+  $('lvMini').textContent=S.lv;$('nameMini').textContent=S.name;
+  $('expBarMini').style.width=Math.min(100,S.exp/needExp(S.lv)*100)+'%';
+  const w=$('walletMini');w.textContent=S.money<0?`借金 ${money(-S.money)}`:money(S.money);w.className='num'+(S.money<0?' debt':'');
+  const open=RACES.filter(r=>!lockReason(r)).length;
+  $('tileRaces').textContent=`出走できるレース ${open} / ${RACES.length}`;
+  const buyable=ITEMS.filter(it=>!S.owned.includes(it.id)&&S.lv>=it.lv&&S.money>=it.price).length;
+  $('tileShop').textContent=buyable?`いま買えるアイテム ${buyable}個`:'装備を整える';
+  $('tileProfile').textContent=`${S.starts}戦${S.wins}勝 ・ ランキング・騎手の切り替え`;
+}
 
 function renderHome(){
   $('lv').textContent=S.lv;
@@ -769,7 +1095,8 @@ function renderHome(){
   $('stRate').textContent=S.starts?Math.round(S.wins/S.starts*100):0;
   $('stGrade').textContent=S.gradeWins;
   $('stIncome').textContent=money(S.income);
-  renderGear();renderAccounts();renderRanking();
+  $('stFalls').textContent=S.falls||0;$('stMedical').textContent=money(S.medical||0);
+  renderShop();renderAccounts();renderRanking();renderMenu();
   // stage progress
   let cur=0;
   for(let i=0;i<STAGES.length;i++){if(RACES.some(r=>r.stage===i&&!lockReason(r)))cur=i;}
@@ -810,20 +1137,24 @@ function renderHome(){
   $('raceList').innerHTML=out;
 }
 
-function renderGear(){
-  $('wallet').textContent=money(S.money);
-  $('gear').innerHTML=GEAR.map(g=>{
-    const t=S.gear[g.key]||0;
-    const pips=g.items.map((_,i)=>`<i class="${i<=t?'on':''}"></i>`).join('');
-    let next;
-    if(t>=g.items.length-1)next=`<div class="gnext"><span class="gmax">最高級の装備です</span></div>`;
-    else{
-      const price=PRICES[t+1],ok=S.money>=price;
-      next=`<div class="gnext"><span style="min-width:0">次：${g.items[t+1]}<br><span class="gfx">${g.fmt(g.val[t+1])} ・ ${money(price)}</span></span>
-        <button class="btn" type="button" data-buy="${g.key}" ${ok?'':'disabled'}>${ok?'購入':'資金不足'}</button></div>`;
-    }
-    return `<div class="gslot"><div class="gtop"><span class="label">${g.slot}</span><span class="pips">${pips}</span></div>
-      <span class="gname">${g.items[t]}</span><span class="gfx">${g.stat}：${g.fmt(g.val[t])}</span>${next}</div>`;
+let shopSlot='whip';
+function renderShop(){
+  const w=$('wallet');w.textContent=S.money<0?`借金 ${money(-S.money)}`:money(S.money);w.style.color=S.money<0?'#d93a2f':'var(--gold)';
+  $('equipRow').innerHTML=SLOTS.map(sl=>`<div class="eq"><span>${sl.n}</span><b>${esc(itemById(S.equip[sl.k]).name)}</b></div>`).join('');
+  $('shopTabs').innerHTML=SLOTS.map(sl=>`<button type="button" role="tab" class="tab" data-slot="${sl.k}" aria-selected="${sl.k===shopSlot}">${sl.n}</button>`).join('');
+  const list=ITEMS.filter(x=>x.slot===shopSlot).sort((a,b)=>a.lv-b.lv||a.price-b.price);
+  $('items').innerHTML=list.map(it=>{
+    const own=S.owned.includes(it.id),on=S.equip[it.slot]===it.id,lock=S.lv<it.lv;
+    let act;
+    if(on)act=`<span class="need" style="color:var(--gold)">装備中</span>`;
+    else if(own)act=`<button class="btn ghost" type="button" data-equip="${it.id}">装備する</button>`;
+    else if(lock)act=`<span class="need">騎手Lv.${it.lv}で解放</span>`;
+    else act=`<button class="btn" type="button" data-buy="${it.id}" ${S.money>=it.price?'':'disabled'}>${S.money>=it.price?'買う':'資金不足'}</button>`;
+    return `<div class="item ${on?'on':''} ${lock&&!own?'locked':''}">
+      <div class="ih"><b>${esc(it.name)}</b>${it.weird?'<span class="weird">変</span>':''}</div>
+      <div class="fx">${fxChips(it.fx)}</div>
+      <div class="desc">${esc(it.desc)}</div>
+      <div class="ib"><span class="price">${own?'所持':it.price?money(it.price):'無料'}</span>${act}</div></div>`;
   }).join('');
 }
 let curRace=null,offers=[],picked=-1,curGoing='良';
@@ -853,7 +1184,7 @@ function openCard(id){
   const chips=[`${r.course}`,`${r.surf==='ダ'?'ダート':'芝'} ${r.dist}m`,`馬場：${curGoing}`,`直線 ${r.straight}m`,`${r.field}頭立て`,`1着 ${money(r.purse)}`,`相手関係 ${rankOf(r.R)}`];
   if(r.course==='パリロンシャン')chips.push('フォルスストレートあり');
   $('rcChips').innerHTML=chips.map((c,i)=>`<span class="chip ${i===2&&curGoing!=='良'?'on':''}">${c}</span>`).join('');
-  $('rcNote').textContent=`いまの騎手Lv.${S.lv}では総合${capOf(S.lv)}までの馬に乗れます。装備：${GEAR.map(g=>g.items[S.gear[g.key]||0]).join('・')}`;
+  $('rcNote').textContent=`いまの騎手Lv.${S.lv}では総合${capOf(S.lv)}までの馬に乗れます。装備：${SLOTS.map(sl=>itemById(S.equip[sl.k]).name).filter(n=>n!=='なし').join('・')}`;
   renderOffers();show('card');
 }
 function statRow(lbl,v){const rk=rankOf(v);return `<div class="srow"><span>${lbl}</span><div class="bar"><i style="width:${clamp(v/120*100,0,100)}%"></i></div><span class="rank r-${rk}">${rk}</span></div>`;}
@@ -906,7 +1237,7 @@ function say(t,pri=1){$('hCall').textContent='実況：'+t;lastSayReal=performan
 function startRace(){
   const h=offers[picked];
   usedNames.clear();usedNames.add(h.name);
-  st=createRaceState(curRace,h,S.lv,curGoing,gearFx());
+  st=createRaceState(curRace,h,S.lv,curGoing,gearFx());st.fx=gearFx();
   const r=curRace;
   $('rsName').textContent=r.name;
   $('rsMeta').textContent=`${r.course} ${r.surf==='ダ'?'ダ':'芝'}${r.dist}m ${st.going}`;
@@ -922,12 +1253,12 @@ function startRace(){
   gate={phase:'wait',openAt:0,early:false};
   st.player.gateWait=true;
   const g=$('gate');g.hidden=false;g.className='gate';
-  $('gateTxt').textContent='ゲートイン';$('gateSub').textContent='ゲートが開いた瞬間にタップ';
+  $('gateTxt').textContent='ゲートイン';$('gateSub').textContent='金色になった瞬間にタップ！ 早すぎると暴れます';renderGateMeter(null,false);
   resizeCv();draw();updateHud();
   const myRace=st;
   clearTimeout(gateTimer);
   gateTimer=setTimeout(()=>{ if(st!==myRace)return;
-    g.className='gate open';$('gateTxt').textContent='スタート！';$('gateSub').textContent='いまタップ！';
+    g.className='gate open';$('gateTxt').textContent='スタート！';$('gateSub').textContent='いまタップ！';renderGateMeter(null,false);
     gate.phase='open';gate.openAt=performance.now();
     running=true;last=performance.now();
     raf=requestAnimationFrame(loop);
@@ -935,13 +1266,24 @@ function startRace(){
   },1700+Math.random()*1800);
 }
 let gate={phase:'none'},gateTimer=0;
+/* 反応時間メーター：早すぎ｜好｜五分｜出遅れ（0〜0.8秒） */
+function gateZones(){const b=(st&&st.fx&&st.fx.start)||0;return {good:0.2+b,ok:0.38+b,max:0.8};}
+function renderGateMeter(rt,early){
+  const z=gateZones(),E=14,W=86;const pos=t=>E+Math.min(1,t/z.max)*W;
+  const g=pos(z.good)-E,o=pos(z.ok)-pos(z.good),l=100-pos(z.ok);
+  let mark='';
+  if(early)mark=`<b class="gm-mark" style="left:${E/2}%"></b>`;
+  else if(rt!=null)mark=`<b class="gm-mark" style="left:${pos(rt)}%"></b>`;
+  $('gmeter').innerHTML=`<div class="gm-bar"><i class="gm-early" style="width:${E}%"></i><i class="gm-good" style="width:${g}%"></i><i class="gm-ok" style="width:${o}%"></i><i class="gm-late" style="width:${l}%"></i>${mark}</div>
+    <div class="gm-lab"><span style="width:${E}%">早すぎ</span><span style="width:${g}%">好</span><span style="width:${o}%">五分</span><span style="width:${l}%">出遅れ</span></div>`;
+}
 /* スタートの反応時間 → 出の良し悪し */
 function startTap(){
   if(!st)return;
   const p=st.player,nm=p.name;
   if(gate.phase==='wait'){
     if(gate.early)return;
-    gate.early=true;$('gateSub').textContent='早すぎた！ ゲートの中で暴れている';
+    gate.early=true;$('gateSub').textContent='早すぎた！ ゲートの中で暴れている';renderGateMeter(null,true);
     return;
   }
   if(gate.phase!=='open')return;
@@ -949,13 +1291,16 @@ function startTap(){
   const rt=(performance.now()-gate.openAt)/1000;
   let label,line;
   if(gate.early){p.startDelay=1.1+rt*2;label='立ち遅れ';line=`${nm}、ゲートの中で暴れて出遅れた！`;}
-  else if(rt<0.2){p.goodStart=1.6;label='好スタート';line=`好スタート！ ${nm}がポンと飛び出した`;}
-  else if(rt<0.38){label='五分のスタート';line=`${nm}、まずまずのスタート`;}
+  else if(rt<gateZones().good){p.goodStart=1.6;label='好スタート';line=`好スタート！ ${nm}がポンと飛び出した`;}
+  else if(rt<gateZones().ok){label='五分のスタート';line=`${nm}、まずまずのスタート`;}
   else{p.startDelay=Math.min(3,(rt-0.25)*2.6);label='出遅れ';line=`あっと、${nm}は出遅れた！`;}
   p.gateWait=false;st.startInfo={rt,label};
   const g=$('gate');g.className='gate result';
-  $('gateTxt').textContent=label;$('gateSub').textContent=`反応 ${rt.toFixed(2)}秒`;
-  setTimeout(()=>{g.hidden=true;},700);
+  const icon=label==='好スタート'?'♪ ':label==='五分のスタート'?'':'〰 ';
+  $('gateTxt').innerHTML=`<span class="gbig" style="color:${label==='好スタート'?'var(--gold)':label==='五分のスタート'?'var(--good)':'#d93a2f'}">${icon}${label}</span>`;
+  $('gateSub').textContent=gate.early?'ゲートが開く前にタップしてしまった':`反応 ${rt.toFixed(2)}秒（好スタートは${gateZones().good.toFixed(2)}秒以内）`;
+  renderGateMeter(rt,gate.early);
+  setTimeout(()=>{if(gate.phase==='done')g.hidden=true;},1500);
   say(pick('start',LINES.start,{race:st.race.name})+' '+line,2);
   if(label==='好スタート')react('good','好スタート');else if(label!=='五分のスタート')react('bad',label);
 }
@@ -1028,9 +1373,21 @@ function react(type,label){
   p.react={type,t:1.6,label};
   if(st.log){if(type==='good')st.log.good++;else st.log.bad++;}
 }
+const FALL_LINES=[c=>`あーっと！ ${c.me}の鞍上${c.jk}が落馬！`,c=>`落馬です！ ${c.jk}がターフに投げ出された！`,c=>`なんということだ！ ${c.jk}、落馬！ ${c.me}はカラ馬に`];
+function fallOff(){
+  const p=st.player;if(p.fell)return;
+  p.fell=true;p.hold=false;p.whipT=0;p.urgeT=0;p.kakari=0;p.fallD=p.d;p.fallLane=p.lane;st.fallT=st.t;
+  st.log.fell={remain:Math.round(st.race.dist-p.d)};
+  react('bad','落馬！');
+  say(pick('fall',FALL_LINES,ctxNow()),2);
+  const g=$('gate');g.hidden=false;g.className='gate fall';
+  $('gateTxt').innerHTML='<span class="gbig">落馬！</span>';$('gateSub').textContent='モヤモヤな騎乗が続いて、バランスを崩した';$('gmeter').innerHTML='';
+  setTimeout(()=>{g.hidden=true;},1800);
+  speedMul=Math.max(speedMul,2);$('btnSpeed').textContent='早送り ×'+speedMul;
+}
 function act(a){
   if(st&&(gate.phase==='wait'||gate.phase==='open')){startTap();return;}
-  if(!st||!running)return;
+  if(!st||!running||st.player.fell)return;
   const p=st.player,D=st.race.dist,remain=D-p.d,late=remain<Math.max(300,st.race.straight+120)+150;
   const wasTired=p.S<=0;
   const res=playerAct(st,a);
@@ -1050,11 +1407,16 @@ function act(a){
     if(L.spurtAt==null)L.spurtAt=remain;
     if(wasTired){key='whip_tired';mood='bad';label='もう脚がない';L.whipTired++;}
     else if(p.whips>22){key='whip_much';mood='bad';label='鞭に慣れてきた';}
-    else{key=S.gear.whip?'whip':'whip_negi';mood='good';label='ぐいっと伸びた';}
+    else{key=S.equip.whip!=='negi'?'whip':'whip_negi';mood='good';label='ぐいっと伸びた';}
   }else if(res==='whip_early'){mood='bad';label='まだ早い';L.whipEarly++;if(L.spurtAt==null)L.spurtAt=remain;}
   else if(res==='yore'){mood='bad';label='ヨレた';L.yore++;}
   if(res==='hold_on'||res==='hold_off'||res==='urge_release')$('btnHold').setAttribute('aria-pressed',p.hold?'true':'false');
   if(mood)react(mood,label);
+  if(mood==='bad'&&!p.fell){
+    L.trouble=(L.trouble||0)+(res==='yore'?2:1);
+    const risk=clamp((L.trouble-3)*0.07+(res==='yore'?0.06:0),0,0.45)*st.fx.fall*Math.max(0.4,1-S.lv*0.012);
+    if(Math.random()<risk){fallOff();updateHud();return;}
+  }
   const lines=ACT_LINES[key];
   if(lines)say(pick('act_'+key,lines,c),key==='yore'||key==='rein_ok'?1:0);
   updateHud();
@@ -1076,7 +1438,8 @@ function commentary(){
   if(!F.c&&lr<R.straight+600&&R.course!=='パリロンシャン'){F.c=1;sayKey('corner',1,c);}
   if(!F.d&&lr<R.straight){F.d=1;sayKey('straight',1,c);}
   if(!F.e&&lr<200){F.e=1;sayKey('f200',1,c);}
-  if(!F.f&&lead.fin){F.f=1;sayKey(lead.isPlayer?'win':'lose',2,c);return;}
+  if(!F.f&&lead.fin){F.f=1;sayKey(lead.isPlayer&&!p.fell?'win':'lose',2,c);return;}
+  if(p.fell)return;
   if(lead.fin)return;
   // 合間の実況：先頭交代・順位の上下・様子
   const now=performance.now(),quiet=now-lastSayReal>3200&&(!voiceOn()||!TTS.speaking);
@@ -1109,7 +1472,7 @@ function loop(now){
   order.forEach((r,i)=>{if(r.d>150){r.laneT=Math.min(r.laneT,(i%6)*0.95);}r.lane+=(r.laneT-r.lane)*Math.min(1,real*1.2);});
   commentary();
   draw();updateHud();
-  if(st.player.fin){
+  if(st.player.fin||(st.player.fell&&st.runners.every(r=>r.fin||r.isPlayer))){
     finishWait+=real;
     if(finishWait>0.6)speedMul=Math.max(speedMul,3);
     const all=st.runners.every(r=>r.fin);
@@ -1133,7 +1496,8 @@ function updateHud(){
   if(p.urgeT>0)ch.push('<span class="chip on">促し</span>');
   if(p.whipT>0)ch.push('<span class="chip on">鞭</span>');
   if(p.yore>0)ch.push('<span class="chip alert">ヨレ</span>');
-  if(p.tired)ch.push('<span class="chip alert">バテ</span>');
+  if(p.tired&&!p.fell)ch.push('<span class="chip alert">バテ</span>');
+  if(p.fell)ch.push('<span class="chip alert">落馬・競走中止</span>');
   ch.push(`<span class="chip">鞭 ${p.whips}発</span>`);
   $('hStatus').innerHTML=ch.join('');
 }
@@ -1149,24 +1513,24 @@ window.addEventListener('resize',()=>{if(st&&!$('raceScr').hidden){resizeCv();dr
 function draw(){
   const W=cv.clientWidth,H=cv.clientHeight,R=st.race,D=R.dist,p=st.player;
   const ppm=clamp(W/46,7,15);
-  const cam=p.d;
+  const cam=p.fell?Math.min(p.d,p.fallD+Math.max(0,st.t-st.fallT-1.5)*14):p.d;
   const px=d=>W*0.55+(d-cam)*ppm;
   const dirt=R.surf==='ダ';
   ctx.clearRect(0,0,W,H);
   // minimap
-  ctx.fillStyle='#14291f';ctx.fillRect(0,0,W,34);
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,34);
   const mx0=14,mx1=W-14,mm=d=>mx0+(mx1-mx0)*clamp(d/D,0,1.02);
   ctx.fillStyle='rgba(220,173,66,.18)';ctx.fillRect(mm(D-R.straight),9,mm(D)-mm(D-R.straight),12);
-  ctx.strokeStyle='#2b4a3b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(mx0,15);ctx.lineTo(mx1,15);ctx.stroke();
+  ctx.strokeStyle='#c9d8f0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(mx0,15);ctx.lineTo(mx1,15);ctx.stroke();
   ctx.fillStyle='#d8473a';ctx.fillRect(mm(D)-1,6,3,18);
-  ctx.font='10px "IBM Plex Mono",monospace';ctx.fillStyle='#9fb1a2';ctx.textAlign='left';
+  ctx.font='10px "IBM Plex Mono",monospace';ctx.fillStyle='#56688c';ctx.textAlign='left';
   ctx.fillText('直線',mm(D-R.straight)+2,31);
   for(const r of st.runners){if(r.isPlayer)continue;ctx.fillStyle=FRAME_COLORS[r.frame];ctx.beginPath();ctx.arc(mm(r.d),15,3.2,0,7);ctx.fill();}
   ctx.fillStyle='#dcad42';ctx.beginPath();ctx.arc(mm(p.d),15,5.5,0,7);ctx.fill();
-  ctx.strokeStyle='#0d1d18';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.strokeStyle='#1d3b8b';ctx.lineWidth=1.5;ctx.stroke();
   // track
   const y0=40,y1=H-6;
-  ctx.fillStyle=dirt?'#7b5634':'#2d6a3c';ctx.fillRect(0,y0,W,y1-y0);
+  ctx.fillStyle=dirt?'#c98d54':'#4cb85c';ctx.fillRect(0,y0,W,y1-y0);
   const stripe=10;
   const dStart=cam-(W*0.55)/ppm-stripe,dEnd=cam+(W*0.45)/ppm+stripe;
   for(let d=Math.floor(dStart/stripe)*stripe;d<dEnd;d+=stripe){
@@ -1183,7 +1547,7 @@ function draw(){
     const d=D-k*200;if(d<dStart||d>dEnd)continue;
     const x=px(d);
     ctx.fillStyle='#f2efe6';ctx.fillRect(x-2,y0-2,4,14);
-    ctx.fillStyle='#0d1d18';ctx.fillRect(x-14,y0+12,28,14);
+    ctx.fillStyle='#1d3b8b';ctx.fillRect(x-14,y0+12,28,14);
     ctx.fillStyle='#efe8d2';ctx.fillText(k*200,x,y0+23);
   }
   // finish
@@ -1203,6 +1567,16 @@ function draw(){
     const bob=Math.sin(st.t*9+r.num)*1.2*(r.v/16);
     drawHorse(x,y+bob,len,r);
   }
+  if(p.fell){ // 地面の騎手
+    const x=px(p.fallD),y=y0+14+laneH*(p.fallLane+0.5)+6;
+    if(x>-40&&x<W+40){
+      ctx.save();ctx.fillStyle=FRAME_COLORS[p.frame];ctx.strokeStyle='#efe8d2';ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(x-12,y);ctx.lineTo(x+8,y+2);ctx.stroke();
+      ctx.beginPath();ctx.arc(x+12,y+1,5,0,7);ctx.fill();
+      ctx.fillStyle='#dcad42';ctx.font='12px "Dela Gothic One",sans-serif';ctx.textAlign='center';ctx.fillText('あなた（落馬）',x,y-12);
+      ctx.restore();
+    }
+  }
 }
 function drawMood(x,y,m){
   const k=clamp(m.t/1.6,0,1),age=1-k;
@@ -1213,7 +1587,7 @@ function drawMood(x,y,m){
     ctx.font='bold 15px sans-serif';ctx.fillText('♫',x+14,y+6-age*30);
   }else{
     const cx=x+4,cy=y-6-age*8;
-    ctx.strokeStyle='#c3b4e6';ctx.lineWidth=2.2;ctx.beginPath();
+    ctx.strokeStyle='#7d62c4';ctx.lineWidth=2.2;ctx.beginPath();
     for(let a=0;a<=Math.PI*6.2;a+=0.18){
       const rr=4+a*1.15+Math.sin(a*3+st.t*6)*1.2;
       const px=cx+Math.cos(a)*rr*0.9,py=cy+Math.sin(a)*rr*0.6;
@@ -1241,9 +1615,9 @@ function drawHorse(x,y,len,r){
   ctx.fillStyle=FRAME_TEXT[r.frame];ctx.font=`600 ${Math.max(9,len*0.17)}px "IBM Plex Mono",monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText(r.num,bx+len*0.05,y+0.5);
   ctx.textBaseline='alphabetic';
-  if(r.isPlayer){ctx.fillStyle='#dcad42';ctx.font='12px "Dela Gothic One",sans-serif';ctx.fillText('あなた',bx,y-len*0.42);}
+  if(r.isPlayer){ctx.fillStyle='#dcad42';ctx.font='12px "Dela Gothic One",sans-serif';ctx.fillText(r.fell?'カラ馬':'あなた',bx,y-len*0.42);}
   if(r.isPlayer&&r.react)drawMood(bx+len*0.55,y-len*0.5,r.react);
-  if(r.whipT>0&&r.isPlayer){const ng=!S.gear.whip;ctx.strokeStyle=ng?'#7cc35a':'#efe8d2';ctx.lineWidth=ng?3:1.5;ctx.beginPath();ctx.moveTo(bx-len*0.1,y-len*0.1);ctx.lineTo(bx-len*0.45,y-len*0.3);ctx.stroke();}
+  if(r.whipT>0&&r.isPlayer){const ng=S.equip.whip==='negi';ctx.strokeStyle=ng?'#7cc35a':'#efe8d2';ctx.lineWidth=ng?3:1.5;ctx.beginPath();ctx.moveTo(bx-len*0.1,y-len*0.1);ctx.lineTo(bx-len*0.45,y-len*0.3);ctx.stroke();}
   ctx.restore();
 }
 
@@ -1299,9 +1673,10 @@ function evaluateRide(order){
   items.push({k:'鞭さばき',sc:wbad===0?(p.whips>0?3:1):wbad<=2?2:wbad<=4?1:0,
     txt:p.whips===0?'鞭を1発も使わなかった':`鞭${p.whips}発`+(L.yore?`・ヨレ${L.yore}回`:'')+(L.whipEarly?`・早打ち${L.whipEarly}回`:'')+(L.whipTired?`・バテた後に${L.whipTired}回`:'')+(L.holdLate?`・直線で抑え${L.holdLate}回`:'')+(much?'・打ちすぎ':'')+(wbad===0?'。無駄なし':''),
     tip:'鞭は直線で間隔をあけて。操縦性が低い馬は「促す」中心だとヨレにくい'});
+  if(L.fell)items.unshift({k:'落馬',sc:0,txt:`残り${L.fell.remain}mで落馬。モヤモヤな騎乗が重なった`,tip:'ヨレ・早打ち・バテた後の鞭が続くと落馬しやすい。〰が続いたら一度手を止めよう。お守りやカエルの置物も効く'});
   const total=items.reduce((a,x)=>a+x.sc,0),max=items.length*3;
-  const grade=total>=16?'S':total>=13?'A':total>=10?'B':total>=7?'C':'D';
-  const bonus={S:0.3,A:0.15}[grade]||0;
+  const grade=L.fell?'D':total>=16?'S':total>=13?'A':total>=10?'B':total>=7?'C':'D';
+  const bonus=L.fell?0:({S:0.3,A:0.15}[grade]||0);
   const worst=items.slice().sort((a,b)=>a.sc-b.sc)[0];
   const best=items.slice().sort((a,b)=>b.sc-a.sc)[0];
   return {items,total,max,grade,bonus,worst,best,good:L.good,bad:L.bad};
@@ -1318,19 +1693,28 @@ function finishRace(){
   gate.phase='none';clearTimeout(gateTimer);
   cancelAnimationFrame(raf);
   for(const r of st.runners)if(!r.fin){r.time=st.t+(st.race.dist-r.d)/Math.max(10,r.v);}
-  const order=[...st.runners].sort((a,b)=>a.time-b.time);
-  const place=order.indexOf(st.player)+1;
+  const fell=!!st.player.fell;
+  const order=[...st.runners].sort((a,b)=>(a.isPlayer&&fell?1e9:a.time)-(b.isPlayer&&fell?1e9:b.time));
+  const place=fell?99:order.indexOf(st.player)+1;
   const R=st.race;
   // rewards
   const mult=[1,.6,.45,.32,.25][place-1]??.12;
   const ev=evaluateRide(order);
-  const expBase=Math.round(R.R*mult*4),exp=Math.round(expBase*(1+ev.bonus));
-  const prize=place<=5?R.purse*[1,.4,.25,.15,.1][place-1]:0;
+  const expBase=fell?3:Math.round(R.R*mult*4),exp=fell?3:Math.round(expBase*(1+ev.bonus));
+  const prize=!fell&&place<=5?R.purse*[1,.4,.25,.15,.1][place-1]:0;
   const jk=prize*0.05;
+  let injury=null;
+  if(fell){
+    const kinds=[['打撲',1,'全治1週間'],['捻挫',1.6,'全治2週間'],['鎖骨骨折',2.6,'全治6週間']];
+    const k=kinds[Math.random()<0.5?0:Math.random()<0.7?1:2];
+    const cost=Math.max(1,Math.round(R.purse*0.05*rnd(1,1.6)*k[1]*st.fx.cost*10)/10);
+    injury={name:k[0],weeks:k[2],cost};
+    S.money-=cost;S.falls=(S.falls||0)+1;S.medical=(S.medical||0)+cost;
+  }
   const lvBefore=S.lv;
   S.starts++;S.exp+=exp;S.income+=jk;S.money+=jk;
   if(place===1){S.wins++;S.won[R.id]=(S.won[R.id]||0)+1;if(R.grade)S.gradeWins++;}
-  if(!S.best[R.id]||place<S.best[R.id])S.best[R.id]=place;
+  if(!fell&&(!S.best[R.id]||place<S.best[R.id]))S.best[R.id]=place;
   while(S.exp>=needExp(S.lv)){S.exp-=needExp(S.lv);S.lv++;}
   const firstArc=R.id==='arc'&&place===1&&!S.arc;
   if(R.id==='arc'&&place===1)S.arc=true;
@@ -1338,21 +1722,24 @@ function finishRace(){
   syncSave(S).then(()=>{if(rankScope==='online')fetchOnline();});
   // render
   renderEval(ev);
-  $('resPlace').textContent=place+'着';
-  $('resPlace').className='place num'+(place===1?' win':'');
+  $('resPlace').textContent=fell?'落馬':place+'着';
+  $('resPlace').className='place num'+(place===1?' win':'')+(fell?' fell':'');
   $('resLabel').textContent=`${R.course} ${R.surf==='ダ'?'ダート':'芝'}${R.dist}m ・ ${st.going}${st.startInfo?` ・ ${st.startInfo.label}（反応${st.startInfo.rt.toFixed(2)}秒）`:''}`;
   $('resName').textContent=`${R.name} — ${st.player.name}`;
   const unlocked=RACES.filter(x=>lockReason(x)===null);
   let rw=`<div class="card stat"><b>+${exp}</b><span>経験値</span></div>
     <div class="card stat"><b>${money(prize)}</b><span>獲得賞金（馬主）</span></div>
     <div class="card stat"><b>${money(jk)}</b><span>騎手の進上金（所持金 ${money(S.money)}）</span></div>`;
+  if(injury)rw=`<div class="card stat"><b style="color:#d93a2f">-${money(injury.cost)}</b><span>治療費（${injury.name}・${injury.weeks}）</span></div>
+    <div class="card stat"><b>+${exp}</b><span>経験値（競走中止）</span></div>
+    <div class="card stat"><b style="color:${S.money<0?'#d93a2f':'var(--ivory)'}">${S.money<0?'借金 '+money(-S.money):money(S.money)}</b><span>所持金</span></div>`;
   if(S.lv>lvBefore)rw+=`<div class="card stat"><b class="lvup">Lv.${lvBefore} → ${S.lv}</b><span>レベルアップ！ 総合${capOf(S.lv)}まで騎乗可</span></div>`;
   $('rewards').innerHTML=rw;
   const t0=order[0].time;
-  $('resBody').innerHTML=order.map((r,i)=>`<tr class="${r.isPlayer?'me':''}"><td class="num">${i+1}</td>
+  $('resBody').innerHTML=order.map((r,i)=>`<tr class="${r.isPlayer?'me':''}"><td class="num">${r.isPlayer&&fell?'中止':i+1}</td>
     <td><span class="waku" style="background:${FRAME_COLORS[r.frame]};color:${FRAME_TEXT[r.frame]}">${r.frame+1}</span></td>
     <td class="num">${r.num}</td><td>${r.name}${r.isPlayer?'（あなた）':''}</td><td>${STYLE[r.style].label}</td>
-    <td class="num">${fmtTime(r.time)}</td><td>${i?marginTxt(r.time-order[i-1].time):''}</td></tr>`).join('');
+    <td class="num">${r.isPlayer&&fell?'—':fmtTime(r.time)}</td><td>${r.isPlayer&&fell?'落馬・競走中止':i?marginTxt(r.time-order[i-1].time):''}</td></tr>`).join('');
   $('arcBanner').hidden=!(R.id==='arc'&&place===1);
   if(R.id==='arc'&&place===1)$('arcText').textContent=`地方競馬からデビューした${S.name}が、${st.player.name}とともにパリロンシャンの頂点に立ちました。通算${S.starts}戦${S.wins}勝。`;
   st=null;
@@ -1360,11 +1747,12 @@ function finishRace(){
 }
 
 /* ------------ events ------------ */
-$('gear').addEventListener('click',e=>{
-  const b=e.target.closest('[data-buy]');if(!b)return;
-  const g=GEAR.find(x=>x.key===b.dataset.buy),t=S.gear[g.key]||0,price=PRICES[t+1];
-  if(price==null||S.money<price)return;
-  S.money-=price;S.gear[g.key]=t+1;save();renderGear();
+$('shopTabs').addEventListener('click',e=>{const b=e.target.closest('[data-slot]');if(b){shopSlot=b.dataset.slot;renderShop();}});
+$('items').addEventListener('click',e=>{
+  const bb=e.target.closest('[data-buy]'),be=e.target.closest('[data-equip]');
+  if(bb){const it=itemById(bb.dataset.buy);if(!it||S.lv<it.lv||S.money<it.price||S.owned.includes(it.id))return;
+    S.money-=it.price;S.owned.push(it.id);S.equip[it.slot]=it.id;save();renderShop();renderMenu();}
+  if(be){const it=itemById(be.dataset.equip);if(it&&S.owned.includes(it.id)){S.equip[it.slot]=it.id;save();renderShop();}}
 });
 $('raceList').addEventListener('click',e=>{const b=e.target.closest('[data-race]');if(b)openCard(b.dataset.race);});
 $('offers').addEventListener('click',e=>{
@@ -1372,7 +1760,7 @@ $('offers').addEventListener('click',e=>{
   picked=+b.dataset.i;renderOffers();
 });
 $('btnReroll').onclick=()=>{offers=genOffers(curRace);picked=-1;renderOffers();};
-$('btnBack1').onclick=()=>{renderHome();show('home');};
+$('btnBack1').onclick=()=>showPanel('races');
 $('btnGo').onclick=()=>{if(picked>=0){if(voiceOn()){try{TTS.cancel();const u=new SpeechSynthesisUtterance('');TTS.speak(u);}catch(e){}}startRace();}};
 $('btnVoice').onclick=toggleVoice;$('btnVoice2').onclick=toggleVoice;
 $('btnHold').onclick=()=>act('hold');
@@ -1383,7 +1771,7 @@ $('btnUrge').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault
 $('btnWhip').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();act('whip');}});
 $('btnSpeed').onclick=()=>{speedMul=speedMul===1?2:1;$('btnSpeed').textContent='早送り ×'+speedMul;};
 $('btnAgain').onclick=()=>openCard(curRace.id);
-$('btnHome').onclick=()=>{renderHome();show('home');};
+$('btnHome').onclick=()=>showPanel('menu');
 $('jockeyName').addEventListener('change',e=>{S.name=e.target.value.trim()||'若手騎手';save();renderHome();syncSave(S);});
 $('btnReset').onclick=()=>{$('btnResetYes').hidden=false;$('resetNote').hidden=false;};
 $('btnResetYes').onclick=()=>{removeCurrent();$('btnResetYes').hidden=true;$('resetNote').hidden=true;};
@@ -1415,11 +1803,184 @@ document.addEventListener('keydown',e=>{
   else if(k===' '){e.preventDefault();act('whip');}
 });
 
+/* ------------ 音楽（Web Audioでその場で演奏） ------------ */
+const Music={ctx:null,master:null,noise:null,on:true,unlocked:false,playing:false,timer:0,step:0,next:0,
+  init(){
+    if(this.ctx)return true;
+    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;
+    try{
+      this.ctx=new AC();this.master=this.ctx.createGain();this.master.gain.value=0.16;
+      const comp=this.ctx.createDynamicsCompressor();this.master.connect(comp);comp.connect(this.ctx.destination);
+      const len=this.ctx.sampleRate*0.2,buf=this.ctx.createBuffer(1,len,this.ctx.sampleRate),d=buf.getChannelData(0);
+      for(let i=0;i<len;i++)d[i]=Math.random()*2-1;this.noise=buf;
+    }catch(e){this.ctx=null;return false;}
+    return true;
+  },
+  unlock(){if(!this.init())return;try{this.ctx.resume();}catch(e){}this.unlocked=true;$('tHint').hidden=true;if(this.on)this.play();},
+  play(){
+    if(!this.on||!this.ctx||this.playing)return;
+    try{this.ctx.resume();}catch(e){}
+    this.playing=true;this.step=0;this.next=this.ctx.currentTime+0.08;
+    this.timer=setInterval(()=>this.sched(),25);
+  },
+  stop(){if(!this.playing)return;this.playing=false;clearInterval(this.timer);},
+  resume(){if(this.unlocked&&this.on)this.play();},
+  setOn(v){this.on=v;STORE.music=v;save();if(v){this.unlock();}else this.stop();renderMusicBtns();},
+  sched(){
+    const spb=60/156/4;
+    while(this.next<this.ctx.currentTime+0.15){this.note(this.step,this.next,spb);this.next+=spb;this.step=(this.step+1)%128;}
+  },
+  tone(type,midi,t,dur,gain,cut){
+    const c=this.ctx,o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();
+    o.type=type;o.frequency.value=440*Math.pow(2,(midi-69)/12);
+    f.type='lowpass';f.frequency.value=cut||3000;
+    g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(gain,t+0.012);
+    g.gain.setValueAtTime(gain,t+Math.max(0.02,dur-0.05));g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(f);f.connect(g);g.connect(this.master);o.start(t);o.stop(t+dur+0.02);
+  },
+  hit(t,freq,gain,dur){
+    const c=this.ctx,n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();
+    n.buffer=this.noise;f.type='bandpass';f.frequency.value=freq;f.Q.value=1.2;
+    g.gain.setValueAtTime(gain,t);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    n.connect(f);f.connect(g);g.connect(this.master);n.start(t);n.stop(t+dur+0.02);
+  },
+  kick(t){
+    const c=this.ctx,o=c.createOscillator(),g=c.createGain();
+    o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(45,t+0.12);
+    g.gain.setValueAtTime(0.9,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.18);
+    o.connect(g);g.connect(this.master);o.start(t);o.stop(t+0.2);
+  },
+  note(step,t,spb){
+    const bar=Math.floor(step/16),s16=step%16;
+    const CH=[[48,[60,64,67]],[48,[60,64,67]],[53,[60,65,69]],[55,[59,62,67]],[57,[57,60,64]],[53,[60,65,69]],[55,[59,62,67]],[48,[60,64,67]]];
+    const MEL=[
+      [[0,67,2],[2,72,2],[4,76,2],[6,79,6],[12,76,2],[14,79,2]],
+      [[0,84,6],[6,83,2],[8,81,2],[10,79,6]],
+      [[0,81,2],[2,77,2],[4,81,2],[6,84,6],[12,81,2],[14,84,2]],
+      [[0,86,6],[6,84,2],[8,83,2],[10,81,2],[12,79,4]],
+      [[0,76,2],[2,81,2],[4,84,2],[6,88,6],[12,86,2],[14,84,2]],
+      [[0,86,4],[4,84,4],[8,81,4],[12,77,4]],
+      [[0,79,2],[2,83,2],[4,86,2],[6,91,6],[12,89,2],[14,86,2]],
+      [[0,88,4],[4,84,2],[6,79,2],[8,84,8]]];
+    const [root,chord]=CH[bar];
+    // 蹄の音（タタタン）
+    if([1,0,1,1][s16%4])this.hit(t,s16%4===0?2600:1800,s16%4===0?0.32:0.18,0.05);
+    if(s16===0||s16===8)this.kick(t);
+    // ベース（8分でルートとオクターブ）
+    if(s16%2===0)this.tone('triangle',root+(s16%4===2?12:0),t,spb*1.8,0.32,900);
+    // 和音（小節頭）
+    if(s16===0)for(const n of chord)this.tone('sawtooth',n,t,spb*15,0.035,1400);
+    // ファンファーレ
+    for(const [st0,m,len] of MEL[bar])if(st0===s16){this.tone('square',m,t,spb*len*0.95,0.07,2600);this.tone('sawtooth',m-12,t,spb*len*0.95,0.03,1800);}
+  }
+};
+function renderMusicBtns(){for(const id of ['btnMusicT','btnMusicM']){const b=$(id);b.textContent=Music.on?'♪ 音楽 ON':'♪ 音楽 OFF';b.setAttribute('aria-pressed',Music.on?'true':'false');}}
+
+/* ------------ タイトル映像（ナイター競馬場を駆ける馬） ------------ */
+const Title={raf:0,running:false,W:0,H:0,
+  start(){if(this.running)return;this.running=true;this.resize();const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tick=now=>{if(!this.running)return;drawTitle(now/1000);if(!reduce)this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);},
+  stop(){this.running=false;cancelAnimationFrame(this.raf);},
+  resize(){const c=$('tcv'),dpr=Math.min(2,window.devicePixelRatio||1);this.W=c.clientWidth;this.H=c.clientHeight;c.width=Math.round(this.W*dpr);c.height=Math.round(this.H*dpr);c.getContext('2d').setTransform(dpr,0,0,dpr,0,0);}
+};
+window.addEventListener('resize',()=>{if(Title.running)Title.resize();});
+const T_RUNNERS=[{c:'#5b331d',s:2,j:3},{c:'#8d5a2b',s:4,j:6},{c:'#2b201a',s:3,j:2},{c:'#7a4526',s:5,j:0},{c:'#3f2617',s:7,j:4}];
+function drawGallop(c,x,y,s,ph,coat,silk,num){
+  c.save();c.lineCap='round';c.lineJoin='round';
+  // 脚
+  const leg=(hx,hy,o,front)=>{
+    const a1=(front?0.55:0.5)*Math.sin(ph+o)+(front?0.15:-0.1);
+    const kx=hx+Math.sin(a1)*0.22*s,ky=hy+Math.cos(a1)*0.22*s;
+    const bend=(front?-1:1)*0.9*Math.max(0,Math.sin(ph+o+(front?1.2:-0.8)));
+    const a2=a1+bend;
+    c.beginPath();c.moveTo(hx,hy);c.lineTo(kx,ky);c.lineTo(kx+Math.sin(a2)*0.22*s,ky+Math.cos(a2)*0.22*s);c.stroke();
+  };
+  c.strokeStyle=shade(coat,-25);c.lineWidth=0.06*s;
+  leg(x+0.3*s,y+0.08*s,0.6,true);leg(x-0.32*s,y+0.06*s,3.4,false);
+  c.strokeStyle=coat;
+  leg(x+0.34*s,y+0.08*s,0,true);leg(x-0.28*s,y+0.06*s,2.8,false);
+  // 尾
+  c.strokeStyle=shade(coat,-45);c.lineWidth=0.06*s;c.beginPath();c.moveTo(x-0.48*s,y-0.08*s);
+  c.quadraticCurveTo(x-0.7*s,y-0.12*s+Math.sin(ph*1.3)*0.04*s,x-0.82*s,y+0.06*s+Math.sin(ph)*0.06*s);c.stroke();
+  // 胴・首・頭
+  c.fillStyle=coat;c.beginPath();c.ellipse(x,y,0.52*s,0.18*s,0,0,7);c.fill();
+  c.beginPath();c.moveTo(x+0.3*s,y-0.12*s);c.lineTo(x+0.6*s,y-0.44*s);c.lineTo(x+0.72*s,y-0.38*s);c.lineTo(x+0.48*s,y+0.06*s);c.closePath();c.fill();
+  c.save();c.translate(x+0.74*s,y-0.38*s);c.rotate(0.55);c.beginPath();c.ellipse(0.04*s,0,0.15*s,0.065*s,0,0,7);c.fill();c.restore();
+  c.beginPath();c.moveTo(x+0.62*s,y-0.47*s);c.lineTo(x+0.6*s,y-0.56*s);c.lineTo(x+0.67*s,y-0.48*s);c.fill();
+  // ゼッケン
+  c.fillStyle='#f4f4f0';c.fillRect(x-0.12*s,y-0.15*s,0.26*s,0.2*s);
+  c.fillStyle='#111';c.font=`700 ${Math.round(0.13*s)}px "IBM Plex Mono",monospace`;c.textAlign='center';c.textBaseline='middle';c.fillText(num,x+0.01*s,y-0.05*s);
+  // 騎手（前傾）
+  c.fillStyle=silk;c.save();c.translate(x+0.12*s,y-0.29*s);c.rotate(-0.18);c.beginPath();c.ellipse(0,0,0.19*s,0.075*s,0,0,7);c.fill();c.restore();
+  c.strokeStyle='#f2efe6';c.lineWidth=0.045*s;c.beginPath();c.moveTo(x-0.02*s,y-0.24*s);c.lineTo(x+0.08*s,y-0.1*s);c.lineTo(x+0.02*s,y-0.02*s);c.stroke();
+  c.strokeStyle=silk;c.lineWidth=0.04*s;c.beginPath();c.moveTo(x+0.24*s,y-0.3*s);c.lineTo(x+0.5*s,y-0.32*s);c.stroke();
+  c.fillStyle=silk;c.beginPath();c.arc(x+0.33*s,y-0.38*s,0.07*s,0,7);c.fill();
+  c.restore();
+}
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,v+amt));return `rgb(${f(n>>16)},${f((n>>8)&255)},${f(n&255)})`;}
+function drawTitle(t){
+  const c=$('tcv').getContext('2d'),W=Title.W,H=Title.H;if(!W||!H)return;
+  const g=c.createLinearGradient(0,0,0,H*0.5);g.addColorStop(0,'#3aa8ff');g.addColorStop(1,'#bfe8ff');
+  c.fillStyle=g;c.fillRect(0,0,W,H);
+  // 太陽
+  const sx=W*0.82,sy0=H*0.12;const sg=c.createRadialGradient(sx,sy0,0,sx,sy0,H*0.22);sg.addColorStop(0,'rgba(255,250,210,1)');sg.addColorStop(0.18,'rgba(255,236,150,.9)');sg.addColorStop(1,'rgba(255,236,150,0)');
+  c.fillStyle=sg;c.fillRect(sx-H*0.22,sy0-H*0.22,H*0.44,H*0.44);
+  // 雲
+  for(let i=0;i<5;i++){
+    const cw=W*0.9+300,cx=((i*W*0.37-t*(14+i*5))%cw+cw)%cw-150,cy=H*(0.06+((i*0.13)%0.22));
+    c.fillStyle='rgba(255,255,255,.92)';
+    for(const [dx,dy,r] of [[0,0,26],[26,-10,30],[56,0,24],[30,8,26]]){c.beginPath();c.arc(cx+dx,cy+dy,r*(0.8+(i%3)*0.15),0,7);c.fill();}
+  }
+  // 遠くの山
+  const hy=H*0.36;c.fillStyle='#7cc48a';c.beginPath();c.moveTo(0,hy);
+  for(let x=0;x<=W;x+=20)c.lineTo(x,hy-18-Math.sin((x+t*6)*0.012)*14-Math.sin((x+t*6)*0.031)*8);c.lineTo(W,hy+10);c.lineTo(0,hy+10);c.fill();
+  // スタンド（白い建物・赤い屋根・旗）
+  const sy=hy,sh=H*0.12,off=(t*30)%160;
+  c.fillStyle='#f7f3e8';c.fillRect(0,sy,W,sh);
+  c.fillStyle='#e8443a';c.fillRect(0,sy-8,W,10);
+  for(let x=-off;x<W+160;x+=160){
+    c.fillStyle='#1d3b8b';c.fillRect(x+10,sy+sh*0.35,120,sh*0.45);
+    for(let k=0;k<12;k++){c.fillStyle=['#ffd23f','#e8443a','#ffffff','#22a04b'][(k+Math.floor((x+t*30)/160))%4];c.fillRect(x+14+k*10,sy+sh*0.42+((k%3)*sh*0.12),6,6);}
+    c.strokeStyle='#1d3b8b';c.lineWidth=2;c.beginPath();c.moveTo(x+70,sy-8);c.lineTo(x+70,sy-34);c.stroke();
+    c.fillStyle=['#ffd23f','#e8443a','#22a04b','#3aa8ff'][Math.abs(Math.floor((x+t*30)/160))%4];
+    c.beginPath();c.moveTo(x+70,sy-34);c.lineTo(x+92,sy-28+Math.sin(t*6+x)*3);c.lineTo(x+70,sy-22);c.fill();
+  }
+  // 芝
+  const ty=sy+sh;const tg=c.createLinearGradient(0,ty,0,H);tg.addColorStop(0,'#46b85a');tg.addColorStop(1,'#2f9a45');c.fillStyle=tg;c.fillRect(0,ty,W,H-ty);
+  const sp=t*260,stripe=80;
+  for(let x=-(sp%(stripe*2));x<W;x+=stripe*2){c.fillStyle='rgba(255,255,255,.1)';c.beginPath();c.moveTo(x,ty);c.lineTo(x+stripe,ty);c.lineTo(x+stripe*1.6,H);c.lineTo(x+stripe*0.6,H);c.fill();}
+  // 内ラチ
+  c.fillStyle='#ffffff';c.fillRect(0,ty+6,W,5);
+  for(let x=-(sp%46);x<W;x+=46)c.fillRect(x,ty+6,4,16);
+  // ハロン棒
+  const hx=W-((t*260)%(W*3));if(hx>-20&&hx<W){c.fillStyle='#e8443a';c.fillRect(hx,ty-30,6,40);c.fillStyle='#fff';c.fillRect(hx-10,ty-36,26,10);}
+  // 馬（奥から手前へ）
+  const base=Math.min(W*0.26,H*0.32);
+  T_RUNNERS.forEach((r,i)=>{
+    const depth=i/(T_RUNNERS.length-1),s=base*(0.62+depth*0.55);
+    const yy=ty+(H-ty)*(0.28+depth*0.52);
+    const xx=W*(0.18+((i*0.19+0.07)%0.7))+Math.sin(t*0.35+i*1.7)*W*0.06;
+    const ph=t*11+i*1.3,bob=Math.abs(Math.sin(ph))*0.035*s;
+    c.fillStyle='rgba(0,40,0,.18)';c.beginPath();c.ellipse(xx,yy+0.5*s,0.6*s,0.07*s,0,0,7);c.fill();
+    for(let k=0;k<5;k++){const a=((t*1.8+k*0.2+i*0.37)%1);c.fillStyle=`rgba(190,150,90,${0.3*(1-a)})`;c.beginPath();c.arc(xx-0.4*s-a*s*0.9,yy+0.42*s-a*0.1*s,(0.03+a*0.08)*s,0,7);c.fill();}
+    drawGallop(c,xx,yy-bob,s,ph,r.c,FRAME_COLORS[r.j],r.s);
+  });
+}
+
+/* ------------ 画面遷移 ------------ */
+$('title').addEventListener('pointerdown',()=>{if(!Music.unlocked)Music.unlock();});
+$('btnStart').onclick=()=>{Music.unlock();showPanel('menu');};
+$('btnToTitle').onclick=()=>show('title');
+$('btnMusicT').onclick=e=>{e.stopPropagation();Music.setOn(!Music.on);};
+$('btnMusicM').onclick=()=>Music.setOn(!Music.on);
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b&&!$('home').hidden)showPanel(b.dataset.go);});
+
 /* ------------ boot ------------ */
 function boot(data){
   if(data&&data.store&&data.store.list){STORE=data.store;STORE.list.forEach(p=>p.save=norm(p.save));S=STORE.list.find(p=>p.id===STORE.current).save;}
   else S=load();
-  renderHome();show('home');
+  Music.on=STORE.music!==false;renderMusicBtns();
+  renderHome();show('title');
   initOnline();
 }
 try{window.claude?.hot?.snapshot?.(()=>{save();return {store:STORE};});}catch(e){}
