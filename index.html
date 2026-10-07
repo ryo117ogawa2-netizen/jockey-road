@@ -284,6 +284,17 @@ tr.me td{background:rgba(220,173,66,.12);font-weight:700}
 .reset-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
+/* 馬からひとこと */
+.horse-say{display:grid;grid-template-columns:84px 1fr;gap:12px;align-items:center}
+.hs-face{width:84px;height:84px}
+.hs-face svg{width:100%;height:100%}
+.hs-bubble{position:relative;background:#fff;border:3px solid var(--frame);border-radius:16px;box-shadow:0 4px 0 var(--frame);padding:10px 14px;min-width:0}
+.hs-bubble::before{content:"";position:absolute;left:-13px;top:28px;border:10px solid transparent;border-right-color:var(--frame)}
+.hs-bubble::after{content:"";position:absolute;left:-7px;top:30px;border:8px solid transparent;border-right-color:#fff}
+.hs-bubble .hs-name{font-size:12px;color:var(--muted);font-weight:700}
+.hs-bubble p{margin:2px 0 0;font-size:18px;font-weight:800;line-height:1.5;color:var(--ivory)}
+.hs-bubble.angry{border-color:var(--silk);box-shadow:0 4px 0 var(--silk)}
+.hs-bubble.angry::before{border-right-color:var(--silk)}
 /* ===== ポップな見た目（上書き） ===== */
 h1,h2,h3{color:var(--frame)}
 .label{color:var(--muted);font-weight:700}
@@ -593,6 +604,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       <h2>凱旋門賞 制覇</h2>
       <p style="margin:0" id="arcText"></p>
     </div>
+    <div class="horse-say" id="horseSay"></div>
     <div class="res-head">
       <span class="place num" id="resPlace">1</span>
       <div>
@@ -1681,6 +1693,82 @@ function evaluateRide(order){
   const best=items.slice().sort((a,b)=>b.sc-a.sc)[0];
   return {items,total,max,grade,bonus,worst,best,good:L.good,bad:L.bad};
 }
+/* ---- 馬からのコメント（荒ぶり気味） ---- */
+const HORSE_SAYS={
+  fell:['落ちとるやないかい！ ワイ一人で走ったわ','どこ行ってん！ 気づいたら背中軽かったで','てめーが走れ。…いや、ほんまにワイだけで走ったけどな','乗るとこから練習し直してこい、ボケ'],
+  winGood:['なかなかやるやん。今日だけは褒めたる','ええ手綱さばきやった。次も頼むで、相棒','勝ったし人参3本な。忘れたら蹴るで','ワイとお前、最強コンビちゃうか？'],
+  win:['勝ったけど、ほぼワイのおかげやからな','結果オーライや。中身はボロボロやったけどな','まあ勝ちは勝ちや。人参よこせ'],
+  near:['惜しかったな…次は勝たせろや','あと少しやったのに！ 慰めの人参よこせ','悔しいわ！ 次はもっとちゃんと乗れや'],
+  mid:['まあまあやな。人参くれたら次はもっと走ったる','可もなく不可もなし。つまり普通や','こんなもんちゃうぞ、ワイの本気は'],
+  bad:['ヘタクソ！ 乗り方から勉強し直してこい','てめーが走れ！','今日のは見んかったことにしたるわ…人参よこせ','ワイの背中に乗る資格あるんか？'],
+  whipMuch:[c=>`鞭叩きすぎやボケ！ ${c.whips}発て、太鼓ちゃうねんぞ`,'鞭叩きすぎや！ ケツ真っ赤やないか'],
+  whipEarly:['まだ早いっちゅうねん！ 向こう正面で叩くな','仕掛け早すぎや。ゴールの場所知っとるか？'],
+  whipTired:['もう脚ないって言うたやろ！ 叩いても出えへんもんは出えへん'],
+  yore:['急に叩くからビビったやないか！ ヨレたんはお前のせいやで'],
+  noWhip:['最後くらい追えや！ 寝とったんか？','手綱持ったまま終わったで。散歩ちゃうねんぞ'],
+  late:['追い出し遅すぎや！ もう100m早よ言えや'],
+  kakari:['前半もっとなだめてくれや。行きたくなるやろ','手綱ガチャガチャすんなや、落ち着かれへん'],
+  startLate:['スタートぼーっとしすぎや。ゲート開いとったで？','出遅れたやないか！ ワイは準備できとったぞ'],
+  startEarly:['ゲートの中で暴れさせんなや、恥ずかしいわ'],
+  startGood:['スタートは完璧やったな。そこだけは褒めたる'],
+  tired:['飛ばしすぎや！ ワイの肺どないなっとると思とんねん','ペース考えろや。最後は脚プルプルや'],
+  spare:['まだ全然走れたで？ 何を遠慮しとんねん'],
+  negi:['ネギで叩くな。ええ匂いして腹減るわ','ネギやめろや。鍋にされるんかと思たわ'],
+  belt:['このベルトなんやねん、ビリビリして気持ち悪いわ'],
+  ninjin:['目の前の人参、最後まで食べられへんかったやないか！ 詐欺や'],
+  kigurumi:['その着ぐるみ、ちょっとドキッとしたわ'],
+  harisen:['ハリセンの音うるさいねん！ お笑いか！'],
+  hanamegane:['鼻メガネで乗るな。笑ってもうて走られへんわ']
+};
+function horseComment(place,fell,ev){
+  const L=st.log,p=st.player,c={whips:p.whips};
+  const pk=k=>pick('horse_'+k,HORSE_SAYS[k],c);
+  if(fell)return {text:pk('fell'),angry:true};
+  const res=place===1?(ev.grade==='S'||ev.grade==='A'?'winGood':'win'):place<=3?'near':place<=6?'mid':'bad';
+  const bad=[],good=[];
+  if(p.whips>22)bad.push('whipMuch');
+  if(L.whipEarly)bad.push('whipEarly');
+  if(L.whipTired)bad.push('whipTired');
+  if(L.yore)bad.push('yore');
+  if(L.spurtAt==null)bad.push('noWhip');else if(L.spurtAt<180)bad.push('late');
+  if(L.kakariTime>=4)bad.push('kakari');
+  const sl=st.startInfo&&st.startInfo.label;
+  if(sl==='立ち遅れ')bad.push('startEarly');else if(sl==='出遅れ')bad.push('startLate');else if(sl==='好スタート')good.push('startGood');
+  if(L.tiredAt!=null&&L.tiredAt>150)bad.push('tired');else if(p.S/p.maxS>0.35)bad.push('spare');
+  const eq=S.equip;
+  if(eq.whip==='negi')bad.push('negi');
+  if(eq.whip==='harisen')bad.push('harisen');
+  if(eq.acc==='belt')bad.push('belt');
+  if(eq.acc==='ninjin')bad.push('ninjin');
+  if(eq.suit==='kigurumi')good.push('kigurumi');
+  if(eq.goggle==='hanamegane')bad.push('hanamegane');
+  const pool=place===1&&!bad.length?good:bad.length?bad:good;
+  const extra=pool.length?pk(pool[Math.floor(Math.random()*pool.length)]):'';
+  const first=pk(res);
+  return {text:extra?`${first}　${extra}`:first,angry:bad.length>0&&place>1||res==='bad'};
+}
+function horseFaceSVG(angry,coat){
+  coat=shade(coat,70);
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">
+    <path d="M30 18 L36 4 L44 20 Z M58 20 L66 4 L72 18 Z" fill="${coat}" stroke="#1d3b8b" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M26 30 Q50 6 76 30 L80 66 Q82 94 50 94 Q18 94 20 66 Z" fill="${coat}" stroke="#1d3b8b" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M44 22 Q50 34 56 22" fill="#fff" stroke="#1d3b8b" stroke-width="2"/>
+    <ellipse cx="50" cy="76" rx="22" ry="14" fill="#f6dcc0" stroke="#1d3b8b" stroke-width="3"/>
+    <ellipse cx="42" cy="76" rx="3.5" ry="4.5" fill="#1d3b8b"/><ellipse cx="58" cy="76" rx="3.5" ry="4.5" fill="#1d3b8b"/>
+    ${angry?`<path d="M30 44 L44 50 M70 44 L56 50" stroke="#1d3b8b" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="38" cy="54" r="5" fill="#1d3b8b"/><circle cx="62" cy="54" r="5" fill="#1d3b8b"/>
+      <path d="M76 18 l8 0 m-4 -4 l0 8 m6 -6 l-4 4" stroke="#e8443a" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M78 22 q4 -6 10 -2 M84 12 q6 2 4 8" stroke="#e8443a" stroke-width="3" fill="none" stroke-linecap="round"/>`
+    :`<path d="M32 52 Q38 44 44 52 M56 52 Q62 44 68 52" stroke="#1d3b8b" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <ellipse cx="30" cy="62" rx="5" ry="3" fill="#ff9aa2" opacity=".8"/><ellipse cx="70" cy="62" rx="5" ry="3" fill="#ff9aa2" opacity=".8"/>`}
+  </svg>`;
+}
+function renderHorseSay(hc){
+  const p=st.player;
+  $('horseSay').innerHTML=`<div class="hs-face">${horseFaceSVG(hc.angry,p.coat||'#8d5a2b')}</div>
+    <div class="hs-bubble ${hc.angry?'angry':''}"><span class="hs-name">${esc(p.name)}からひとこと</span><p>「${esc(hc.text)}」</p></div>`;
+  if(voiceOn()){const t=hc.text;setTimeout(()=>{if($('result').hidden)return;try{TTS.cancel();const u=new SpeechSynthesisUtterance(t.replace(/　/g,'、'));u.lang='ja-JP';if(jaVoice)u.voice=jaVoice;u.pitch=hc.angry?0.55:0.75;u.rate=hc.angry?1.25:1.1;TTS.speak(u);}catch(e){}},1600);}
+}
 function renderEval(ev){
   const row=x=>`<tr><td>${x.k}</td><td class="mk mk${x.sc}">${MARK[x.sc]}</td><td class="ev-txt">${esc(x.txt)}</td></tr>`;
   $('evalBox').innerHTML=`<div class="ev-head"><div class="ev-grade g-${ev.grade}">${ev.grade}</div>
@@ -1722,6 +1810,7 @@ function finishRace(){
   syncSave(S).then(()=>{if(rankScope==='online')fetchOnline();});
   // render
   renderEval(ev);
+  renderHorseSay(horseComment(place,fell,ev));
   $('resPlace').textContent=fell?'落馬':place+'着';
   $('resPlace').className='place num'+(place===1?' win':'')+(fell?' fell':'');
   $('resLabel').textContent=`${R.course} ${R.surf==='ダ'?'ダート':'芝'}${R.dist}m ・ ${st.going}${st.startInfo?` ・ ${st.startInfo.label}（反応${st.startInfo.rt.toFixed(2)}秒）`:''}`;
@@ -1917,7 +2006,7 @@ function drawGallop(c,x,y,s,ph,coat,silk,num){
   c.fillStyle=silk;c.beginPath();c.arc(x+0.33*s,y-0.38*s,0.07*s,0,7);c.fill();
   c.restore();
 }
-function shade(hex,amt){const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,v+amt));return `rgb(${f(n>>16)},${f((n>>8)&255)},${f(n&255)})`;}
+function shade(hex,amt){if(hex[0]!=='#')return hex;const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,v+amt));return `rgb(${f(n>>16)},${f((n>>8)&255)},${f(n&255)})`;}
 function drawTitle(t){
   const c=$('tcv').getContext('2d'),W=Title.W,H=Title.H;if(!W||!H)return;
   const g=c.createLinearGradient(0,0,0,H*0.5);g.addColorStop(0,'#3aa8ff');g.addColorStop(1,'#bfe8ff');
