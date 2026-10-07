@@ -295,6 +295,14 @@ tr.me td{background:rgba(220,173,66,.12);font-weight:700}
 .hs-bubble p{margin:2px 0 0;font-size:18px;font-weight:800;line-height:1.5;color:var(--ivory)}
 .hs-bubble.angry{border-color:var(--silk);box-shadow:0 4px 0 var(--silk)}
 .hs-bubble.angry::before{border-right-color:var(--silk)}
+/* 騎手名 */
+.me-namerow{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.me-namerow .me-name{margin-bottom:0}
+.rename{background:#fff;border:2px solid var(--frame);border-radius:999px;padding:1px 10px;font-size:12px;font-weight:700;color:var(--frame)}
+.namecard{display:flex;flex-direction:column;gap:12px}
+.namecard p{margin:0;color:var(--muted)}
+.nameform{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.nameform input{font:inherit;font-size:20px;font-weight:800;padding:8px 12px;border-radius:10px;width:12em;max-width:100%}
 /* ===== ポップな見た目（上書き） ===== */
 h1,h2,h3{color:var(--frame)}
 .label{color:var(--muted);font-weight:700}
@@ -413,7 +421,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       <div class="card me-strip">
         <div class="lvbadge sm"><div><small>LV</small><b id="lvMini">1</b></div></div>
         <div style="min-width:0">
-          <b id="nameMini" class="me-name">若手騎手</b>
+          <div class="me-namerow"><b id="nameMini" class="me-name">若手騎手</b><button type="button" class="rename" id="btnRename" aria-label="騎手名を変える">✎ 名前を変える</button></div>
           <div class="bar"><i id="expBarMini" style="width:0%"></i></div>
         </div>
         <div class="me-money"><span class="label">所持金</span><b class="num" id="walletMini">0円</b></div>
@@ -435,6 +443,22 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       <div class="menu-foot">
         <button class="btn ghost" id="btnMusicM" type="button" aria-pressed="true">♪ 音楽 ON</button>
         <button class="btn ghost" id="btnToTitle" type="button">タイトルへ</button>
+      </div>
+    </div>
+
+    <!-- 騎手名 -->
+    <div class="panel" data-panel="name" hidden>
+      <div class="card namecard">
+        <span class="label" id="nameEyebrow">はじめまして</span>
+        <h2 id="nameTitle">騎手名を決めよう</h2>
+        <p>ランキングやレースの実況で呼ばれる名前です（12文字まで）。家族で遊ぶときは、それぞれの名前にしておくと順位がわかりやすくなります。</p>
+        <form id="nameForm" class="nameform">
+          <label for="nameInput" class="label">騎手名</label>
+          <input id="nameInput" maxlength="12" placeholder="例：パパ" autocomplete="off">
+          <button class="btn" type="submit">これで決定</button>
+        </form>
+        <span id="nameErr" class="need" hidden>名前を入れてください</span>
+        <div><button class="btn ghost" type="button" data-go="menu" id="btnNameLater">あとで決める</button></div>
       </div>
     </div>
 
@@ -1080,6 +1104,14 @@ function show(id){
 }
 function showPanel(name){
   homePanel=name;
+  if(name==='name'){
+    const first=S.name==='若手騎手'&&S.starts===0;
+    $('nameEyebrow').textContent=first?'はじめまして':'騎手名';
+    $('nameTitle').textContent=first?'騎手名を決めよう':'騎手名を変える';
+    $('btnNameLater').textContent=first?'あとで決める':'やめる';
+    $('nameInput').value=first?'':S.name;$('nameErr').hidden=true;
+    setTimeout(()=>{try{$('nameInput').focus();}catch(e){}},50);
+  }
   for(const el of document.querySelectorAll('#home .panel'))el.hidden=el.dataset.panel!==name;
   renderHome();show('home');
   if(name==='profile'&&rankScope==='online')fetchOnline();
@@ -2058,7 +2090,13 @@ function drawTitle(t){
 
 /* ------------ 画面遷移 ------------ */
 $('title').addEventListener('pointerdown',()=>{if(!Music.unlocked)Music.unlock();});
-$('btnStart').onclick=()=>{Music.unlock();showPanel('menu');};
+$('btnStart').onclick=()=>{Music.unlock();showPanel(S.name==='若手騎手'&&S.starts===0?'name':'menu');};
+$('btnRename').onclick=()=>showPanel('name');
+$('nameForm').addEventListener('submit',e=>{
+  e.preventDefault();const v=$('nameInput').value.trim().slice(0,12);
+  if(!v){$('nameErr').hidden=false;return;}
+  S.name=v;save();syncSave(S);showPanel('menu');
+});
 $('btnToTitle').onclick=()=>show('title');
 $('btnMusicT').onclick=e=>{e.stopPropagation();Music.setOn(!Music.on);};
 $('btnMusicM').onclick=()=>Music.setOn(!Music.on);
