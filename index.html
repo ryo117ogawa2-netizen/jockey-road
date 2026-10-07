@@ -267,7 +267,7 @@ tr.me td{background:rgba(220,173,66,.12);font-weight:700}
       </div>
       <div class="tabs" id="scopeTabs" hidden>
         <button type="button" class="tab" data-scope="local" aria-selected="true">この端末</button>
-        <button type="button" class="tab" data-scope="online" aria-selected="false">オンライン</button>
+        <button type="button" class="tab" data-scope="online" aria-selected="false">みんな</button>
       </div>
       <form class="newacct" id="groupForm" hidden>
         <label for="groupCode" class="label">合言葉</label>
@@ -684,16 +684,16 @@ async function initOnline(){
     if(!c||!c.url||!c.anonKey)return;
     ONLINE.url=String(c.url).replace(/\/$/,'');ONLINE.key=c.anonKey;ONLINE.ok=true;
     $('scopeTabs').hidden=false;
-    if(STORE.group){for(const p of STORE.list)syncSave(p.id===STORE.current?S:p.save);}
-    renderRanking();
+    for(const p of STORE.list)syncSave(p.id===STORE.current?S:p.save);
+    rankScope='online';renderRanking();fetchOnline();
   }catch(e){}
 }
 async function syncSave(sv){
-  if(!ONLINE.ok||!STORE.group)return;
+  if(!ONLINE.ok)return;
   const c=cloudOf(sv);save();
   try{
     const r=await fetch(ONLINE.url+'/rest/v1/rpc/submit_jockey',{method:'POST',headers:sbHeaders(),body:JSON.stringify({
-      p_id:c.id,p_secret:c.secret,p_group:STORE.group,p_name:String(sv.name).slice(0,12)||'騎手',p_level:sv.lv,p_starts:sv.starts,
+      p_id:c.id,p_secret:c.secret,p_group:'all',p_name:String(sv.name).slice(0,12)||'騎手',p_level:sv.lv,p_starts:sv.starts,
       p_wins:sv.wins,p_grade_wins:sv.gradeWins,p_income:Math.round(sv.income*10)/10,p_reach:reachOf(sv),p_arc:!!sv.arc})});
     if(!r.ok)onlineMsg='オンラインに成績を送れませんでした';
   }catch(e){onlineMsg='オンラインに接続できませんでした';}
@@ -703,9 +703,9 @@ async function deleteCloud(sv){
   try{await fetch(ONLINE.url+'/rest/v1/rpc/delete_jockey',{method:'POST',headers:sbHeaders(),body:JSON.stringify({p_id:sv.cloud.id,p_secret:sv.cloud.secret})});}catch(e){}
 }
 async function fetchOnline(){
-  if(!ONLINE.ok||!STORE.group)return;
+  if(!ONLINE.ok)return;
   try{
-    const q=`${ONLINE.url}/rest/v1/leaderboard?select=id,name,level,starts,wins,grade_wins,income,reach,arc&group_code=eq.${encodeURIComponent(STORE.group)}&limit=200`;
+    const q=`${ONLINE.url}/rest/v1/leaderboard?select=id,name,level,starts,wins,grade_wins,income,reach,arc&group_code=eq.all&order=level.desc,wins.desc&limit=200`;
     const r=await fetch(q,{headers:sbHeaders()});if(!r.ok)throw new Error(r.status);
     onlineRows=(await r.json()).map(x=>({id:x.id,save:{name:x.name,lv:x.level,exp:0,starts:x.starts,wins:x.wins,gradeWins:x.grade_wins,income:+x.income,arc:x.arc,reachTxt:x.reach}}));
     onlineMsg='';
@@ -716,8 +716,7 @@ function renderRanking(){
   const rk=RANK_KEYS.find(x=>x.k===rankKey);
   for(const b of $('scopeTabs').querySelectorAll('[data-scope]'))b.setAttribute('aria-selected',b.dataset.scope===rankScope?'true':'false');
   const online=rankScope==='online';
-  $('groupForm').hidden=!online;
-  if(online)$('groupCode').value=STORE.group||'';
+  $('groupForm').hidden=true;
   const myCloud=S.cloud&&S.cloud.id;
   const localCloud=new Set(STORE.list.map(p=>p.save.cloud&&p.save.cloud.id).filter(Boolean));
   let src;
@@ -731,7 +730,7 @@ function renderRanking(){
     return `<tr class="${p.me?'me':''}"><td class="${place===1?'r1':''}">${place}</td><td>${esc(p.save.name)}${p.mine&&!p.me?' <span style="color:var(--muted);font-size:11px">この端末</span>':''}</td>
     <td class="val">${rk.show(p.save)}</td><td class="num">${p.save.wins}</td><td class="num">${p.save.gradeWins}</td><td>${esc(p.save.reachTxt||reachOf(p.save))}</td></tr>`;}).join('');
   if(!online)$('rankNote').textContent=STORE.list.length<2?'「＋ 騎手を追加」で家族の騎手を登録すると、ここで順位を競えます。':'この端末に登録した騎手の順位です。';
-  else $('rankNote').textContent=onlineMsg||(!STORE.group?'合言葉を決めて参加すると、別のスマホの家族とも順位を競えます。':onlineRows===null?'読み込み中…':`合言葉「${STORE.group}」のランキング。この端末の騎手の成績は自動で送られます。`);
+  else $('rankNote').textContent=onlineMsg||(onlineRows===null?'読み込み中…':'遊んでいる全員のランキング（上位200人）。この端末の騎手の成績は自動で送られます。');
 }
 function renderAccounts(){
   $('accts').innerHTML=STORE.list.map(p=>{const on=p.id===STORE.current;
