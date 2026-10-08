@@ -237,6 +237,31 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .item.furn .ib{flex-wrap:wrap}
 .item.furn .fprev{height:76px}
 
+/* titles */
+.achv-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.achv{border:2px dashed var(--line);border-radius:10px;padding:6px 10px;display:flex;flex-direction:column;min-width:0;background:var(--panel-2);color:var(--muted)}
+.achv b{font-size:14px}
+.achv span{font-size:11px}
+.achv.got{border:3px solid var(--frame);background:var(--sun);color:var(--frame)}
+.achv-new b{color:var(--gold)}
+.road .node{min-width:40px;font-size:11px}
+.road .seg{min-width:6px}
+
+/* viewer (ranking → room) */
+.rk-row{cursor:pointer}
+.rk-row:hover td,.rk-row:focus td{background:var(--panel-2)}
+.rk-peek{font-size:12px}
+.viewer{position:fixed;inset:0;z-index:50;background:rgba(29,59,139,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.viewer[hidden]{display:none}
+.viewer-card{background:#fff;border:3px solid var(--frame);box-shadow:0 5px 0 var(--frame);border-radius:16px;padding:14px;width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;display:flex;flex-direction:column;gap:8px}
+.vw-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.vw-head h2{font-size:22px;overflow-wrap:anywhere}
+.vw-head .btn{padding:6px 12px;font-size:13px}
+.vw-meta{font-size:12px;color:var(--muted)}
+.vw-room{border:3px solid var(--frame);border-radius:12px;background:var(--panel)}
+.vw-gear{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+body.noscroll{overflow:hidden}
+
 /* accounts */
 .acct-box{display:flex;flex-direction:column;gap:8px}
 .accts{display:flex;gap:8px;flex-wrap:wrap}
@@ -587,6 +612,11 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       </div>
 
       <div class="stage">
+        <div class="stage-h"><span class="label">TITLES</span><h2>称号</h2><b class="num" id="achvCount" style="color:var(--gold)">0 / 0</b></div>
+        <div class="achv-list" id="achvList"></div>
+      </div>
+
+      <div class="stage">
         <div class="stage-h" style="justify-content:space-between">
           <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span class="label">LEADING</span><h2>騎手ランキング</h2></div>
           <button class="btn ghost" id="btnBrag" type="button" style="padding:4px 12px;font-size:13px">成績をコピー</button>
@@ -753,6 +783,19 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
 
 </div>
 
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="vwName">
+  <div class="viewer-card">
+    <div class="vw-head">
+      <div style="min-width:0"><span class="label">JOCKEY ROOM</span><h2 id="vwName"></h2></div>
+      <button class="btn ghost" id="vwClose" type="button">とじる</button>
+    </div>
+    <span class="vw-meta" id="vwMeta"></span>
+    <svg id="vwRoom" class="room-svg vw-room" viewBox="0 0 360 300" role="img" aria-label="騎手の部屋"></svg>
+    <ul class="ava-gear vw-gear" id="vwGear"></ul>
+    <span class="vw-meta" id="vwNote"></span>
+  </div>
+</div>
+
 <script>
 //SIM-START
 const STYLE={
@@ -778,7 +821,7 @@ function createRaceState(race,playerHorse,lv,going,gear){
   const pnum=1+Math.floor(Math.random()*n);
   const runners=[];
   for(let i=1;i<=n;i++){
-    const h=i===pnum?playerHorse:genHorse(race.R+rnd(-9,7),race.course==='パリロンシャン');
+    const h=i===pnum?playerHorse:genHorse(race.R+rnd(-9,7),race.course==='パリロンシャン'?true:race.intl?'en':false);
     const r=makeRunner(h,i,n,i===pnum);
     r.frame=frameOf(i,n);
     r.lane=clamp((i-1)/(n-1)*5,0,5);r.laneT=r.lane;
@@ -834,7 +877,7 @@ function step(st,dt){
     if(r.rein>0){r.rein-=dt;v*=0.9;dm*=0.5;}
     const kick=r.burst*0.02*sty.kick;
     if(!r.isPlayer){
-      if(late&&r.S>0){v+=kick*(0.85+r.aiAgg*0.3)*(0.65+0.7*r.S/r.maxS);dm*=1.3;}
+      if(late&&r.S>0){v+=kick*(0.85+r.aiAgg*0.3)*(R.tough||1)*(0.65+0.7*r.S/r.maxS);dm*=1.3;}
     }else{
       if(late&&r.S>0)v+=kick*(0.25+TAME_KICK*r.tame/TAME_MAX);
       if(r.whipT>0){
@@ -842,7 +885,7 @@ function step(st,dt){
         if(r.S>0){
           const lateW=remain<spurtAt+150;
           const fade=r.whips>22?0.8:1;
-          v+=kick*(lateW?1.0:0.35)*(1+st.lv*0.012)*fade*(r.gWhip||1)*(r.gKick||1)*(0.65+0.7*r.S/r.maxS);
+          v+=kick*(lateW?1.0:0.35)*(1+Math.min(st.lv,25)*0.012)*fade*(r.gWhip||1)*(r.gKick||1)*(0.65+0.7*r.S/r.maxS);
           dm*=lateW?1.3:2.2;
         }
       }
@@ -915,7 +958,9 @@ const STAGES=[
   {name:'中央 条件戦',short:'中央'},
   {name:'中央 重賞',short:'重賞'},
   {name:'GI',short:'GI'},
-  {name:'海外遠征',short:'凱旋門'}
+  {name:'海外遠征',short:'凱旋門'},
+  {name:'世界ツアー',short:'世界'},
+  {name:'伝説への道',short:'伝説'}
 ];
 const RACES=[
   {id:'ooi_c3',stage:0,name:'C3 一般',course:'大井',surf:'ダ',dist:1200,straight:386,R:30,lv:1,field:8,grade:'',purse:70},
@@ -935,7 +980,16 @@ const RACES=[
   {id:'jc',stage:3,name:'ジャパンカップ',course:'東京',surf:'芝',dist:2400,straight:525,R:88,lv:20,field:12,grade:'GI',purse:50000},
   {id:'arima',stage:3,name:'有馬記念',course:'中山',surf:'芝',dist:2500,straight:310,R:90,lv:22,field:12,grade:'GI',purse:50000},
   {id:'foy',stage:4,name:'フォワ賞',course:'パリロンシャン',surf:'芝',dist:2400,straight:533,R:88,lv:23,field:8,grade:'GII',purse:1200,need:{stage:[3,2]}},
-  {id:'arc',stage:4,name:'凱旋門賞',course:'パリロンシャン',surf:'芝',dist:2400,straight:533,R:96,lv:25,field:12,grade:'GI',purse:47000,need:{win:'foy'}}
+  {id:'arc',stage:4,name:'凱旋門賞',course:'パリロンシャン',surf:'芝',dist:2400,straight:533,R:96,lv:25,field:12,grade:'GI',purse:47000,need:{win:'foy'}},
+  {id:'dubai',tough:1.12,stage:5,name:'ドバイワールドカップ',course:'メイダン',surf:'ダ',dist:2000,straight:450,R:98,lv:26,field:12,grade:'GI',purse:150000,need:{win:'arc'},intl:1},
+  {id:'hk_cup',tough:1.14,stage:5,name:'香港カップ',course:'シャティン',surf:'芝',dist:2000,straight:430,R:100,lv:28,field:12,grade:'GI',purse:25000,intl:1},
+  {id:'kgvi',tough:1.12,stage:5,name:'キングジョージ',course:'アスコット',surf:'芝',dist:2400,straight:500,R:102,lv:30,field:10,grade:'GI',purse:20000,intl:1},
+  {id:'bc_classic',tough:1.1,stage:5,name:'ブリーダーズカップ・クラシック',course:'サンタアニタ',surf:'ダ',dist:2000,straight:300,R:104,lv:32,field:12,grade:'GI',purse:100000,intl:1},
+  {id:'melbourne',tough:1.04,stage:5,name:'メルボルンカップ',course:'フレミントン',surf:'芝',dist:3200,straight:450,R:106,lv:34,field:12,grade:'GI',purse:50000,intl:1},
+  {id:'tenku',tough:1.25,stage:6,name:'天空ステークス',course:'雲の上',surf:'芝',dist:2400,straight:600,R:110,lv:36,field:12,grade:'GI',purse:80000,need:{stage:[5,3]}},
+  {id:'ginga',tough:1.18,stage:6,name:'銀河ダービー',course:'銀河',surf:'芝',dist:2600,straight:520,R:113,lv:39,field:12,grade:'GI',purse:120000},
+  {id:'ryuoh',tough:1.23,stage:6,name:'竜王賞',course:'竜の谷',surf:'ダ',dist:2200,straight:400,R:116,lv:42,field:12,grade:'GI',purse:150000},
+  {id:'legend',tough:1.27,stage:6,name:'レジェンドカップ',course:'伝説の丘',surf:'芝',dist:3000,straight:560,R:119,lv:45,field:14,grade:'GI',purse:300000,need:{stage:[6,3]}}
 ];
 const raceById=id=>RACES.find(r=>r.id===id);
 
@@ -951,12 +1005,14 @@ function frameOf(num,n){
 const JP_A=['アカツキ','シロガネ','ハヤテ','ミナモ','カゼノ','ホシノ','ツキヨ','アオバ','クレナイ','イナズマ','ソラノ','ユメノ','コガネ','ヒバナ','サザナミ','トキノ','ミカヅキ','ハルカ','ナギサ','ムサシ'];
 const JP_B=['ボルト','ローズ','キング','ダンサー','ブレイブ','ミラージュ','スター','ウインド','オーラ','フラッシュ','ジェット','クイーン','ソング','ランナー','アロー','レガシー','ノヴァ','リズム','ゲイル','ホープ'];
 const FR=['ベルエトワール','ロワデュヴァン','ソレイユルージュ','プランタン','ミストラル','シャトーブラン','ルミエール','レーヴドール','ヴァンクール','エトランジェ','ボンヌシャンス','ラファール','モンマルトル','ジャルダン','セーヌブルー','フルール','グランパレ','シュヴァリエ'];
+const EN=['ゴールドラッシュ','サンダーキング','ミッドナイトスター','ブルーオーシャン','ワイルドウエスト','シルバーアロー','ロイヤルクラウン','デザートストーム','オーシャンブリーズ','ファイアフライ','ビッグベン','ハッピートレイル','レッドロック','グレートバリア','サザンクロス','ノーザンライツ'];
 const COATS=['#7a4526','#5b331d','#8d5a2b','#3f2617','#9a6a3a','#6e6a66','#2b201a'];
 const usedNames=new Set();
 function horseName(fr){
   for(let i=0;i<60;i++){
     let n;
-    if(fr&&Math.random()<0.75)n=FR[Math.floor(Math.random()*FR.length)];
+    if(fr==='en'&&Math.random()<0.75)n=EN[Math.floor(Math.random()*EN.length)];
+    else if(fr===true&&Math.random()<0.75)n=FR[Math.floor(Math.random()*FR.length)];
     else n=JP_A[Math.floor(Math.random()*JP_A.length)]+JP_B[Math.floor(Math.random()*JP_B.length)];
     if(n.length<=9&&!usedNames.has(n)){usedNames.add(n);return n;}
   }
@@ -973,7 +1029,7 @@ function genHorse(overall,fr){
 const overallOf=h=>Math.round((h.stam+h.burst+h.hand)/3);
 const rankOf=x=>x>=100?'S':x>=90?'A':x>=80?'B':x>=70?'C':x>=60?'D':x>=50?'E':x>=40?'F':'G';
 const capOf=lv=>30+lv*3;
-const needExp=lv=>40+lv*25;
+const needExp=lv=>40+lv*25+Math.max(0,lv-10)**2*2; // Lv10 を過ぎると少しずつ上がりにくくなる
 
 /* ------------ items ------------ */
 const SLOTS=[{k:'whip',n:'鞭'},{k:'helmet',n:'ヘルメット'},{k:'goggle',n:'ゴーグル'},{k:'shoes',n:'靴'},{k:'suit',n:'服'},{k:'acc',n:'小物'}];
@@ -1344,6 +1400,28 @@ function normRoom(o){
   if(!r.items.some(it=>it.id==='me'))r.items.push({id:'me',x:180,y:280});
   o.room=r;
 }
+/* ランキングに送る見た目（お金や成績は入れない） */
+function lookOf(sv){
+  return {face:faceOf(sv),equip:Object.assign({},sv.equip),
+    room:{wp:sv.room.wp,fl:sv.room.fl,items:sv.room.items.slice(0,40).map(it=>({id:it.id,x:Math.round(it.x),y:Math.round(it.y),flip:it.flip?1:0}))}};
+}
+/* よその騎手の見た目は信用しない：知らない id や変な値は捨てる */
+function cleanLook(look,name){
+  const L=look&&typeof look==='object'?look:{};
+  const eq={};
+  for(const sl of SLOTS){const v=L.equip&&L.equip[sl.k],it=typeof v==='string'&&itemById(v);eq[sl.k]=it&&it.slot===sl.k?it.id:DEFAULT_EQUIP[sl.k];}
+  const R=L.room&&typeof L.room==='object'?L.room:{};
+  const kindOk=(id,k)=>{const f=typeof id==='string'&&furnById(id);return f&&f.kind===k?id:null;};
+  const seen=new Set(),items=[];
+  for(const it of Array.isArray(R.items)?R.items.slice(0,40):[]){
+    if(!it||typeof it.id!=='string'||seen.has(it.id))continue;
+    const f=furnById(it.id);if(it.id!=='me'&&!(f&&(f.kind==='f'||f.kind==='w')))continue;
+    const o={id:it.id,x:Number(it.x)||180,y:Number(it.y)||280,flip:!!it.flip};roomClamp(o);seen.add(it.id);items.push(o);
+  }
+  if(!seen.has('me'))items.push({id:'me',x:180,y:280});
+  return {name,face:faceOf({face:L.face&&typeof L.face==='object'?L.face:{}}),equip:eq,
+    room:{wp:kindOk(R.wp,'wp')||'wp_plain',fl:kindOk(R.fl,'fl')||'fl_wood',items}};
+}
 /* 置ける範囲：床の家具は床の上、壁のものは壁の中 */
 function roomClamp(it){
   const f=furnById(it.id),half=f?f.w/2:50;
@@ -1352,9 +1430,9 @@ function roomClamp(it){
   else it.y=Math.round(clamp(it.y,WALL_H+18,ROOM_H-4));
 }
 let roomTab='f',roomSel=-1,roomTrial=null;
-function roomItemSVG(it,i){
-  const sel=i===roomSel;
-  if(it.id==='me')return `<g class="ri" data-ri="${i}" transform="translate(${it.x},${it.y}) scale(${it.flip?-0.5:0.5},0.5)"><g transform="translate(-100,-258)">${avatarParts(S)}</g>${sel?'<rect x="-56" y="-262" width="112" height="268" rx="10" fill="none" stroke="#e8443a" stroke-width="5" stroke-dasharray="12 8"/>':''}</g>`;
+function roomItemSVG(it,i,sv){
+  const sel=!sv&&i===roomSel;
+  if(it.id==='me')return `<g class="ri" data-ri="${i}" transform="translate(${it.x},${it.y}) scale(${it.flip?-0.5:0.5},0.5)"><g transform="translate(-100,-258)">${avatarParts(sv||S)}</g>${sel?'<rect x="-56" y="-262" width="112" height="268" rx="10" fill="none" stroke="#e8443a" stroke-width="5" stroke-dasharray="12 8"/>':''}</g>`;
   const f=furnById(it.id);
   return `<g class="ri${it.trial?' trial':''}" data-ri="${i}" transform="translate(${it.x},${it.y}) scale(${it.flip?-1:1},1)">${sel||it.trial?`<rect x="${-f.w/2-5}" y="${-f.h-5}" width="${f.w+10}" height="${f.h+10}" rx="6" fill="${it.trial?'rgba(255,210,63,.25)':'none'}" stroke="${it.trial?'#e3a000':'#e8443a'}" stroke-width="2.5" stroke-dasharray="6 4"/>`:''}${f.svg}</g>`;
 }
@@ -1365,13 +1443,14 @@ function roomItems(){
     items.push(Object.assign({id:t.id,x:t.kind==='w'?250:110,y:t.kind==='w'?120:262,trial:true},roomDragTrial||{}));
   return items;
 }
-function roomSVGInner(){
-  const t=roomTrial&&furnById(roomTrial);
-  const wp=furnById(t&&t.kind==='wp'?t.id:S.room.wp),fl=furnById(t&&t.kind==='fl'?t.id:S.room.fl);
-  const items=roomItems().map((it,i)=>({it,i}));
+/* other = よその騎手（ランキングから見る）。{name, face, equip, room} */
+function roomSVGInner(other){
+  const t=!other&&roomTrial&&furnById(roomTrial),room=other?other.room:S.room;
+  const wp=furnById(t&&t.kind==='wp'?t.id:room.wp),fl=furnById(t&&t.kind==='fl'?t.id:room.fl);
+  const items=(other?room.items:roomItems()).map((it,i)=>({it,i}));
   const order=(a)=>{const f=furnById(a.it.id);return (f&&f.kind==='w'?0:10000)+a.it.y;};
   items.sort((a,b)=>order(a)-order(b));
-  return `${wp.draw(ROOM_W,WALL_H)}<g transform="translate(0,${WALL_H})">${fl.draw(ROOM_W,ROOM_H-WALL_H)}</g><rect x="0" y="${WALL_H-6}" width="${ROOM_W}" height="8" fill="#fff" stroke="currentColor" stroke-width="2"/>${items.map(o=>roomItemSVG(o.it,o.i)).join('')}`;
+  return `${wp.draw(ROOM_W,WALL_H)}<g transform="translate(0,${WALL_H})">${fl.draw(ROOM_W,ROOM_H-WALL_H)}</g><rect x="0" y="${WALL_H-6}" width="${ROOM_W}" height="8" fill="#fff" stroke="currentColor" stroke-width="2"/>${items.map(o=>roomItemSVG(o.it,o.i,other)).join('')}`;
 }
 function furnPreview(f){
   if(f.kind==='wp'||f.kind==='fl')return `<svg class="fprev" viewBox="0 0 120 70" aria-hidden="true">${f.draw(120,70)}<rect x="1" y="1" width="118" height="68" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
@@ -1451,9 +1530,44 @@ function roomUp(){
   renderRoom();
 }
 
+/* ------------ 称号（やりこみ要素） ------------ */
+const stageAll=(sv,i)=>RACES.filter(r=>r.stage===i).every(r=>sv.won&&sv.won[r.id]);
+const ACHV=[
+  {id:'win1',name:'初勝利',hint:'1勝する',ok:s=>s.wins>=1},
+  {id:'grade1',name:'重賞ウイナー',hint:'重賞を1つ勝つ',ok:s=>s.gradeWins>=1},
+  {id:'win10',name:'10勝ジョッキー',hint:'通算10勝',ok:s=>s.wins>=10},
+  {id:'win50',name:'50勝ジョッキー',hint:'通算50勝',ok:s=>s.wins>=50},
+  {id:'win100',name:'100勝ジョッキー',hint:'通算100勝',ok:s=>s.wins>=100},
+  {id:'win300',name:'300勝の大記録',hint:'通算300勝',ok:s=>s.wins>=300},
+  {id:'starts500',name:'鉄人',hint:'500回騎乗する',ok:s=>s.starts>=500},
+  {id:'st0',name:'地方の星',hint:'地方競馬の全レースを勝つ',ok:s=>stageAll(s,0)},
+  {id:'st1',name:'中央の顔',hint:'中央 条件戦の全レースを勝つ',ok:s=>stageAll(s,1)},
+  {id:'st2',name:'重賞ハンター',hint:'中央 重賞の全レースを勝つ',ok:s=>stageAll(s,2)},
+  {id:'st3',name:'GIジョッキー',hint:'GIの全レースを勝つ',ok:s=>stageAll(s,3)},
+  {id:'arc',name:'凱旋門賞ジョッキー',hint:'凱旋門賞を勝つ',ok:s=>!!s.arc},
+  {id:'arc3',name:'凱旋門の主',hint:'凱旋門賞を3回勝つ',ok:s=>(s.won.arc||0)>=3},
+  {id:'st5',name:'世界の名手',hint:'世界ツアーの全レースを勝つ',ok:s=>stageAll(s,5)},
+  {id:'legend',tough:1.27,name:'伝説の騎手',hint:'レジェンドカップを勝つ',ok:s=>!!s.won.legend},
+  {id:'allrace',name:'全レース制覇',hint:'すべてのレースを1回は勝つ',ok:s=>RACES.every(r=>s.won[r.id])},
+  {id:'lv30',name:'ベテラン',hint:'騎手Lv.30',ok:s=>s.lv>=30},
+  {id:'lv50',name:'生ける伝説',hint:'騎手Lv.50',ok:s=>s.lv>=50},
+  {id:'srank10',name:'名騎乗',hint:'騎乗評価Sを10回とる',ok:s=>(s.sCount||0)>=10},
+  {id:'rich',name:'億万長者',hint:'騎手収入1億円',ok:s=>s.income>=10000},
+  {id:'weird',name:'変なもの好き',hint:'「変」アイテムを全部そろえる',ok:s=>ITEMS.filter(x=>x.weird).every(x=>s.owned.includes(x.id))},
+  {id:'items',name:'道具コレクター',hint:'アイテムを全部そろえる',ok:s=>ITEMS.every(x=>s.owned.includes(x.id))},
+  {id:'furn',name:'インテリア王',hint:'家具を全部そろえる',ok:s=>FURN.every(x=>(s.furn||[]).includes(x.id))},
+  {id:'fall10',name:'不死身',hint:'落馬10回（それでも乗る）',ok:s=>(s.falls||0)>=10}
+];
+const achvCount=sv=>ACHV.filter(a=>a.ok(sv)).length;
+function renderAchv(){
+  const n=achvCount(S);
+  $('achvCount').textContent=`${n} / ${ACHV.length}`;
+  $('achvList').innerHTML=ACHV.map(a=>{const got=a.ok(S);return `<div class="achv ${got?'got':''}"><b>${got?'★ ':''}${esc(a.name)}</b><span>${esc(a.hint)}</span></div>`;}).join('');
+}
+
 /* ------------ save ------------ */
 const KEY='jockey-road-v1';
-function fresh(){return {v:1,name:'若手騎手',lv:1,exp:0,starts:0,wins:0,gradeWins:0,income:0,money:0,owned:Object.values(DEFAULT_EQUIP),equip:Object.assign({},DEFAULT_EQUIP),falls:0,medical:0,won:{},best:{},arc:false,face:Object.assign({},DEFAULT_FACE),furn:['wp_plain','fl_wood'],room:freshRoom()};}
+function fresh(){return {v:1,name:'若手騎手',lv:1,exp:0,starts:0,wins:0,gradeWins:0,income:0,money:0,owned:Object.values(DEFAULT_EQUIP),equip:Object.assign({},DEFAULT_EQUIP),falls:0,medical:0,won:{},best:{},arc:false,sCount:0,face:Object.assign({},DEFAULT_FACE),furn:['wp_plain','fl_wood'],room:freshRoom()};}
 let S=fresh();
 const KEY2='jockey-road-v2';
 /* 騎手アカウント：この端末のブラウザに複数の騎手データを保存 */
@@ -1507,10 +1621,10 @@ const RANK_KEYS=[
 ];
 let rankKey='lv';
 function reachOf(sv){
-  if(sv.arc)return '凱旋門制覇';
+  if(sv.won&&sv.won.legend)return '伝説の騎手';
   const prev=S;S=sv;
   let cur=0;for(let i=0;i<STAGES.length;i++)if(RACES.some(r=>r.stage===i&&!lockReason(r)))cur=i;
-  S=prev;return STAGES[cur].short;
+  S=prev;return cur<5&&sv.arc?'凱旋門制覇':STAGES[cur].short;
 }
 /* ------------ オンライン（Vercel + Supabase） ------------ */
 const ONLINE={url:null,key:null,ok:false};
@@ -1536,7 +1650,7 @@ async function syncSave(sv){
   try{
     const r=await fetch(ONLINE.url+'/rest/v1/rpc/submit_jockey',{method:'POST',headers:sbHeaders(),body:JSON.stringify({
       p_id:c.id,p_secret:c.secret,p_group:'all',p_name:String(sv.name).slice(0,12)||'騎手',p_level:sv.lv,p_starts:sv.starts,
-      p_wins:sv.wins,p_grade_wins:sv.gradeWins,p_income:Math.round(sv.income*10)/10,p_reach:reachOf(sv),p_arc:!!sv.arc})});
+      p_wins:sv.wins,p_grade_wins:sv.gradeWins,p_income:Math.round(sv.income*10)/10,p_reach:reachOf(sv),p_arc:!!sv.arc,p_look:lookOf(sv)})});
     if(!r.ok)onlineMsg='オンラインに成績を送れませんでした';
   }catch(e){onlineMsg='オンラインに接続できませんでした';}
 }
@@ -1547,9 +1661,9 @@ async function deleteCloud(sv){
 async function fetchOnline(){
   if(!ONLINE.ok)return;
   try{
-    const q=`${ONLINE.url}/rest/v1/leaderboard?select=id,name,level,starts,wins,grade_wins,income,reach,arc&group_code=eq.all&order=level.desc,wins.desc&limit=200`;
+    const q=`${ONLINE.url}/rest/v1/leaderboard?select=id,name,level,starts,wins,grade_wins,income,reach,arc,look&group_code=eq.all&order=level.desc,wins.desc&limit=200`;
     const r=await fetch(q,{headers:sbHeaders()});if(!r.ok)throw new Error(r.status);
-    onlineRows=(await r.json()).map(x=>({id:x.id,save:{name:x.name,lv:x.level,exp:0,starts:x.starts,wins:x.wins,gradeWins:x.grade_wins,income:+x.income,arc:x.arc,reachTxt:x.reach}}));
+    onlineRows=(await r.json()).map(x=>({id:x.id,save:{name:x.name,lv:x.level,exp:0,starts:x.starts,wins:x.wins,gradeWins:x.grade_wins,income:+x.income,arc:x.arc,reachTxt:x.reach,look:x.look||null}}));
     onlineMsg='';
   }catch(e){onlineMsg='オンラインのランキングを読み込めませんでした';}
   renderRanking();
@@ -1568,12 +1682,30 @@ function renderRanking(){
   $('rankCol').textContent=rk.label;
   const rows=src.slice().sort((a,b)=>rk.get(b.save)-rk.get(a.save)||b.save.wins-a.save.wins);
   let place=0,prevV=null;
+  rankRows=rows;
   $('rankBody').innerHTML=rows.map((p,i)=>{const v=rk.get(p.save);if(v!==prevV){place=i+1;prevV=v;}
-    return `<tr class="${p.me?'me':''}"><td class="${place===1?'r1':''}">${place}</td><td>${esc(p.save.name)}${p.mine&&!p.me?' <span style="color:var(--muted);font-size:11px">この端末</span>':''}</td>
+    return `<tr class="${p.me?'me':''} rk-row" data-view="${i}" tabindex="0" title="アバターと部屋を見る"><td class="${place===1?'r1':''}">${place}</td><td><span class="rk-name">${esc(p.save.name)}</span> <span class="rk-peek" aria-hidden="true">🏠</span>${p.mine&&!p.me?' <span style="color:var(--muted);font-size:11px">この端末</span>':''}</td>
     <td class="val">${rk.show(p.save)}</td><td class="num">${p.save.wins}</td><td class="num">${p.save.gradeWins}</td><td>${esc(p.save.reachTxt||reachOf(p.save))}</td></tr>`;}).join('');
-  if(!online)$('rankNote').textContent=STORE.list.length<2?'「＋ 騎手を追加」で家族の騎手を登録すると、ここで順位を競えます。':'この端末に登録した騎手の順位です。';
-  else $('rankNote').textContent=onlineMsg||(onlineRows===null?'読み込み中…':'遊んでいる全員のランキング（上位200人）。この端末の騎手の成績は自動で送られます。');
+  if(!online)$('rankNote').textContent=STORE.list.length<2?'「＋ 騎手を追加」で家族の騎手を登録すると、ここで順位を競えます。名前をタップするとアバターと部屋が見られます。':'この端末に登録した騎手の順位です。名前をタップするとアバターと部屋が見られます。';
+  else $('rankNote').textContent=onlineMsg||(onlineRows===null?'読み込み中…':'遊んでいる全員のランキング（上位200人）。名前をタップするとアバターと部屋が見られます。この端末の騎手の成績と見た目は自動で送られます。');
 }
+let rankRows=[];
+/* ランキングから騎手の部屋をのぞく */
+function openViewer(i){
+  const p=rankRows[i];if(!p)return;
+  const sv=p.save,local=!!sv.room;
+  const o=local?cleanLook(lookOf(sv),sv.name):sv.look?cleanLook(sv.look,sv.name):null;
+  $('vwName').textContent=sv.name;
+  $('vwMeta').textContent=`Lv.${sv.lv} ・ ${sv.starts}戦${sv.wins}勝（重賞${sv.gradeWins}勝） ・ 到達：${sv.reachTxt||reachOf(sv)}`;
+  if(o){
+    $('vwRoom').innerHTML=roomSVGInner(o);$('vwRoom').hidden=false;
+    $('vwGear').innerHTML=SLOTS.map(sl=>{const it=itemById(o.equip[sl.k]);return `<li><span>${sl.n}</span><b>${esc(it.name)}</b>${it.weird?'<i class="weird">変</i>':''}</li>`;}).join('');
+    $('vwNote').textContent='';
+  }else{$('vwRoom').hidden=true;$('vwGear').innerHTML='';$('vwNote').textContent='この騎手はまだ見た目を送っていません（新しい版で遊ぶと表示されます）。';}
+  $('viewer').hidden=false;document.body.classList.add('noscroll');
+  setTimeout(()=>{try{$('vwClose').focus();}catch(e){}},30);
+}
+function closeViewer(){$('viewer').hidden=true;document.body.classList.remove('noscroll');}
 function renderAccounts(){
   $('accts').innerHTML=STORE.list.map(p=>{const on=p.id===STORE.current;
     return `<button type="button" class="acct ${on?'on':''}" data-acct="${p.id}" aria-pressed="${on}"><b>${esc(p.save.name)}</b><span class="num">Lv.${p.save.lv}${p.save.arc?' ・ 凱旋門':''}</span></button>`;}).join('')
@@ -1606,6 +1738,7 @@ function show(id){
   window.scrollTo(0,0);
 }
 function showPanel(name){
+  if(homePanel!==name&&['room','shop','profile'].includes(homePanel))syncSave(S); // 見た目の変更をランキングにも反映
   homePanel=name;
   if(name==='name'){
     const first=S.name==='若手騎手'&&S.starts===0;
@@ -1646,22 +1779,23 @@ function renderHome(){
   $('stGrade').textContent=S.gradeWins;
   $('stIncome').textContent=money(S.income);
   $('stFalls').textContent=S.falls||0;$('stMedical').textContent=money(S.medical||0);
-  renderShop();renderAccounts();renderRanking();renderMenu();renderAvatar();renderRoom();
+  renderShop();renderAccounts();renderRanking();renderMenu();renderAvatar();renderRoom();renderAchv();
   // stage progress
   let cur=0;
   for(let i=0;i<STAGES.length;i++){if(RACES.some(r=>r.stage===i&&!lockReason(r)))cur=i;}
-  const stageDone=i=>i<cur||(i===4&&S.arc);
+  const stageDone=i=>i<cur||(i===4&&S.arc)||(i===6&&S.won.legend);
   let h='';
   STAGES.forEach((s,i)=>{
     if(i)h+=`<div class="seg ${stageDone(i-1)||i<=cur?'done':''}"></div>`;
-    h+=`<div class="node ${stageDone(i)?'done':''} ${i===cur&&!S.arc?'now':''}"><div class="dot"></div>${s.short}</div>`;
+    h+=`<div class="node ${stageDone(i)?'done':''} ${i===cur&&!stageDone(i)?'now':''}"><div class="dot"></div>${s.short}</div>`;
   });
   $('road').innerHTML=h;
   // goal
   let goal;
-  if(S.arc){goal=`${S.name}は凱旋門賞ジョッキーになりました。さらに勝ち星を積み上げましょう。`;$('heroLabel').textContent='凱旋門賞ジョッキー';}
+  const next=RACES.find(r=>lockReason(r));
+  if(S.won.legend){goal=`${S.name}は伝説の騎手になりました。まだ取っていない称号を集めよう（${achvCount(S)} / ${ACHV.length}）。`;$('heroLabel').textContent='伝説の騎手';}
+  else if(S.arc){goal=next?`凱旋門賞ジョッキー${S.name}、次は世界へ。次の目標：${next.name}（${lockReason(next)}）`:'レジェンドカップに挑戦できます。伝説の丘へ。';$('heroLabel').textContent=S.lv<36?'凱旋門賞ジョッキー — 世界ツアーへ':'世界の名手 — 伝説への道';}
   else{
-    const next=RACES.find(r=>lockReason(r));
     goal=next?`次の目標：${next.name}（${lockReason(next)}）`:'凱旋門賞に挑戦できます。パリロンシャンへ。';
     $('heroLabel').textContent=S.lv<8?'若手騎手 — 地方競馬からの挑戦':S.lv<16?'中堅騎手 — 中央の舞台へ':'トップ騎手 — 世界の頂点へ';
   }
@@ -2379,7 +2513,8 @@ function finishRace(){
     injury={name:k[0],weeks:k[2],cost};
     S.money-=cost;S.falls=(S.falls||0)+1;S.medical=(S.medical||0)+cost;
   }
-  const lvBefore=S.lv;
+  const lvBefore=S.lv,achBefore=new Set(ACHV.filter(a=>a.ok(S)).map(a=>a.id));
+  if(ev.grade==='S')S.sCount=(S.sCount||0)+1;
   S.starts++;S.exp+=exp;S.income+=jk;S.money+=jk;
   if(place===1){S.wins++;S.won[R.id]=(S.won[R.id]||0)+1;if(R.grade)S.gradeWins++;}
   if(!fell&&(!S.best[R.id]||place<S.best[R.id]))S.best[R.id]=place;
@@ -2403,6 +2538,7 @@ function finishRace(){
     <div class="card stat"><b>+${exp}</b><span>経験値（競走中止）</span></div>
     <div class="card stat"><b style="color:${S.money<0?'#d93a2f':'var(--ivory)'}">${S.money<0?'借金 '+money(-S.money):money(S.money)}</b><span>所持金</span></div>`;
   if(S.lv>lvBefore)rw+=`<div class="card stat"><b class="lvup">Lv.${lvBefore} → ${S.lv}</b><span>レベルアップ！ 総合${capOf(S.lv)}まで騎乗可</span></div>`;
+  for(const a of ACHV)if(!achBefore.has(a.id)&&a.ok(S))rw+=`<div class="card stat achv-new"><b>★ ${esc(a.name)}</b><span>称号ゲット！（${esc(a.hint)}）</span></div>`;
   $('rewards').innerHTML=rw;
   const t0=order[0].time;
   $('resBody').innerHTML=order.map((r,i)=>`<tr class="${r.isPlayer?'me':''}"><td class="num">${r.isPlayer&&fell?'中止':i+1}</td>
@@ -2481,6 +2617,11 @@ $('groupForm').addEventListener('submit',async e=>{
   await Promise.all(STORE.list.map(p=>syncSave(p.id===STORE.current?S:p.save)));
   fetchOnline();
 });
+$('rankBody').addEventListener('click',e=>{const r=e.target.closest('[data-view]');if(r)openViewer(+r.dataset.view);});
+$('rankBody').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const r=e.target.closest('[data-view]');if(r){e.preventDefault();openViewer(+r.dataset.view);}});
+$('vwClose').onclick=closeViewer;
+$('viewer').addEventListener('click',e=>{if(e.target.id==='viewer')closeViewer();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('viewer').hidden)closeViewer();});
 $('rankTabs').addEventListener('click',e=>{const b=e.target.closest('[data-rk]');if(b){rankKey=b.dataset.rk;renderRanking();}});
 $('btnBrag').onclick=()=>{
   const t=`【ジョッキーロード】${S.name} Lv.${S.lv}／${S.starts}戦${S.wins}勝（重賞${S.gradeWins}勝）／騎手収入 ${money(S.income)}／到達：${reachOf(S)}`;
