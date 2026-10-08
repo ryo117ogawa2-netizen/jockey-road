@@ -354,6 +354,21 @@ body.makai .rs-clock{background:var(--panel);color:#ffd1dc}
 .rec-tbl td.r1{color:var(--gold);font-weight:800}
 .rv-sub{font-size:11px;color:var(--muted)}
 
+/* tutorial */
+.coach{position:absolute;left:8px;right:8px;top:40px;z-index:4;display:flex;gap:8px;align-items:flex-start;background:#fff;border:3px solid var(--frame);border-radius:14px;box-shadow:0 4px 0 var(--frame);padding:8px 10px;pointer-events:none}
+.coach[hidden]{display:none}
+.coach-face{font-size:26px;line-height:1}
+.coach p{margin:0;font-weight:700;font-size:14px;color:var(--frame);line-height:1.5}
+.tut-glow{position:relative;z-index:2;outline:4px solid var(--sun);outline-offset:2px;animation:tutpulse 1s infinite}
+@keyframes tutpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,210,63,.9)}50%{box-shadow:0 0 0 10px rgba(255,210,63,0)}}
+@media (prefers-reduced-motion:reduce){.tut-glow{animation:none}}
+.tut-card{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--sun)!important}
+.tut-card div{display:flex;flex-direction:column;min-width:0}
+.tut-card b{font-size:17px;color:var(--frame)}
+.tut-card span{font-size:13px}
+.tut-next{grid-column:1/-1}
+.tut-next ol{margin:6px 0 0;padding-left:1.4em;font-size:14px;line-height:1.8}
+
 /* accounts */
 .acct-box{display:flex;flex-direction:column;gap:8px}
 .accts{display:flex;gap:8px;flex-wrap:wrap}
@@ -597,6 +612,10 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
         </div>
         <div class="me-money"><span class="label">所持金</span><b class="num" id="walletMini">0円</b></div>
       </div>
+      <div class="card tut-card" id="tutCard" hidden>
+        <div><b>はじめての人へ</b><span>練習コースで、コーチといっしょに操作をおぼえよう（3分くらい）。</span></div>
+        <span class="rb-btns"><button class="btn" type="button" id="btnTut">チュートリアルを始める</button><button class="btn ghost" type="button" id="btnTutSkip">あとで</button></span>
+      </div>
       <div class="tiles">
         <button type="button" class="tile go" data-go="races">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>
@@ -621,6 +640,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       </div>
       <div class="menu-foot">
         <button class="btn ghost" id="btnMusicM" type="button" aria-pressed="true">♪ 音楽 ON</button>
+        <button class="btn ghost" id="btnTut2" type="button">チュートリアル</button>
         <button class="btn ghost" id="btnToTitle" type="button">タイトルへ</button>
       </div>
     </div>
@@ -830,6 +850,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
     </div>
     <div class="cv-box">
       <canvas id="cv" aria-label="レース映像"></canvas>
+      <div class="coach" id="coach" hidden aria-live="polite"><span class="coach-face" aria-hidden="true">🧢</span><p id="coachTxt"></p></div>
       <button class="gate" id="gate" type="button" hidden><span id="gateTxt">ゲートイン</span><small id="gateSub">ゲートが開いた瞬間にタップ</small><div class="gmeter" id="gmeter"></div></button>
     </div>
     <div class="hud">
@@ -2166,6 +2187,7 @@ function renderMenu(){
   $('tileRaces').textContent=`出走できるレース ${open} / ${RACES.length}`;
   const buyable=ITEMS.filter(it=>!S.owned.includes(it.id)&&S.lv>=it.lv&&S.money>=it.price).length;
   $('tileShop').textContent=buyable?`いま買えるアイテム ${buyable}個`:'装備を整える';
+  $('tutCard').hidden=!!(S.tutorialDone||S.tutSkip);
   const nch=vsChallenges.length;$('vsBadge').hidden=!nch;$('vsBadge').textContent=nch;
   $('tileVs').textContent=nch?`対戦の申し込みが${nch}件届いています`:'ルームを作って家族やみんなと勝負';
   $('tileRoom').textContent=`家具 ${S.furn.length-2} / ${FURN.length-2}個 ・ 部屋をかざる`;
@@ -2396,6 +2418,33 @@ function renderVoiceBtn(){
 }
 function toggleVoice(){S.voice=!voiceOn();save();renderVoiceBtn();if(voiceOn())speak('実況音声をオンにしました',2);else stopVoice();}
 function say(t,pri=1){$('hCall').textContent='実況：'+t;lastSayReal=performance.now();speak(t,pri);}
+/* ------ チュートリアル：練習コースで、場面ごとに止めて「このボタンを押して」と教える ------ */
+const TUTORIAL_RACE={id:'tutorial',tutorial:1,stage:0,name:'チュートリアル',course:'練習コース',surf:'ダ',dist:1200,straight:350,R:25,lv:1,field:6,grade:'',purse:0};
+const TUT_BTN={hold:'btnHold',rein:'btnRein',urge:'btnUrge',whip:'btnWhip'};
+function startTutorial(){
+  curRoom=null;curRace=TUTORIAL_RACE;curGoing='良';cardSeed=4242;curBet=null;
+  usedNames.clear();const h=genHorse(45,false);h.name='レッスンボーイ';h.hand=95;h.style='senko';
+  offers=[h];picked=0;startRace();
+  st.tut={step:0,wait:null,reined:false,msgT:0};
+  coach('ゲートが金色に光った瞬間にタップ！（パソコンならスペースキー）。「構えて…」が出たらもうすぐだよ');
+}
+function coach(t,sec){const c=$('coach');c.hidden=false;$('coachTxt').textContent=t;if(st&&st.tut)st.tut.msgT=sec||0;}
+function tutGlow(k){for(const id of Object.values(TUT_BTN))$(id).classList.toggle('tut-glow',TUT_BTN[k]===id);}
+function tutAsk(btn,text,done){const t=st.tut;t.step++;t.wait={btn,done};coach(text);tutGlow(btn);}
+function tutTick(real){
+  const t=st.tut;if(!t)return;
+  const p=st.player,D=st.race.dist,rem=D-p.d,SA=st.race.straight;
+  if(t.wait){
+    if(t.wait.done()){const was=t.wait.btn;t.wait=null;tutGlow(null);
+      coach({hold:'いいね！ 抑えているあいだは「溜め」がたまって、直線でよく伸びるよ',rein:'落ち着いた！ 掛かったらすぐ「手綱を引く」。おぼえておこう',urge:'その調子！ ぐんぐん前へ',whip:'そのまま鞭を何回も押して！ ゴールまで追いつづけよう'}[was],was==='whip'?0:3.5);}
+    return;
+  }
+  if(t.msgT>0){t.msgT-=real;if(t.msgT<=0)$('coach').hidden=true;}
+  if(t.step===0&&p.d>60)tutAsk('hold','前半は「抑える」でスタミナを温存しよう。光っている「抑える」ボタンを押してね',()=>p.hold);
+  else if(t.step===1&&p.d>D*0.35){p.kakari=6;st.player.react={type:'bad',label:'掛かった',t:3};tutAsk('rein','あっ、馬が掛かった（興奮して勝手に飛ばしている）！ 「手綱を引く」でなだめよう',()=>t.reined);}
+  else if(t.step===2&&rem<SA+260)tutAsk('urge','もうすぐ最後の直線。「促す」を押すと、抑えるのをやめて前へ押していけるよ',()=>!p.hold&&p.urgeT>0);
+  else if(t.step===3&&rem<SA+80)tutAsk('whip','直線だ！ 「鞭」を連打して追いこめ！',()=>p.whips>0);
+}
 function startRace(){
   const h=offers[picked];
   usedNames.clear();usedNames.add(h.name);
@@ -2443,7 +2492,7 @@ let gate={phase:'none'},gateTimer=0;
 /* 反応時間メーター：早すぎ｜好｜五分｜出遅れ（0〜0.8秒） */
 /* スマホのタッチ遅れ（0.1秒前後）も見込んだ幅。開く直前 FLY 秒以内の早押しは「読み切った」扱いで好スタート */
 const GATE_FLY=0.2;
-function gateZones(){const b=(st&&st.fx&&st.fx.start)||0;return {good:0.38+b,ok:0.7+b,max:1.2};}
+function gateZones(){const b=((st&&st.fx&&st.fx.start)||0)+(st&&st.tut?0.15:0);return {good:0.38+b,ok:0.7+b,max:1.2};}
 function renderGateMeter(rt,early){
   const z=gateZones(),E=14,W=86;const pos=t=>E+Math.min(1,t/z.max)*W;
   const g=pos(z.good)-E,o=pos(z.ok)-pos(z.good),l=100-pos(z.ok);
@@ -2479,6 +2528,7 @@ function startTap(){
   renderGateMeter(rt,gate.early);
   setTimeout(()=>{if(gate.phase==='done')g.hidden=true;},1500);
   say(pick('start',LINES.start,{race:st.race.name})+' '+line,2);
+  if(st.tut)coach(label==='好スタート'?'ナイススタート！ まずはそのまま走らせよう':'スタートはタイミングが大事。慣れれば大丈夫！ まずはそのまま走らせよう',3);
   if(label==='好スタート')react('good','好スタート');else if(label!=='五分のスタート')react('bad',label);
 }
 $('gate').addEventListener('pointerdown',e=>{e.preventDefault();startTap();});
@@ -2569,7 +2619,8 @@ function act(a){
   if(!st||!running||st.player.fell)return;
   const p=st.player,D=st.race.dist,remain=D-p.d,late=remain<Math.max(300,st.race.straight+120)+150;
   const wasTired=p.S<=0;
-  const res=playerAct(st,a);
+  if(st.tut&&a==='rein'&&p.kakari>0){st.tut.reined=true;p.rein=0;}
+  const res=st.tut&&a==='rein'&&st.tut.reined&&p.kakari>0?(p.kakari=0,p.rein=0.6,'rein_ok'):playerAct(st,a);
   if(!res){updateHud();return;}
   const L=st.log,c=ctxNow();
   let key=res,mood=null,label='';
@@ -2593,7 +2644,7 @@ function act(a){
   else if(res==='odoroki_early'){mood='bad';label='驚いて掛かった';L.kakari++;L.whipEarly++;}
   if(res==='hold_on'||res==='hold_off'||res==='urge_release')$('btnHold').setAttribute('aria-pressed',p.hold?'true':'false');
   if(mood)react(mood,label);
-  if(mood==='bad'&&!p.fell){
+  if(mood==='bad'&&!p.fell&&!st.tut){
     L.trouble=(L.trouble||0)+(res==='yore'?2:1);
     const risk=clamp((L.trouble-3)*0.07+(res==='yore'?0.06:0),0,0.45)*st.fx.fall*Math.max(0.4,1-S.lv*0.012);
     if(Math.random()<risk){fallOff();updateHud();return;}
@@ -2643,7 +2694,8 @@ function logTick(simDt){
 }
 function loop(now){
   const real=Math.min(0.05,(now-last)/1000);last=now;
-  const simDt=real*4*speedMul;
+  if(st.tut&&running)tutTick(real);
+  const simDt=st.tut&&st.tut.wait?0:real*4*speedMul;
   const sub=Math.ceil(simDt/(1/30));
   for(let i=0;i<sub;i++)step(st,simDt/sub);
   if(st.rec&&!st.player.fin&&!st.player.fell){while(st.t>=st.rec.next&&st.rec.s.length<2400){st.rec.s.push(Math.round(st.player.d*10)/10);st.rec.next+=0.5;}}
@@ -3002,7 +3054,7 @@ function finishRace(){
   const mult=[1,.6,.45,.32,.25][place-1]??.12;
   const ev=evaluateRide(order);
   const expBase=fell?3:Math.round(R.R*mult*4),exp=fell?3:Math.round(expBase*(1+ev.bonus));
-  const room=st.room,practice=!!(room&&lockReason(R)),makai=!!R.makai; // まだ出られないレースのルームは練習あつかい（賞金なし・経験値少し）
+  const room=st.room,tutorial=!!R.tutorial,practice=tutorial||!!(room&&lockReason(R)),makai=!!R.makai; // まだ出られないレースのルームは練習あつかい（賞金なし・経験値少し）
   const prize=!makai&&!practice&&!fell&&place<=5?R.purse*[1,.4,.25,.15,.1][place-1]:0;
   const makaiDelta=makai?(place===1&&!fell?R.purse:-R.purse):0; // 魔界：勝てば丸ごと、負ければ罰金
   const jk=prize*0.05;
@@ -3045,6 +3097,12 @@ function finishRace(){
   if(!practice&&R.id==='arc'&&place===1)S.arc=true;
   // 対戦ルーム：タイムとゴーストを送る
   $('vsRes').hidden=!room;$('btnAgain').hidden=!!room;
+  $('coach').hidden=true;tutGlow(null);
+  let tutCard='';
+  if(tutorial){
+    if(!S.tutorialDone){S.tutorialDone=true;S.money+=50;tutCard=`<div class="card stat bet-hit"><b>+${money(50)}</b><span>チュートリアル完了ボーナス！</span></div>`;}
+    tutCard+=`<div class="card tut-next"><b>チュートリアル完了！ 次はこうしよう</b><ol><li>メニューの「レースに出る」→ 地方競馬の C3 一般から出走</li><li>賞金がたまったら「アイテムを買う」で装備を強くしよう（試着もできるよ）</li><li>勝つと経験値でレベルアップ。もっと強い馬に乗れて、上のレースに挑戦できる</li><li>下の「騎乗評価」に、どこが良くてどこを直すといいかが出ているよ</li></ol></div>`;
+  }
   if(room){
     vsLastRoom=room.id;
     if(!fell)st.rec.s.push(R.dist);
@@ -3074,6 +3132,7 @@ function finishRace(){
     <div class="card stat"><b style="color:${S.money<0?'#d93a2f':'var(--ivory)'}">${S.money<0?'借金 '+money(-S.money):money(S.money)}</b><span>所持金</span></div>`;
   if(S.lv>lvBefore)rw+=`<div class="card stat"><b class="lvup">Lv.${lvBefore} → ${S.lv}</b><span>レベルアップ！ 総合${capOf(S.lv)}まで騎乗可</span></div>`;
   rw+=betCards;
+  if(tutCard)rw=tutCard+rw;
   for(const a of ACHV)if(!achBefore.has(a.id)&&a.ok(S))rw+=`<div class="card stat achv-new"><b>★ ${esc(a.name)}</b><span>称号ゲット！（${esc(a.hint)}）</span></div>`;
   if(makai)rw=`<div class="card stat makai-pay ${makaiDelta>0?'win':'lose'}"><b>${makaiDelta>0?'+':'-'}${money(Math.abs(makaiDelta))}</b><span>${makaiDelta>0?'魔界の優勝賞金！':'魔界の罰金……'}（所持金 ${S.money<0?'借金 '+money(-S.money):money(S.money)}）</span></div>`+rw;
   $('rewards').innerHTML=rw;
@@ -3167,7 +3226,9 @@ $('btnUrge').addEventListener('pointerdown',e=>{e.preventDefault();act('urge');}
 $('btnUrge').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();act('urge');}});
 $('btnWhip').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();act('whip');}});
 $('btnSpeed').onclick=()=>{speedMul=speedMul===1?2:1;$('btnSpeed').textContent='早送り ×'+speedMul;};
-$('btnAgain').onclick=()=>openCard(curRace.id);
+$('btnAgain').onclick=()=>curRace&&curRace.tutorial?startTutorial():openCard(curRace.id);
+$('btnTut').onclick=()=>startTutorial();$('btnTut2').onclick=()=>startTutorial();
+$('btnTutSkip').onclick=()=>{S.tutSkip=true;save();renderMenu();};
 $('btnHome').onclick=()=>showPanel('menu');
 $('jockeyName').addEventListener('change',e=>{S.name=e.target.value.trim()||'若手騎手';save();renderHome();syncSave(S);});
 $('btnFace').onclick=()=>{const fe=$('faceEdit');fe.hidden=!fe.hidden;if(!fe.hidden){renderFaceEdit();fe.scrollIntoView({behavior:'smooth',block:'nearest'});}};
