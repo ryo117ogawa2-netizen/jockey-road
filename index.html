@@ -369,6 +369,30 @@ body.makai .rs-clock{background:var(--panel);color:#ffd1dc}
 .tut-next{grid-column:1/-1}
 .tut-next ol{margin:6px 0 0;padding-left:1.4em;font-size:14px;line-height:1.8}
 
+/* course records list */
+.cr-body{display:flex;flex-direction:column;gap:18px}
+.cr-sum{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start}
+.cr-sum>div{display:flex;flex-direction:column;min-width:0}
+.cr-sum .cr-mine{font-size:34px;color:var(--frame);line-height:1.1}
+.cr-hold li b{font-size:15px;color:var(--frame);margin-left:4px}
+.cr-sum small{font-size:15px;color:var(--muted)}
+.cr-hold ol{margin:4px 0 0;padding-left:1.3em;font-size:14px}
+.cr-hold li.me{color:var(--silk);font-weight:800}
+.cr-list{border-top:0}
+.cr-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1px dashed var(--line);padding:10px 4px;font:inherit;color:var(--ivory);cursor:pointer}
+.cr-row:last-child{border-bottom:0}
+.cr-row:disabled{cursor:default}
+.cr-row.me{background:rgba(255,210,63,.25)}
+.cr-race{display:flex;flex-direction:column;min-width:0}
+.cr-race b{color:var(--frame);font-size:15px}
+.cr-race span{font-size:11px;color:var(--muted)}
+.cr-rec{display:flex;flex-direction:column;align-items:flex-end;text-align:right;min-width:0}
+.cr-rec b{font-size:18px;color:var(--frame)}
+.cr-rec span{font-size:11px;color:var(--muted);max-width:15em;overflow-wrap:anywhere}
+.cr-rec .cr-my{color:var(--good);font-weight:700}
+.makai-stage .cr-race b,.makai-stage .cr-rec b{color:#ffd1dc}
+.makai-stage .cr-row{color:#f1e6ff}
+
 /* accounts */
 .acct-box{display:flex;flex-direction:column;gap:8px}
 .accts{display:flex;gap:8px;flex-wrap:wrap}
@@ -640,6 +664,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       </div>
       <div class="menu-foot">
         <button class="btn ghost" id="btnMusicM" type="button" aria-pressed="true">♪ 音楽 ON</button>
+        <button class="btn ghost" type="button" data-go="records">🏆 コースレコード</button>
         <button class="btn ghost" id="btnTut2" type="button">チュートリアル</button>
         <button class="btn ghost" id="btnToTitle" type="button">タイトルへ</button>
       </div>
@@ -761,10 +786,17 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       </div>
     </div>
 
+    <!-- コースレコード一覧 -->
+    <div class="panel" data-panel="records" hidden>
+      <div><button class="btn ghost back" type="button" data-go="menu">← メニュー</button></div>
+      <div class="stage-h"><span class="label">COURSE RECORDS</span><h2>コースレコード一覧</h2></div>
+      <div id="crBody" class="cr-body"></div>
+    </div>
+
     <!-- レースに出る -->
     <div class="panel" data-panel="races" hidden>
       <div><button class="btn ghost back" type="button" data-go="menu">← メニュー</button></div>
-      <div class="stage-h"><span class="label">RACES</span><h2>レースに出る</h2></div>
+      <div class="stage-h" style="justify-content:space-between"><div style="display:flex;gap:10px;align-items:baseline"><span class="label">RACES</span><h2>レースに出る</h2></div><button class="btn ghost" type="button" data-go="records" style="padding:4px 12px;font-size:13px">🏆 コースレコード一覧</button></div>
       <div class="road" id="road" aria-label="キャリアの道のり"></div>
       <div id="raceList" class="wrap" style="gap:24px"></div>
     </div>
@@ -1968,8 +2000,8 @@ const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 let RECORDS={};
 async function fetchRecords(){
   if(!ONLINE.ok)return;
-  try{const rows=await sbGet('race_top?select=race_id,name,time,horse,going');RECORDS={};for(const r of rows)if(raceById(r.race_id)&&+r.time>0)RECORDS[r.race_id]=r;
-    if(!$('home').hidden&&homePanel==='races')renderHome();}catch(e){}
+  try{const rows=await sbGet('race_top?select=race_id,name,time,horse,going,set_at,jockey_id');RECORDS={};for(const r of rows)if(raceById(r.race_id)&&+r.time>0)RECORDS[r.race_id]=r;
+    if(!$('home').hidden&&(homePanel==='races'||homePanel==='records'))renderHome();}catch(e){}
 }
 function recLine(r){
   const rec=RECORDS[r.id],pb=S.bestTime&&S.bestTime[r.id];
@@ -1989,6 +2021,32 @@ async function openRecords(id){
     $('rvBody').innerHTML=rows.length?rows.map((x,i)=>`<tr class="${x.jockey_id===me?'me':''}"><td class="${i===0?'r1':''}">${i+1}</td><td>${esc(x.name)}</td><td class="num">${fmtTime(+x.time)}</td><td class="rv-sub">${esc(x.horse||'')}${x.going?` ・ ${esc(x.going)}`:''}<br>${esc(new Date(x.set_at).toLocaleDateString('ja-JP'))}</td></tr>`).join('')
       :'<tr><td colspan="4">まだだれも走っていません。最初のレコードをつくろう！</td></tr>';
   }catch(e){$('rvMeta').textContent='レコードを読み込めませんでした';}
+}
+/* コースレコード一覧：全レースの1位と自分の自己ベスト、レコード保持数ランキング */
+function renderRecordsPanel(){
+  const me=S.cloud&&S.cloud.id,pb=S.bestTime||{};
+  const races=RACES.filter(r=>!(r.makai&&!S.makaiInv));
+  const mine=races.filter(r=>RECORDS[r.id]&&RECORDS[r.id].jockey_id&&RECORDS[r.id].jockey_id===me).length;
+  const holders={};for(const r of races){const x=RECORDS[r.id];if(x){const k=x.jockey_id||x.name;(holders[k]=holders[k]||{name:x.name,n:0,me:x.jockey_id===me}).n++;}}
+  const hl=Object.values(holders).sort((a,b)=>b.n-a.n).slice(0,5);
+  let h='';
+  if(!ONLINE.ok)h+=`<div class="vs-msg">インターネットにつながっていないので、みんなのレコードは見られません。自分の自己ベストだけ表示しています。</div>`;
+  else h+=`<div class="card cr-sum"><div><span class="label">あなたのコースレコード</span><b class="num cr-mine">${mine} <small>/ ${races.length}</small></b></div>
+    <div class="cr-hold"><span class="label">レコード保持数ランキング</span>${hl.length?`<ol>${hl.map(x=>`<li class="${x.me?'me':''}">${esc(x.name)} <b class="num">${x.n}</b></li>`).join('')}</ol>`:'<span class="vs-sub">まだだれもレコードを持っていません</span>'}</div></div>`;
+  STAGES.forEach((st_,i)=>{
+    const rs=races.filter(r=>r.stage===i);if(!rs.length)return;
+    h+=`<div class="stage ${st_.secret?'makai-stage':''}"><div class="stage-h"><span class="label">STAGE ${i+1}</span><h2>${st_.name}</h2></div><div class="races cr-list">`;
+    for(const r of rs){
+      const x=RECORDS[r.id],my=pb[r.id],isMe=x&&x.jockey_id&&x.jockey_id===me;
+      const gap=my&&x?my-(+x.time):null;
+      h+=`<button type="button" class="cr-row ${isMe?'me':''}" ${ONLINE.ok?`data-rec="${r.id}"`:'disabled'}>
+        <span class="cr-race"><b>${esc(r.name)}</b><span>${esc(r.course)} ${r.makai?'魔界の道':r.surf==='ダ'?'ダート':'芝'}${r.dist}m</span></span>
+        <span class="cr-rec">${x?`<b class="num">${fmtTime(+x.time)}</b><span>${isMe?'👑 ':''}${esc(x.name)}${x.horse?` ・ ${esc(x.horse)}`:''}${x.going?` ・ ${esc(x.going)}`:''}</span>`:ONLINE.ok?'<span class="vs-sub">レコードなし</span>':''}
+        ${my?`<span class="cr-my">自己ベスト ${fmtTime(my)}${gap!=null&&gap>0.005?`（+${gap.toFixed(1)}秒）`:''}</span>`:''}</span></button>`;
+    }
+    h+='</div></div>';
+  });
+  $('crBody').innerHTML=h;
 }
 function closeRecords(){$('recView').hidden=true;document.body.classList.remove('noscroll');}
 function lockReason(r){
@@ -2173,6 +2231,7 @@ function showPanel(name){
   }
   if(name!=='shop')tryId=null;
   if(name!=='room'){roomTrial=null;roomDragTrial=null;roomSel=-1;}
+  if(name==='records'&&prevPanel!=='records')fetchRecords();
   if(name==='versus'){if(prevPanel!=='versus'){vsRoom=null;vsRooms=null;vsLoad();vsStartPolling();}}
   else if(name==='menu')vsCheckChallenges();
   for(const el of document.querySelectorAll('#home .panel'))el.hidden=el.dataset.panel!==name;
@@ -2207,7 +2266,7 @@ function renderHome(){
   $('stGrade').textContent=S.gradeWins;
   $('stIncome').textContent=money(S.income);
   $('stFalls').textContent=S.falls||0;$('stMedical').textContent=money(S.medical||0);
-  renderShop();renderAccounts();renderRanking();renderMenu();renderAvatar();renderRoom();renderAchv();
+  renderShop();renderAccounts();renderRanking();renderMenu();renderAvatar();renderRoom();renderAchv();renderRecordsPanel();
   // stage progress
   let cur=0;
   for(let i=0;i<STAGES.length;i++){if(RACES.some(r=>r.stage===i&&!lockReason(r)))cur=i;}
@@ -3201,6 +3260,7 @@ $('furnList').addEventListener('click',roomClick);
 $('roomBar').addEventListener('click',roomClick);
 $('raceList').addEventListener('click',e=>{const rc=e.target.closest('[data-rec]');if(rc){openRecords(rc.dataset.rec);return;}const b=e.target.closest('[data-race]');if(b)openCard(b.dataset.race);});
 $('rvClose').onclick=closeRecords;
+$('crBody').addEventListener('click',e=>{const b=e.target.closest('[data-rec]');if(b)openRecords(b.dataset.rec);});
 $('recView').addEventListener('click',e=>{if(e.target.id==='recView')closeRecords();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('recView').hidden)closeRecords();});
 $('offers').addEventListener('click',e=>{
