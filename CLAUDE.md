@@ -21,6 +21,7 @@
 - `api/config.js` — Supabase 接続先を返す関数
 - `supabase/migrations/20261007000000_leaderboard.sql` — ランキング用テーブルと関数（本番に適用済み）
 - `supabase/migrations/20261009000000_versus_rooms.sql` — 対戦ルーム（`race_rooms` / `room_entries` / `challenges` と関数。本番に適用済み。MCP の apply_migration が大きいと時間切れになるので、本番へはテーブルごと・関数 2〜3 個ずつに分けて適用した）
+- `supabase/migrations/20261012000000_social.sql` — 掲示板・オンライン表示・友達・個人チャット・プレゼント（本番に適用済み。7 つに分けて適用。関数の中に DELETE / DROP を書くと MCP が確認待ちで止まるので、友達をやめる・断るは `status` の更新で表している）
 - `supabase/migrations/20261011000000_race_top_jockey.sql` — `race_top` ビューに `jockey_id` を追加（本番に適用済み）
 - `supabase/migrations/20261010000000_race_records.sql` — レースレコード（`race_records`、ビュー `race_top`、関数 `submit_record`。本番に適用済み。`delete_jockey` を書きかえてレコードも消す案は、MCP の確認待ちで止まるので見送り）
 - `supabase/migrations/20261008000000_leaderboard_look.sql` — `look`（アバターと部屋の見た目）列と 12 引数版 `submit_jockey`（本番に適用済み。古い 11 引数版も残してある）
@@ -47,17 +48,18 @@
    - `対戦` — ルーム（全員が同じレース・馬場・相手・馬で 1 回だけ走り、タイムで順位）と対戦の申し込み。`vsLoad` / `renderVersus` / `renderRoomDetail` / `vsRun`（ゴーストを読み込んで出走）/ `vsSubmit`（タイムと位置の記録 `st.rec.s` を送る）。書き込みは RPC `create_room` / `join_room` / `submit_room_result` / `send_challenge` / `respond_challenge`（どれも合鍵を確認）。まだ解放していないレースのルームは「練習あつかい」（賞金なし・経験値 3 割・成績に数えない）。よその騎手の名前は必ず `esc()`、ゴーストの数値は `clamp` してから使う。
    - `馬券` — 出馬表で単勝を買える（通常レースのみ。魔界・対戦ルームは不可）。`openCard` で `cardSeed` を決め、`betField()` が同じ seed で `createRaceState` して出走馬とオッズ（総合力の softmax）を出す。本番も同じ seed なので、見せた相手のまま走る。買ったお金は出走時に引き、`finishRace` で精算。`S.betProfit`（馬券の通算もうけ）が `BET_LIMIT`＝1 億円を超えると競馬協会に見つかり、もうけを全額没収（`S.confiscated`）。
    - `レースレコード` — レース中は上に経過タイム（`hClock`）、結果画面にタイムと自己ベスト・コースレコードとの差（`resTime`）。自己ベストは端末の `S.bestTime`、全員分はサーバーの `race_records`（騎手×レースで最速だけ残す）。`fetchRecords()` が `race_top` から各レースの 1 位を `RECORDS` に読み、レース一覧（🏆 ボタン → `openRecords()` でトップ 10）と出馬表のチップに出す。落馬・練習あつかいはタイムを残さない。`records` パネル（メニュー下とレース一覧の「🏆 コースレコード一覧」）の `renderRecordsPanel()` が全レースの 1 位・自分の自己ベストと差・自分の保持数・レコード保持数ランキング（上位 5 人）を出し、行を押すとトップ 10。
+   - `ひろば`（`social` パネル）— タブは 掲示板 / 友達 / プレゼント箱。`socPoll()` が 30 秒ごと（画面が見えているときだけ）に `my_inbox` を呼び、ついでに `leaderboard.last_seen` を更新（＝オンライン表示。2 分以内なら「● オンライン」、`onlineTag()`）。掲示板は `board_posts` を直接読む（最新 50 件、200 文字、5 秒に 1 回まで）。ブロックは端末だけ（`S.blocked`）。友達申請はランキングの「のぞく」画面の「友達申請」（`friend_request`、おたがいに申請したら自動で友達）。個人チャット（`send_dm` / `get_dms`、開いている間は 5 秒ごとに読む、既読は `S.dmRead`）とプレゼント（`send_gift` / `claim_gift`、アイテム・家具・お金。贈った側は送れた時点で手元から消し、受け取った側は `claimGift()` で持ち物に足す。すでに持っていたら半額のお金に）は友達だけ。メニューの「ひろば」に未読・申請・プレゼントの件数バッジ。よその騎手の名前・本文は必ず `esc()`。
 6. `screens` — ホームの各パネル描画（`renderHome` / `renderShop`（上に試着欄 `renderTryOn`、`tryId`）/ `renderRoom` / `renderRanking` / `renderMenu`）と出馬表（`openCard` / `genOffers`）。
 7. `race runtime` — 魔界レースは `body.makai` / `html.makai` で色トークンを暗く入れかえ、Canvas は `drawHellSky`（赤い月・コウモリ・観客の悪魔）と暗いコース、乗りものは `drawBeast`（絵文字を左右反転して描く）。ゲートのタイミング判定（`startTap`、反応時間メーター `renderGateMeter`。判定幅は `gateZones()`：好 0.38 秒以内 / 五分 0.7 秒以内。開く 0.5〜1.1 秒前に「構えて…」を表示し、開く直前 `GATE_FLY`=0.2 秒以内の早押しは好スタート扱い）、実況（`LINES` / `ACT_LINES`、`pick` で同じセリフの連続を避ける）、♪ / モヤモヤの反応マーク（`react`）、落馬（`fallOff`）、記録（`logTick` → `st.log`）、Canvas 描画（`draw` / `drawHorse` / `drawMood`）。
    - `チュートリアル` — `startTutorial()` が練習用の `TUTORIAL_RACE`（`RACES` には入れない、6 頭・弱い相手）を走らせる。`st.tut` があると `tutTick()` が場面ごとに `tutAsk(ボタン, 説明, 終わり判定)` でレースを止め（`simDt=0`）、`coach()` の吹き出しと `.tut-glow` で押すボタンを光らせる。順番は ゲート → 抑える → 掛かり（わざと起こす。手綱は必ず成功）→ 促す → 鞭。チュートリアル中は落馬なし・ゲートの判定幅 +0.15 秒。結果は練習あつかい（成績・レコードに残らない）で、初回だけ完了ボーナス 50 万円（`S.tutorialDone`）。メニューの「はじめての人へ」カード（`S.tutSkip` で隠す）と「チュートリアル」ボタンから何度でも遊べる。
 8. `result` — 着順・賞金（騎手の取り分 = 賞金の 5%）・経験値、騎乗評価表（`evaluateRide`：スタート / 位置取り / 折り合い / 仕掛け / スタミナ配分 / 鞭さばき を ◎○△× で採点、S〜D）、馬からのひとこと（`HORSE_SAYS` / `horseComment`、関西弁の荒ぶった口調）、落馬時の治療費。
 9. `音楽` — Web Audio でファンファーレと蹄の音をその場で合成（音源ファイルなし）。スマホは最初のタップまで鳴らせない。
 10. `タイトル映像` — Canvas で昼の競馬場と走る馬を描くアニメーション（`drawTitle` / `drawGallop`）。
-11. `画面遷移` / `boot` — `show(id)` がセクション（`title` / `home` / `card` / `raceScr` / `result`）を切り替え、`showPanel(name)` がホーム内パネル（`menu` / `name` / `profile` / `races` / `records` / `shop` / `room` / `versus`）を切り替える。
+11. `画面遷移` / `boot` — `show(id)` がセクション（`title` / `home` / `card` / `raceScr` / `result`）を切り替え、`showPanel(name)` がホーム内パネル（`menu` / `name` / `profile` / `races` / `records` / `shop` / `room` / `versus` / `social`）を切り替える。
 
 ## 画面の流れ
 
-タイトル（音楽・スタート）→ 初回のみ騎手名入力 → メニュー（初回は「はじめての人へ」からチュートリアル）（レースに出る / アイテムを買う / 対戦 / マイルーム / 自分の成績）→ 出馬表で馬を選ぶ → ゲート（金色になった瞬間にタップ）→ レース（抑える Z / 手綱を引く X / 促す C / 鞭 Space）→ 結果（馬のひとこと・報酬・騎乗評価・着順表）
+タイトル（音楽・スタート）→ 初回のみ騎手名入力 → メニュー（初回は「はじめての人へ」からチュートリアル）（レースに出る / アイテムを買う / 対戦 / ひろば / マイルーム / 自分の成績）→ 出馬表で馬を選ぶ → ゲート（金色になった瞬間にタップ）→ レース（抑える Z / 手綱を引く X / 促す C / 鞭 Space）→ 結果（馬のひとこと・報酬・騎乗評価・着順表）
 
 ## Supabase のテーブル
 
@@ -66,6 +68,7 @@
 - `submit_jockey(...)` / `delete_jockey(...)` — `security definer`。合鍵が一致したときだけ書き換える。Supabase の診断で「anon が security definer 関数を実行できる」という警告が出るが、ログインなしで成績を送るための意図した設計。
 - `public.race_rooms`（参加コード・レース・seed・馬場）/ `public.room_entries`（メンバー・タイム・落馬・ゴースト）/ `public.challenges`（申し込み）— 誰でも読める。書き込みは関数だけ。`jockey_ok()` は合鍵確認用で外からは呼べない。
 - `public.race_records`（レース×騎手の自己ベスト：名前・タイム・馬・馬場）とビュー `race_top`（レースごとの 1 位、`security_invoker`）— 誰でも読める。書き込みは `submit_record`（合鍵確認、速いときだけ上書き）。
+- `public.board_posts`（掲示板）と `leaderboard.last_seen`（最後にアクセスした時刻）は誰でも読める。`public.friendships`（`pending` / `accepted` / `declined` / `removed`）/ `public.direct_messages` / `public.gifts` は外から読めない（anon に権限なし）。読むのは合鍵を確かめる `my_inbox` / `get_dms` だけ。`are_friends()` は内部用で外からは呼べない。
 - スキーマを変えるときは `supabase/migrations/` に新しいファイルを追加する（既存ファイルは書き換えない）。
 
 ## 作業の決まりごと

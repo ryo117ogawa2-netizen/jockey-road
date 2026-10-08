@@ -393,6 +393,45 @@ body.makai .rs-clock{background:var(--panel);color:#ffd1dc}
 .makai-stage .cr-race b,.makai-stage .cr-rec b{color:#ffd1dc}
 .makai-stage .cr-row{color:#f1e6ff}
 
+/* plaza */
+.soc-tabs .tab{display:inline-flex;align-items:center;gap:4px}
+.soc-post{display:flex;flex-direction:column;gap:6px}
+.soc-post textarea,.soc-dmin textarea{font:inherit;color:var(--ivory);background:var(--panel-2);border:2px solid var(--frame);border-radius:8px;padding:8px 10px;width:100%;resize:vertical;min-height:52px}
+.soc-board{display:flex;flex-direction:column;gap:8px}
+.soc-msg{background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 12px}
+.soc-msg.me{border-color:var(--frame);background:#fffbe6}
+.soc-msg p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.soc-mh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.soc-mh b{color:var(--frame)}
+.soc-mini{background:none;border:0;padding:0;font:inherit;font-size:11px;color:var(--muted);text-decoration:underline;cursor:pointer;margin-left:auto}
+.ol{font-size:11px;font-weight:700}
+.ol.on{color:var(--good)}.ol.off{color:var(--muted)}
+.rk-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#c9d3e8;margin-right:5px;vertical-align:middle}
+.rk-dot.on{background:var(--good);box-shadow:0 0 0 2px rgba(34,160,75,.25)}
+.soc-friends{display:flex;flex-direction:column;gap:8px}
+.soc-friend{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;align-items:center}
+.soc-fi{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;min-width:0}
+.soc-fi b{color:var(--frame);font-size:16px}
+.soc-fb{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.soc-fb .btn{padding:6px 12px;font-size:13px}
+.soc-dmh{display:flex;gap:10px;align-items:baseline}
+.soc-dmh b{font-size:18px;color:var(--frame)}
+.soc-dm{display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto;padding:4px}
+.dm{max-width:80%;align-self:flex-start;background:#fff;border:2px solid var(--line);border-radius:14px 14px 14px 4px;padding:6px 10px}
+.dm.me{align-self:flex-end;background:var(--sun);border-color:var(--frame);border-radius:14px 14px 4px 14px}
+.dm p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.dm span{font-size:10px;color:var(--muted)}
+.soc-dmin{display:flex;gap:8px;align-items:flex-end}
+.soc-dmin .btn{flex:none}
+.soc-glist{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;max-height:320px;overflow-y:auto}
+.soc-gi{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;background:#fff;border:2px solid var(--line);border-radius:10px;padding:6px 8px;font:inherit;color:var(--ivory)}
+.soc-gi.on{border-color:var(--frame);background:var(--sun)}
+.soc-gi .fprev{width:100%;height:50px;color:var(--frame)}
+.soc-gi b{font-size:12px}
+.soc-gslot{font-size:10px;color:var(--muted)}
+.soc-gname{font-weight:800;color:var(--frame)}
+.soc-gifts{display:flex;flex-direction:column;gap:8px}
+
 /* accounts */
 .acct-box{display:flex;flex-direction:column;gap:8px}
 .accts{display:flex;gap:8px;flex-wrap:wrap}
@@ -653,6 +692,10 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 14 10M10 4l10 10M4 4l4 4M16 16l4 4M14 20l6-6"/></svg>
           <b>対戦 <i class="vs-badge" id="vsBadge" hidden>0</i></b><span id="tileVs">ルームを作って家族やみんなと勝負</span>
         </button>
+        <button type="button" class="tile" data-go="social">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v10H9l-5 4zM8 9h8M8 12h5"/></svg>
+          <b>ひろば <i class="vs-badge" id="socBadge" hidden>0</i></b><span id="tileSoc">掲示板・友達・プレゼント</span>
+        </button>
         <button type="button" class="tile" data-go="room">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-5h4v5"/></svg>
           <b>マイルーム</b><span id="tileRoom">家具を買って部屋をかざる</span>
@@ -799,6 +842,13 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       <div class="stage-h" style="justify-content:space-between"><div style="display:flex;gap:10px;align-items:baseline"><span class="label">RACES</span><h2>レースに出る</h2></div><button class="btn ghost" type="button" data-go="records" style="padding:4px 12px;font-size:13px">🏆 コースレコード一覧</button></div>
       <div class="road" id="road" aria-label="キャリアの道のり"></div>
       <div id="raceList" class="wrap" style="gap:24px"></div>
+    </div>
+
+    <!-- ひろば -->
+    <div class="panel" data-panel="social" hidden>
+      <div><button class="btn ghost back" type="button" data-go="menu">← メニュー</button></div>
+      <div class="stage-h"><span class="label">PLAZA</span><h2>ひろば</h2></div>
+      <div id="socBody" class="vs-body"></div>
     </div>
 
     <!-- 対戦 -->
@@ -974,7 +1024,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
     <svg id="vwRoom" class="room-svg vw-room" viewBox="0 0 360 300" role="img" aria-label="騎手の部屋"></svg>
     <ul class="ava-gear vw-gear" id="vwGear"></ul>
     <span class="vw-meta" id="vwNote"></span>
-    <button class="btn" type="button" id="vwChallenge" hidden>この騎手に対戦を申し込む</button>
+    <span class="rb-btns"><button class="btn" type="button" id="vwChallenge" hidden>この騎手に対戦を申し込む</button><button class="btn ghost" type="button" id="vwFriend" hidden>友達申請</button></span>
   </div>
 </div>
 
@@ -1878,7 +1928,7 @@ function save(){
   const cur=STORE.list.find(p=>p.id===STORE.current);if(cur)cur.save=S;
   try{localStorage.setItem(KEY2,JSON.stringify(STORE));}catch(e){}
 }
-function switchTo(id){save();STORE.current=id;S=STORE.list.find(p=>p.id===id).save;save();vsRoom=null;vsRooms=null;vsChallenges=[];vsInvite=null;vsMsg='';renderHome();vsCheckChallenges();}
+function switchTo(id){save();STORE.current=id;S=STORE.list.find(p=>p.id===id).save;save();vsRoom=null;vsRooms=null;vsChallenges=[];vsInvite=null;vsMsg='';SOC.inbox=null;SOC.dm=null;SOC.gift=null;SOC.msg='';renderHome();vsCheckChallenges();socPoll();}
 function addJockey(name){
   const id=newId(),sv=fresh();sv.name=name||`騎手${STORE.list.length+1}`;
   STORE.list.push({id,save:sv});switchTo(id);
@@ -1918,7 +1968,7 @@ async function initOnline(){
     ONLINE.url=String(c.url).replace(/\/$/,'');ONLINE.key=c.anonKey;ONLINE.ok=true;
     $('scopeTabs').hidden=false;
     for(const p of STORE.list)syncSave(p.id===STORE.current?S:p.save);
-    rankScope='online';renderRanking();fetchOnline();vsCheckChallenges();renderVersus();fetchRecords();
+    rankScope='online';renderRanking();fetchOnline();vsCheckChallenges();renderVersus();fetchRecords();socStart();
   }catch(e){}
 }
 async function syncSave(sv){
@@ -1938,9 +1988,9 @@ async function deleteCloud(sv){
 async function fetchOnline(){
   if(!ONLINE.ok)return;
   try{
-    const q=`${ONLINE.url}/rest/v1/leaderboard?select=id,name,level,starts,wins,grade_wins,income,reach,arc,look&group_code=eq.all&order=level.desc,wins.desc&limit=200`;
+    const q=`${ONLINE.url}/rest/v1/leaderboard?select=id,name,level,starts,wins,grade_wins,income,reach,arc,look,last_seen&group_code=eq.all&order=level.desc,wins.desc&limit=200`;
     const r=await fetch(q,{headers:sbHeaders()});if(!r.ok)throw new Error(r.status);
-    onlineRows=(await r.json()).map(x=>({id:x.id,save:{name:x.name,lv:x.level,exp:0,starts:x.starts,wins:x.wins,gradeWins:x.grade_wins,income:+x.income,arc:x.arc,reachTxt:x.reach,look:x.look||null}}));
+    onlineRows=(await r.json()).map(x=>({id:x.id,save:{name:x.name,lv:x.level,exp:0,starts:x.starts,wins:x.wins,gradeWins:x.grade_wins,income:+x.income,arc:x.arc,reachTxt:x.reach,look:x.look||null,lastSeen:x.last_seen||null}}));
     onlineMsg='';
   }catch(e){onlineMsg='オンラインのランキングを読み込めませんでした';}
   renderRanking();
@@ -1961,7 +2011,7 @@ function renderRanking(){
   let place=0,prevV=null;
   rankRows=rows;
   $('rankBody').innerHTML=rows.map((p,i)=>{const v=rk.get(p.save);if(v!==prevV){place=i+1;prevV=v;}
-    return `<tr class="${p.me?'me':''} rk-row" data-view="${i}" tabindex="0" title="アバターと部屋を見る"><td class="${place===1?'r1':''}">${place}</td><td><span class="rk-name">${esc(p.save.name)}</span> <span class="rk-peek" aria-hidden="true">🏠</span>${p.mine&&!p.me?' <span style="color:var(--muted);font-size:11px">この端末</span>':''}</td>
+    return `<tr class="${p.me?'me':''} rk-row" data-view="${i}" tabindex="0" title="アバターと部屋を見る"><td class="${place===1?'r1':''}">${place}</td><td>${online?`<span class="rk-dot ${isOnline(p.save.lastSeen)?'on':''}" title="${isOnline(p.save.lastSeen)?'オンライン':'オフライン'}"></span>`:''}<span class="rk-name">${esc(p.save.name)}</span> <span class="rk-peek" aria-hidden="true">🏠</span>${p.mine&&!p.me?' <span style="color:var(--muted);font-size:11px">この端末</span>':''}</td>
     <td class="val">${rk.show(p.save)}</td><td class="num">${p.save.wins}</td><td class="num">${p.save.gradeWins}</td><td>${esc(p.save.reachTxt||reachOf(p.save))}</td></tr>`;}).join('');
   if(!online)$('rankNote').textContent=STORE.list.length<2?'「＋ 騎手を追加」で家族の騎手を登録すると、ここで順位を競えます。名前をタップするとアバターと部屋が見られます。':'この端末に登録した騎手の順位です。名前をタップするとアバターと部屋が見られます。';
   else $('rankNote').textContent=onlineMsg||(onlineRows===null?'読み込み中…':'遊んでいる全員のランキング（上位200人）。名前をタップするとアバターと部屋が見られます。この端末の騎手の成績と見た目は自動で送られます。');
@@ -1982,6 +2032,9 @@ function openViewer(i){
     $('vwNote').textContent='';
   }else{$('vwRoom').hidden=true;$('vwGear').innerHTML='';$('vwNote').textContent='この騎手はまだ見た目を送っていません（新しい版で遊ぶと表示されます）。';}
   const canCh=ONLINE.ok&&rankScope==='online'&&!p.me&&!sv.room;
+  {const ib=SOC.inbox,fr=ib&&ib.friends.some(f=>f.id===p.id),sent=ib&&ib.sent.includes(p.id),b=$('vwFriend');
+   b.hidden=!canCh;b.dataset.to=p.id;b.disabled=!!(fr||sent);b.textContent=fr?'友達です':sent?'申請中':'友達申請';
+   if(canCh)$('vwMeta').innerHTML=esc($('vwMeta').textContent)+' ・ '+onlineTag(sv.lastSeen);}
   $('vwChallenge').hidden=!canCh;$('vwChallenge').dataset.to=canCh?p.id:'';$('vwChallenge').dataset.name=canCh?sv.name:'';
   $('viewer').hidden=false;document.body.classList.add('noscroll');
   setTimeout(()=>{try{$('vwClose').focus();}catch(e){}},30);
@@ -2206,6 +2259,162 @@ async function vsSubmit(time,fell,ghost){
 function vsOpenRoom(id){vsRoom=(vsRooms||[]).find(x=>x.id===id)||null;vsMsg='';renderVersus();window.scrollTo(0,0);}
 function vsStartPolling(){clearInterval(vsTimer);vsTimer=setInterval(()=>{const a=document.activeElement;if(homePanel==='versus'&&!$('home').hidden&&!(a&&$('vsBody').contains(a)&&/INPUT|SELECT/.test(a.tagName)))vsLoad();},20000);}
 
+/* ------------ ひろば（掲示板・オンライン表示・友達・個人チャット・プレゼント） ------------ */
+/* 掲示板は誰でも読める。友達・個人チャット・プレゼントはサーバーの関数（合鍵つき）からしか読めない。
+   my_inbox を 30 秒ごとに呼ぶと「いまオンライン」も記録される。 */
+const SOC={inbox:null,board:null,seen:{},tab:'board',dm:null,dmMsgs:[],gift:null,msg:'',timer:0,dmTimer:0};
+const ONLINE_SEC=120;
+function onlineTag(ls){
+  if(!ls)return '<span class="ol off">○ オフライン</span>';
+  const s=(Date.now()-new Date(ls).getTime())/1000;
+  if(s<ONLINE_SEC)return '<span class="ol on">● オンライン</span>';
+  const t=s<3600?`${Math.max(1,Math.round(s/60))}分前`:s<86400?`${Math.round(s/3600)}時間前`:`${Math.round(s/86400)}日前`;
+  return `<span class="ol off">○ ${t}</span>`;
+}
+const isOnline=ls=>!!ls&&(Date.now()-new Date(ls).getTime())/1000<ONLINE_SEC;
+const SOC_ERR={'too fast':'ちょっと待ってから送ってね','too many':'今日はもう送れません','not friends':'友達になると送れます','empty':'なにか書いてね','box full':'相手のプレゼント箱がいっぱいです','request not found':'その申請はもう終わっています','gift not found':'そのプレゼントはもう受け取りました','unknown jockey':'その騎手が見つかりません'};
+function socErr(m){for(const [k,v] of Object.entries(SOC_ERR))if(String(m).includes(k))return v;return 'うまく通信できませんでした。もう一度ためしてね';}
+const unreadOf=f=>f.last_in&&f.last_in>((S.dmRead||{})[f.id]||0)?1:0;
+function socBadgeCount(){const ib=SOC.inbox;if(!ib)return 0;return ib.requests.length+ib.gifts.length+ib.friends.filter(unreadOf).length;}
+async function socPoll(){
+  if(!ONLINE.ok||document.visibilityState==='hidden')return;
+  try{
+    const ib=await rpc('my_inbox',{});
+    SOC.inbox={requests:ib.requests||[],sent:ib.sent||[],friends:ib.friends||[],gifts:ib.gifts||[]};
+  }catch(e){return;}
+  renderMenu();
+  if(!$('home').hidden&&homePanel==='social'){
+    if(SOC.tab==='board')await socLoadBoard(true);
+    if(!SOC.dm&&!SOC.gift)renderSocial();
+  }
+}
+function socStart(){clearInterval(SOC.timer);SOC.timer=setInterval(socPoll,30000);socPoll();}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')socPoll();});
+async function socLoadBoard(quiet){
+  try{
+    const rows=await sbGet('board_posts?select=id,jockey_id,name,body,created_at&order=id.desc&limit=50');
+    const ids=[...new Set(rows.map(r=>r.jockey_id))];
+    if(ids.length){const ls=await sbGet(`leaderboard?select=id,last_seen&id=in.(${ids.join(',')})`);for(const x of ls)SOC.seen[x.id]=x.last_seen;}
+    SOC.board=rows;
+  }catch(e){if(!quiet)SOC.msg='掲示板を読み込めませんでした';}
+  if(!quiet||(!SOC.dm&&!SOC.gift&&SOC.tab==='board'&&!($('socBody').contains(document.activeElement)&&/TEXTAREA|INPUT/.test(document.activeElement.tagName))))renderSocial();
+}
+const fmtWhen=t=>{const d=new Date(t),s=(Date.now()-d.getTime())/1000;return s<60?'たった今':s<3600?`${Math.round(s/60)}分前`:s<86400?`${Math.round(s/3600)}時間前`:d.toLocaleDateString('ja-JP');};
+function renderSocial(){
+  if(!$('socBody'))return;
+  if(!ONLINE.ok){$('socBody').innerHTML='<div class="card"><p style="margin:0">ひろばはインターネットにつながっているときだけ使えます（本番のページ https://jockey-road.vercel.app で開いてね）。</p></div>';return;}
+  if(SOC.dm){renderDM();return;}
+  if(SOC.gift){renderGiftForm();return;}
+  const ib=SOC.inbox||{requests:[],friends:[],gifts:[],sent:[]};
+  const nF=ib.requests.length+ib.friends.filter(unreadOf).length,nG=ib.gifts.length;
+  let h=`<div class="tabs soc-tabs">${[['board','掲示板',0],['friends','友達',nF],['gifts','プレゼント箱',nG]].map(([k,n,c])=>`<button type="button" class="tab" data-stab="${k}" aria-selected="${SOC.tab===k}">${n}${c?` <i class="vs-badge">${c}</i>`:''}</button>`).join('')}</div>`;
+  if(SOC.msg)h+=`<div class="vs-msg">${esc(SOC.msg)}</div>`;
+  const me=S.cloud&&S.cloud.id;
+  if(SOC.tab==='board'){
+    const blocked=new Set(S.blocked||[]);
+    h+=`<div class="card soc-post"><label class="label" for="bdText">みんなに書きこむ（200文字まで）</label><textarea id="bdText" maxlength="200" rows="2" placeholder="例：魔界でドラゴン引いた！"></textarea><div class="rb-btns"><button class="btn" type="button" id="bdSend">書きこむ</button><button class="btn ghost" type="button" id="bdReload">更新</button></div>
+      <p class="vs-sub">ここに書いたことは、遊んでいる全員が読めます。住所や学校名など、知られたくないことは書かないでね。</p></div>`;
+    if(SOC.board===null)h+='<p class="vs-sub">読み込み中…</p>';
+    else{const rows=SOC.board.filter(p=>!blocked.has(p.jockey_id));
+      h+=rows.length?`<div class="soc-board">${rows.map(p=>`<div class="soc-msg ${p.jockey_id===me?'me':''}"><div class="soc-mh"><b>${esc(p.name)}</b>${onlineTag(SOC.seen[p.jockey_id])}<span class="vs-sub">${fmtWhen(p.created_at)}</span>${p.jockey_id!==me?`<button type="button" class="soc-mini" data-block="${p.jockey_id}" data-bname="${esc(p.name)}">ブロック</button>`:''}</div><p>${esc(p.body)}</p></div>`).join('')}</div>`:'<p class="vs-sub">まだ書きこみがありません。最初のひとことをどうぞ！</p>';
+      if(blocked.size)h+=`<p class="vs-sub">${blocked.size}人をブロック中 <button type="button" class="soc-mini" id="bdUnblock">ブロックを全部やめる</button></p>`;}
+  }else if(SOC.tab==='friends'){
+    if(ib.requests.length)h+=`<div class="stage"><div class="stage-h"><span class="label">REQUEST</span><h3>友達申請が届いています</h3></div>${ib.requests.map(r=>`<div class="card vs-ch"><div><b>${esc(r.name)}</b> ${onlineTag(r.last_seen)}</div><span class="rb-btns"><button class="btn" type="button" data-fyes="${r.id}">友達になる</button><button class="btn ghost" type="button" data-fno="${r.id}">断る</button></span></div>`).join('')}</div>`;
+    h+=`<div class="stage"><div class="stage-h"><span class="label">FRIENDS</span><h3>友達（${ib.friends.length}人）</h3></div>`;
+    const fr=ib.friends.slice().sort((a,b)=>isOnline(b.last_seen)-isOnline(a.last_seen)||a.name.localeCompare(b.name,'ja'));
+    h+=fr.length?`<div class="soc-friends">${fr.map(f=>`<div class="card soc-friend"><div class="vs-ava">${avatarSVG(cleanLook(f.look,f.name))}</div><div class="soc-fi"><b>${esc(f.name)}</b><span class="vs-sub">Lv.${+f.level||1}</span>${onlineTag(f.last_seen)}</div>
+      <span class="soc-fb"><button class="btn" type="button" data-dm="${f.id}">💬 チャット${unreadOf(f)?' <i class="vs-badge">new</i>':''}</button><button class="btn ghost" type="button" data-gift="${f.id}">🎁 プレゼント</button><button type="button" class="soc-mini" data-unfriend="${f.id}" data-fname="${esc(f.name)}">友達をやめる</button></span></div>`).join('')}</div>`
+      :'<p class="vs-sub">まだ友達がいません。「自分の成績」のランキングで騎手をタップして「友達申請」を送ろう。</p>';
+    if(ib.sent.length)h+=`<p class="vs-sub">返事待ちの申請：${ib.sent.length}件</p>`;
+    h+='</div>';
+  }else{
+    h+=ib.gifts.length?`<div class="soc-gifts">${ib.gifts.map(g=>`<div class="card vs-ch"><div>🎁 <b>${esc(g.from_name)}</b> から<br><span class="soc-gname">${esc(giftLabel(g))}</span>${g.note?`<br><span class="vs-sub">「${esc(g.note)}」</span>`:''}</div><button class="btn" type="button" data-claim="${g.id}">受け取る</button></div>`).join('')}</div>`
+      :'<p class="vs-sub">プレゼント箱はからっぽです。友達になるとプレゼントを送り合えます。</p>';
+  }
+  $('socBody').innerHTML=h;
+}
+function giftLabel(g){
+  if(g.kind==='money')return money(+g.amount||0);
+  const it=g.kind==='item'?itemById(g.item_id):furnById(g.item_id);
+  return it?it.name:'ふしぎな箱';
+}
+/* ---- 個人チャット ---- */
+async function openDM(id){
+  const f=(SOC.inbox&&SOC.inbox.friends||[]).find(x=>x.id===id);if(!f)return;
+  SOC.dm=f;SOC.dmMsgs=[];SOC.msg='';renderSocial();await loadDM();
+  clearInterval(SOC.dmTimer);SOC.dmTimer=setInterval(()=>{if(SOC.dm&&homePanel==='social'&&!$('home').hidden)loadDM();else clearInterval(SOC.dmTimer);},5000);
+}
+async function loadDM(){
+  const f=SOC.dm;if(!f)return;
+  const after=SOC.dmMsgs.length?SOC.dmMsgs[SOC.dmMsgs.length-1].id:0;
+  try{const rows=await rpc('get_dms',{p_other:f.id,p_after:after});if(SOC.dm!==f)return;
+    if(rows&&rows.length){SOC.dmMsgs=SOC.dmMsgs.concat(rows).slice(-200);S.dmRead=S.dmRead||{};S.dmRead[f.id]=Math.max(S.dmRead[f.id]||0,...rows.map(r=>r.id));save();renderMenu();}
+    if(rows&&rows.length||!after)renderDM();}catch(e){}
+}
+function renderDM(){
+  const f=SOC.dm,me=S.cloud&&S.cloud.id,keep=$('dmText')?$('dmText').value:'';
+  $('socBody').innerHTML=`<div><button class="btn ghost back" type="button" id="dmBack">← 友達一覧</button></div>
+    <div class="card soc-dmh"><b>${esc(f.name)}</b>${onlineTag(f.last_seen)}</div>
+    ${SOC.msg?`<div class="vs-msg">${esc(SOC.msg)}</div>`:''}
+    <div class="soc-dm" id="dmList">${SOC.dmMsgs.length?SOC.dmMsgs.map(m=>`<div class="dm ${m.from_id===me?'me':''}"><p>${esc(m.body)}</p><span>${fmtWhen(m.created_at)}</span></div>`).join(''):'<p class="vs-sub">まだメッセージはありません。あいさつしてみよう！</p>'}</div>
+    <div class="soc-dmin"><textarea id="dmText" maxlength="300" rows="2" placeholder="メッセージ（300文字まで）"></textarea><button class="btn" type="button" id="dmSend">送る</button></div>`;
+  $('dmText').value=keep;
+  const L=$('dmList');L.scrollTop=L.scrollHeight;
+}
+/* ---- プレゼント ---- */
+function giftables(kind){
+  if(kind==='item')return ITEMS.filter(it=>S.owned.includes(it.id)&&!Object.values(DEFAULT_EQUIP).includes(it.id)&&S.equip[it.slot]!==it.id);
+  if(kind==='furn')return FURN.filter(f=>S.furn.includes(f.id)&&f.id!=='wp_plain'&&f.id!=='fl_wood'&&S.room.wp!==f.id&&S.room.fl!==f.id);
+  return [];
+}
+function openGift(id){const f=(SOC.inbox&&SOC.inbox.friends||[]).find(x=>x.id===id);if(!f)return;SOC.gift={to:f,kind:'item',pick:null};SOC.msg='';renderSocial();}
+function renderGiftForm(){
+  const g=SOC.gift,list=giftables(g.kind);
+  let body;
+  if(g.kind==='money')body=`<label class="label" for="gfAmt">金額（万円・所持金 ${money(Math.max(0,S.money))}）</label><input id="gfAmt" type="number" min="1" max="${Math.max(0,Math.floor(S.money))}" inputmode="numeric" placeholder="例：100">`;
+  else body=list.length?`<div class="soc-glist">${list.map(x=>`<button type="button" class="soc-gi ${g.pick===x.id?'on':''}" data-gpick="${x.id}">${g.kind==='furn'?furnPreview(x):`<span class="soc-gslot">${SLOTS.find(sl=>sl.k===x.slot).n}</span>`}<b>${esc(x.name)}</b></button>`).join('')}</div>`
+    :`<p class="vs-sub">あげられる${g.kind==='item'?'アイテム':'家具'}がありません（装備中・使用中のものと、最初から持っているものはあげられません）。</p>`;
+  $('socBody').innerHTML=`<div><button class="btn ghost back" type="button" id="gfBack">← 友達一覧</button></div>
+    <div class="card vs-form"><h3>🎁 ${esc(g.to.name)} さんにプレゼント</h3>
+    ${SOC.msg?`<div class="vs-msg">${esc(SOC.msg)}</div>`:''}
+    <div class="tabs">${[['item','アイテム'],['furn','家具'],['money','お金']].map(([k,n])=>`<button type="button" class="tab" data-gkind="${k}" aria-selected="${g.kind===k}">${n}</button>`).join('')}</div>
+    ${body}
+    <label class="label" for="gfNote">ひとこと（なくてもOK）</label><input id="gfNote" maxlength="60" placeholder="例：いつもありがとう">
+    <button class="btn" type="button" id="gfSend">贈る</button>
+    <p class="vs-sub">贈ったものは自分の持ち物からなくなります。相手が「受け取る」と相手のものになります。</p></div>`;
+}
+async function sendGift(){
+  const g=SOC.gift,note=($('gfNote').value||'').trim().slice(0,60);
+  let body,apply;
+  if(g.kind==='money'){
+    const a=Math.floor(Number($('gfAmt').value));
+    if(!(a>0)||a>S.money||a>1000000){SOC.msg='金額を確かめてね（所持金まで）';renderGiftForm();return;}
+    body={p_kind:'money',p_item:null,p_amount:a};apply=()=>{S.money-=a;};
+  }else{
+    const id=g.pick;if(!id||!giftables(g.kind).some(x=>x.id===id)){SOC.msg='贈るものを選んでね';renderGiftForm();return;}
+    body={p_kind:g.kind,p_item:id,p_amount:0};
+    apply=g.kind==='item'?()=>{S.owned=S.owned.filter(x=>x!==id);}:()=>{S.furn=S.furn.filter(x=>x!==id);S.room.items=S.room.items.filter(x=>x.id!==id);};
+  }
+  $('gfSend').disabled=true;
+  try{await rpc('send_gift',Object.assign({p_to:g.to.id,p_note:note||null},body));apply();save();
+    SOC.gift=null;SOC.tab='friends';SOC.msg=`${g.to.name}さんにプレゼントを贈りました`;renderHome();renderSocial();}
+  catch(e){SOC.msg=socErr(e.message);renderGiftForm();}
+}
+async function claimGift(id){
+  try{const g=await rpc('claim_gift',{p_gift:+id});let txt;
+    if(g.kind==='money'){const a=clamp(Number(g.amount)||0,0,1000000);S.money+=a;txt=`${money(a)}を受け取りました`;}
+    else{const isItem=g.kind==='item',it=isItem?itemById(g.item_id):furnById(g.item_id),list=isItem?S.owned:S.furn;
+      if(!it)txt='ふしぎな箱だった（中身は空っぽ）';
+      else if(list.includes(it.id)){const back=Math.round((it.price||0)*0.5*10)/10;S.money+=back;txt=`「${it.name}」はもう持っていたので、売って${money(back)}になりました`;}
+      else{list.push(it.id);txt=`「${it.name}」を受け取りました！`+(isItem?'（アイテムを買う画面で装備できます）':'（マイルームで置けます）');}}
+    save();SOC.msg=`${g.from_name}さんから：${txt}`;await socPoll();renderHome();renderSocial();
+  }catch(e){SOC.msg=socErr(e.message);renderSocial();}
+}
+async function socAction(name,body,okMsg){
+  try{const r=await rpc(name,body);SOC.msg=typeof okMsg==='function'?okMsg(r):okMsg;await socPoll();}catch(e){SOC.msg=socErr(e.message);}
+  renderSocial();
+}
+
 /* ------------ screens ------------ */
 const $=id=>document.getElementById(id);
 let homePanel='menu';
@@ -2232,6 +2441,8 @@ function showPanel(name){
   if(name!=='shop')tryId=null;
   if(name!=='room'){roomTrial=null;roomDragTrial=null;roomSel=-1;}
   if(name==='records'&&prevPanel!=='records')fetchRecords();
+  if(name==='social'&&prevPanel!=='social'){SOC.dm=null;SOC.gift=null;SOC.msg='';if(ONLINE.ok){socLoadBoard();socPoll();}}
+  if(name!=='social')clearInterval(SOC.dmTimer);
   if(name==='versus'){if(prevPanel!=='versus'){vsRoom=null;vsRooms=null;vsLoad();vsStartPolling();}}
   else if(name==='menu')vsCheckChallenges();
   for(const el of document.querySelectorAll('#home .panel'))el.hidden=el.dataset.panel!==name;
@@ -2246,6 +2457,8 @@ function renderMenu(){
   $('tileRaces').textContent=`出走できるレース ${open} / ${RACES.length}`;
   const buyable=ITEMS.filter(it=>!S.owned.includes(it.id)&&S.lv>=it.lv&&S.money>=it.price).length;
   $('tileShop').textContent=buyable?`いま買えるアイテム ${buyable}個`:'装備を整える';
+  const nsoc=socBadgeCount();$('socBadge').hidden=!nsoc;$('socBadge').textContent=nsoc;
+  const ib=SOC.inbox;$('tileSoc').textContent=!ib?'掲示板・友達・プレゼント':ib.requests.length?`友達申請が${ib.requests.length}件届いています`:ib.gifts.length?`プレゼントが${ib.gifts.length}個届いています`:nsoc?'新しいメッセージがあります':`友達 ${ib.friends.length}人（オンライン ${ib.friends.filter(f=>isOnline(f.last_seen)).length}人）`;
   $('tutCard').hidden=!!(S.tutorialDone||S.tutSkip);
   const nch=vsChallenges.length;$('vsBadge').hidden=!nch;$('vsBadge').textContent=nch;
   $('tileVs').textContent=nch?`対戦の申し込みが${nch}件届いています`:'ルームを作って家族やみんなと勝負';
@@ -2266,7 +2479,7 @@ function renderHome(){
   $('stGrade').textContent=S.gradeWins;
   $('stIncome').textContent=money(S.income);
   $('stFalls').textContent=S.falls||0;$('stMedical').textContent=money(S.medical||0);
-  renderShop();renderAccounts();renderRanking();renderMenu();renderAvatar();renderRoom();renderAchv();renderRecordsPanel();
+  renderShop();renderAccounts();renderRanking();renderMenu();renderAvatar();renderRoom();renderAchv();renderRecordsPanel();if(homePanel==='social')renderSocial();
   // stage progress
   let cur=0;
   for(let i=0;i<STAGES.length;i++){if(RACES.some(r=>r.stage===i&&!lockReason(r)))cur=i;}
@@ -3308,6 +3521,30 @@ $('groupForm').addEventListener('submit',async e=>{
 $('rankBody').addEventListener('click',e=>{const r=e.target.closest('[data-view]');if(r)openViewer(+r.dataset.view);});
 $('rankBody').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const r=e.target.closest('[data-view]');if(r){e.preventDefault();openViewer(+r.dataset.view);}});
 $('vwClose').onclick=closeViewer;
+$('vwFriend').onclick=async()=>{const b=$('vwFriend');b.disabled=true;try{const r=await rpc('friend_request',{p_to:b.dataset.to});b.textContent=r==='accepted'?'友達になりました！':r==='already'?'友達です':'申請しました';socPoll();}catch(e){b.textContent=socErr(e.message);}};
+$('socBody').addEventListener('click',async e=>{
+  const t=e.target,g=k=>{const b=t.closest(`[data-${k}]`);return b&&b.dataset[k];};let v;
+  if((v=g('stab'))){SOC.tab=v;SOC.msg='';if(v==='board')socLoadBoard();renderSocial();}
+  else if(t.closest('#bdSend')){const txt=$('bdText').value.trim();if(!txt)return;t.closest('#bdSend').disabled=true;
+    try{await rpc('post_board',{p_body:txt.slice(0,200)});SOC.msg='';await socLoadBoard();}catch(err){SOC.msg=socErr(err.message);renderSocial();$('bdText').value=txt;}}
+  else if(t.closest('#bdReload'))socLoadBoard();
+  else if((v=g('block'))){if(confirm(`${t.closest('[data-block]').dataset.bname}さんの書きこみを、この端末で見えないようにしますか？`)){S.blocked=[...new Set([...(S.blocked||[]),v])];save();renderSocial();}}
+  else if(t.closest('#bdUnblock')){S.blocked=[];save();renderSocial();}
+  else if((v=g('fyes')))socAction('friend_respond',{p_from:v,p_accept:true},'友達になりました！');
+  else if((v=g('fno')))socAction('friend_respond',{p_from:v,p_accept:false},'申請を断りました');
+  else if((v=g('unfriend'))){if(confirm(`${t.closest('[data-unfriend]').dataset.fname}さんと友達をやめますか？`))socAction('friend_remove',{p_other:v},'友達をやめました');}
+  else if((v=g('dm')))openDM(v);
+  else if((v=g('gift')))openGift(v);
+  else if((v=g('claim'))){t.closest('[data-claim]').disabled=true;claimGift(v);}
+  else if(t.closest('#dmBack')){SOC.dm=null;clearInterval(SOC.dmTimer);SOC.msg='';renderSocial();}
+  else if(t.closest('#dmSend')){const txt=$('dmText').value.trim();if(!txt)return;const b=t.closest('#dmSend');b.disabled=true;
+    try{await rpc('send_dm',{p_to:SOC.dm.id,p_body:txt.slice(0,300)});$('dmText').value='';SOC.msg='';await loadDM();}catch(err){SOC.msg=socErr(err.message);renderDM();}
+    if($('dmSend'))$('dmSend').disabled=false;}
+  else if(t.closest('#gfBack')){SOC.gift=null;SOC.msg='';renderSocial();}
+  else if((v=g('gkind'))){SOC.gift.kind=v;SOC.gift.pick=null;renderGiftForm();}
+  else if((v=g('gpick'))){SOC.gift.pick=v;renderGiftForm();}
+  else if(t.closest('#gfSend'))sendGift();
+});
 $('miGo').onclick=()=>closeMakaiInvite(true);$('miLater').onclick=()=>closeMakaiInvite(false);
 $('vwChallenge').onclick=()=>{const b=$('vwChallenge');vsInvite={id:b.dataset.to,name:b.dataset.name};vsRoom=null;vsMsg='';closeViewer();showPanel('versus');};
 $('vsResGo').onclick=()=>{const id=vsLastRoom;showPanel('versus');vsLoad().then(()=>{if(id)vsOpenRoom(id);});};
