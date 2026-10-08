@@ -742,7 +742,7 @@ function createRaceState(race,playerHorse,lv,going,gear){
   if(gear){
     const p=runners[pnum-1],gg=gear.going;
     p.gSuit=gear.speed;p.gKakari=gear.kakari;p.gWhip=gear.whip;p.gHand=gear.hand;
-    p.gKick=gear.kick;p.gYore=gear.yore;p.maxS*=1+gear.stam/100;p.S=p.maxS;
+    p.gKick=gear.kick;p.gYore=gear.yore;p.gOdoroki=gear.odoroki||0;p.maxS*=1+gear.stam/100;p.S=p.maxS;
     p.gSpeed=(1-(gm-1)*0.25*gg)/(1-(gm-1)*0.25);
     p.gDrain=(1+(gm-1)*gg)/gm;
   }
@@ -802,6 +802,8 @@ function step(st,dt){
       }
       r.whipCd-=dt;
     }
+    // びっくり：直線で魔法のステッキが効くと一瞬だけ急加速
+    if(r.odorokiT>0){r.odorokiT-=dt;if(r.S>0){v+=kick*0.45+cruise*0.012;dm*=1.3;}}
     if(r.yore>0){r.yore-=dt;v*=0.86;}
     if(r.S<=0){
       v=Math.min(v,cruise*0.86);
@@ -843,6 +845,11 @@ function playerAct(st,act){
     if(p.kakari>0)p.kakari+=1.5;
     const yoreP=Math.max(0,100-p.hand-(p.gHand||0))/1400*(p.whips>22?2:1)*(p.gYore||1);
     if(Math.random()<yoreP){p.yore=0.8;return 'yore';}
+    const lateW=remain<Math.max(300,st.race.straight+120)+150;
+    if(p.gOdoroki&&Math.random()<p.gOdoroki){
+      if(lateW){p.odorokiT=1.6;return 'odoroki';}
+      p.kakari=Math.max(p.kakari,4);return 'odoroki_early'; // 直線前に驚かせると掛かる
+    }
     return remain<Math.max(300,st.race.straight+120)+150?'whip':'whip_early';
   }
 }
@@ -924,7 +931,7 @@ const needExp=lv=>40+lv*25;
 
 /* ------------ items ------------ */
 const SLOTS=[{k:'whip',n:'鞭'},{k:'helmet',n:'ヘルメット'},{k:'goggle',n:'ゴーグル'},{k:'shoes',n:'靴'},{k:'suit',n:'服'},{k:'acc',n:'小物'}];
-/* fx: whip 鞭の伸び× / kakari 掛かり× / going 重馬場の影響× / hand 操縦性+ / speed 巡航速度× / stam スタミナ+% / kick 末脚× / start スタート判定+秒 / fall 落馬リスク× / yore ヨレやすさ× / cost 治療費× */
+/* fx: odoroki 鞭で馬がびっくりする確率+（直線なら急加速・直線前だと掛かる） / whip 鞭の伸び× / kakari 掛かり× / going 重馬場の影響× / hand 操縦性+ / speed 巡航速度× / stam スタミナ+% / kick 末脚× / start スタート判定+秒 / fall 落馬リスク× / yore ヨレやすさ× / cost 治療費× */
 const ITEMS=[
   {id:'negi',slot:'whip',name:'ネギ',price:0,lv:1,fx:{whip:.88},desc:'台所から持ってきた。いい匂いはする。'},
   {id:'monosashi',slot:'whip',name:'竹の物差し',price:3,lv:1,fx:{whip:.95},desc:'30cm。目盛り付き。'},
@@ -933,6 +940,10 @@ const ITEMS=[
   {id:'kawa',slot:'whip',name:'革の鞭',price:40,lv:4,fx:{whip:1},desc:'ようやく普通の鞭。'},
   {id:'stick',slot:'whip',name:'競走用ステッキ',price:600,lv:10,fx:{whip:1.07},desc:'プロ仕様の軽量ステッキ。'},
   {id:'carbon',slot:'whip',name:'カーボン製ステッキ',price:4000,lv:16,fx:{whip:1.14},desc:'しなりが違う。'},
+  {id:'magonote',slot:'whip',name:'孫の手',price:6,lv:2,fx:{whip:.96,hand:3},desc:'かゆいところに手が届く。馬も気持ちよさそう。',weird:1},
+  {id:'piko',slot:'whip',name:'ピコピコハンマー',price:25,lv:3,fx:{whip:.98,kakari:.9},desc:'ピコッ。痛くないので馬も怒らない。',weird:1},
+  {id:'mahou',slot:'whip',name:'魔法のステッキ',price:800,lv:8,fx:{whip:.95,odoroki:.25},desc:'振るとキラキラ。直線で馬がびっくりして急加速！ ただし直線前に振ると驚いて掛かる。',weird:1},
+  {id:'baguette',slot:'whip',name:'フランスパン',price:1500,lv:13,fx:{whip:1.06,stam:3},desc:'凱旋門の国の鞭。カチカチに焼けている。',weird:1},
   {id:'golden',slot:'whip',name:'黄金のステッキ',price:15000,lv:22,fx:{whip:1.2,kick:1.05},desc:'凱旋門を目指す者だけが持てる。'},
 
   {id:'zaru',slot:'helmet',name:'ザル',price:0,lv:1,fx:{kakari:1.15},desc:'そうめんを茹でるやつ。風通しは最高。'},
@@ -940,12 +951,18 @@ const ITEMS=[
   {id:'koji',slot:'helmet',name:'工事用ヘルメット',price:3,lv:1,fx:{kakari:1},desc:'安全第一。'},
   {id:'joba_h',slot:'helmet',name:'乗馬用ヘルメット',price:40,lv:4,fx:{kakari:.88},desc:'乗馬クラブの払い下げ。'},
   {id:'chonmage',slot:'helmet',name:'ちょんまげカツラ',price:120,lv:6,fx:{kakari:.9,start:.03},desc:'気合いが入る。いざ出陣。',weird:1},
+  {id:'afro',slot:'helmet',name:'アフロのカツラ',price:30,lv:3,fx:{kakari:.95,going:.9},desc:'髪がクッション。雨もスポンジのように吸い取る。',weird:1},
+  {id:'hangure',slot:'helmet',name:'半グレのヘルメット',price:80,lv:5,fx:{kakari:1.1,start:.05,fall:1.3},desc:'ステッカーだらけの半ヘル。気合いでゲートは速いが、頭はあまり守れない。',weird:1},
+  {id:'kingyo',slot:'helmet',name:'金魚鉢',price:150,lv:6,fx:{going:.75,kakari:1.05},desc:'雨は一滴も入らない。中の金魚が気になって馬が少しそわそわ。',weird:1},
   {id:'race_h',slot:'helmet',name:'競走用ヘルメット',price:600,lv:10,fx:{kakari:.77},desc:'公式戦の標準装備。'},
   {id:'carbon_h',slot:'helmet',name:'特注カーボンヘルメット',price:4000,lv:16,fx:{kakari:.66,fall:.85},desc:'軽くて丈夫。'},
+  {id:'oukan',slot:'helmet',name:'王冠',price:6000,lv:18,fx:{kakari:.7,cost:2},desc:'王様気分で馬もひれ伏す。落馬したら治療費も王様価格。',weird:1},
 
   {id:'sun',slot:'goggle',name:'サングラス',price:0,lv:1,fx:{going:1},desc:'雰囲気だけは一流。'},
   {id:'swim',slot:'goggle',name:'水泳ゴーグル',price:3,lv:1,fx:{going:.85},desc:'泥はね対策。'},
   {id:'hanamegane',slot:'goggle',name:'鼻メガネ',price:10,lv:2,fx:{going:1,cost:.5},desc:'笑いで場が和み、治療費が半額に。',weird:1},
+  {id:'marumegane',slot:'goggle',name:'まんまる黒ぶちメガネ',price:10,lv:2,fx:{kakari:.85,start:-.03},desc:'昼寝が得意な小学生がかけていそうなメガネ。のんびりして掛かりにくいが、スタートもぼんやり。',weird:1},
+  {id:'glasses3d',slot:'goggle',name:'3Dメガネ',price:250,lv:7,fx:{kick:1.04,yore:1.4},desc:'ゴール板が飛び出して見える。距離感がおかしくてヨレやすい。',weird:1},
   {id:'joba_g',slot:'goggle',name:'乗馬ゴーグル',price:40,lv:4,fx:{going:.7},desc:'視界良好。'},
   {id:'race_g',slot:'goggle',name:'競走用ゴーグル（3枚重ね）',price:600,lv:10,fx:{going:.55},desc:'汚れたら1枚ずつ下ろす。'},
   {id:'anti_g',slot:'goggle',name:'曇り止め特注ゴーグル',price:4000,lv:16,fx:{going:.4},desc:'不良馬場でも視界くっきり。'},
@@ -954,34 +971,43 @@ const ITEMS=[
   {id:'nagagutsu',slot:'shoes',name:'長靴',price:3,lv:1,fx:{hand:0},desc:'田んぼでも平気。'},
   {id:'geta',slot:'shoes',name:'一本歯下駄',price:6,lv:2,fx:{hand:-3,start:.02},desc:'体幹が鍛えられ、反応が少し速くなる。',weird:1},
   {id:'joba_b',slot:'shoes',name:'乗馬ブーツ',price:40,lv:4,fx:{hand:4},desc:'あぶみにしっかり掛かる。'},
+  {id:'heel',slot:'shoes',name:'ハイヒール',price:100,lv:5,fx:{hand:-5,kick:1.04},desc:'背筋がピンと伸びて追い込みが冴える。あぶみは踏みにくい。',weird:1},
+  {id:'roller',slot:'shoes',name:'ローラースケート',price:220,lv:6,fx:{speed:1.005,fall:1.5},desc:'スイスイ進むが、落ちたら転がっていく。',weird:1},
   {id:'spike',slot:'shoes',name:'陸上スパイク',price:200,lv:7,fx:{hand:4,start:.04},desc:'スタートダッシュ用。',weird:1},
+  {id:'tabi',slot:'shoes',name:'忍者足袋',price:350,lv:8,fx:{hand:6,start:.02},desc:'音もなくあぶみに乗る。ニンニン。',weird:1},
   {id:'race_b',slot:'shoes',name:'競走用ブーツ',price:600,lv:10,fx:{hand:8},desc:'薄くて軽い。'},
   {id:'light_b',slot:'shoes',name:'特注軽量ブーツ',price:4000,lv:16,fx:{hand:12},desc:'足の一部になる。'},
 
   {id:'hagire',slot:'suit',name:'端切れ',price:0,lv:1,fx:{speed:.994},desc:'布を巻いただけ。風でバタバタ。'},
   {id:'sagyo',slot:'suit',name:'作業着',price:3,lv:1,fx:{speed:1},desc:'ポケットが多い。'},
   {id:'jersey',slot:'suit',name:'ジャージ',price:40,lv:4,fx:{speed:1.004},desc:'学校指定。'},
+  {id:'biz',slot:'suit',name:'スーツ',price:120,lv:5,fx:{speed:1.002,cost:.7},desc:'社会人の身だしなみ。保険がしっかりしていて治療費が安い。',weird:1},
+  {id:'idol',slot:'suit',name:'アイドル衣装',price:350,lv:7,fx:{speed:1.002,kakari:.88,whip:1.03},desc:'フリフリ。観客の声援で馬もノリノリ。',weird:1},
   {id:'kigurumi',slot:'suit',name:'馬の着ぐるみ',price:300,lv:8,fx:{speed:.998,kakari:.85},desc:'馬が仲間だと思って安心する。',weird:1},
   {id:'shobu',slot:'suit',name:'勝負服',price:600,lv:10,fx:{speed:1.008},desc:'馬主の色をまとう。'},
   {id:'aero',slot:'suit',name:'空力勝負服',price:4000,lv:16,fx:{speed:1.012},desc:'風洞実験済み。'},
+  {id:'uchu',slot:'suit',name:'宇宙服',price:7000,lv:19,fx:{speed:.996,going:.5,fall:.6},desc:'雨も泥も無重力。ちょっと重いけど安全。',weird:1},
 
   {id:'acc_none',slot:'acc',name:'なし',price:0,lv:1,fx:{},desc:'手ぶら。'},
   {id:'kaeru',slot:'acc',name:'カエルの置物',price:1,lv:1,fx:{fall:.75},desc:'無事カエル。落馬しにくい。',weird:1},
   {id:'socks',slot:'acc',name:'五本指靴下',price:2,lv:1,fx:{hand:2},desc:'指先まで踏ん張れる。',weird:1},
   {id:'haramaki',slot:'acc',name:'毛糸の腹巻き',price:5,lv:1,fx:{going:.9},desc:'お腹が冷えないので雨の日に強い。',weird:1},
   {id:'ireba',slot:'acc',name:'入れ歯',price:8,lv:2,fx:{whip:1.04},desc:'しっかり食いしばれる。',weird:1},
+  {id:'fusen',slot:'acc',name:'風船',price:15,lv:3,fx:{fall:.6,speed:.997},desc:'空に引っぱられて、落ちてもふんわり着地。',weird:1},
+  {id:'maneki',slot:'acc',name:'招き猫',price:50,lv:4,fx:{cost:.5,fall:.85},desc:'福を招いて災いを遠ざける。',weird:1},
   {id:'omamori',slot:'acc',name:'交通安全のお守り',price:20,lv:3,fx:{fall:.5},desc:'落馬リスク半減。'},
   {id:'radio',slot:'acc',name:'携帯ラジオ',price:30,lv:4,fx:{kakari:.88},desc:'演歌を聴かせると馬がリラックス。',weird:1},
   {id:'ninjin',slot:'acc',name:'高級にんじん',price:60,lv:5,fx:{stam:5,kakari:1.05},desc:'目の前にぶら下げる。元気は出るが興奮もする。',weird:1},
   {id:'belt',slot:'acc',name:'筋肉増強ベルト',price:150,lv:6,fx:{stam:8,hand:-4},desc:'お腹に巻くとビリビリ。馬も鍛えられた気がする。',weird:1},
   {id:'tengu',slot:'acc',name:'天狗のお面',price:500,lv:9,fx:{start:.05},desc:'鼻が高くなり、ゲートの反応が冴える。',weird:1},
   {id:'sauna',slot:'acc',name:'サウナスーツ',price:900,lv:12,fx:{stam:10,speed:.996},desc:'汗だくで減量。体は軽いが暑い。',weird:1},
+  {id:'gips',slot:'acc',name:'大リーガー養成ギプス',price:1500,lv:11,fx:{stam:12,speed:.995,kick:1.05},desc:'バネで全身を締めつける特訓器具。苦しいが根性が付く。',weird:1},
   {id:'teitetsu',slot:'acc',name:'金の蹄鉄',price:9000,lv:20,fx:{kick:1.1,fall:.7},desc:'伝説の名馬が履いていたらしい。'}
 ];
 const itemById=id=>ITEMS.find(x=>x.id===id);
 const OLD_TIERS={whip:['negi','monosashi','kawa','stick','carbon'],helmet:['zaru','koji','joba_h','race_h','carbon_h'],goggle:['sun','swim','joba_g','race_g','anti_g'],shoes:['zori','nagagutsu','joba_b','race_b','light_b'],suit:['hagire','sagyo','jersey','shobu','aero']};
 const DEFAULT_EQUIP={whip:'negi',helmet:'zaru',goggle:'sun',shoes:'zori',suit:'hagire',acc:'acc_none'};
-const MULT_KEYS=['whip','kakari','going','speed','kick','fall','yore','cost'],ADD_KEYS=['hand','stam','start'];
+const MULT_KEYS=['whip','kakari','going','speed','kick','fall','yore','cost'],ADD_KEYS=['hand','stam','start','odoroki'];
 function gearFx(){
   const o={};MULT_KEYS.forEach(k=>o[k]=1);ADD_KEYS.forEach(k=>o[k]=0);
   for(const sl of SLOTS){const it=itemById(S.equip[sl.k])||itemById(DEFAULT_EQUIP[sl.k]);
@@ -998,10 +1024,11 @@ function fxChips(fx){
     if(k==='kick'&&v!==1)out.push([v>1,`末脚 +${pct(v)}%`]);
     if(k==='fall'&&v!==1)out.push([v<1,`落馬 ${v<1?'-':'+'}${pct(v)}%`]);
     if(k==='yore')out.push([false,`ヨレやすさ ×${v}`]);
-    if(k==='cost')out.push([true,`治療費 -${pct(v)}%`]);
+    if(k==='cost')out.push([v<1,`治療費 ${v<1?'-':'+'}${pct(v)}%`]);
+    if(k==='odoroki')out.push([true,`鞭で馬がびっくり ${Math.round(v*100)}%`]);
     if(k==='hand'&&v!==0)out.push([v>0,`操縦性 ${v>0?'+':''}${v}`]);
     if(k==='stam')out.push([v>0,`スタミナ +${v}%`]);
-    if(k==='start')out.push([true,`好スタート判定 +${v.toFixed(2)}秒`]);
+    if(k==='start')out.push([v>0,`好スタート判定 ${v>0?'+':''}${v.toFixed(2)}秒`]);
   }
   if(!out.length)out.push([null,'効果なし']);
   return out.map(([up,t])=>`<i class="${up===null?'':up?'up':'down'}">${t}</i>`).join('');
@@ -1033,10 +1060,15 @@ const WHIP_ART={
   kawa:stickWhip('#8a4f26','#5b331d','#8a4f26'),
   stick:stickWhip('#262626','#c99a5b','#c99a5b'),
   carbon:stickWhip('#3a3f4a','#1f6fff','#1f6fff','<path d="M0,-30 v-10 M0,-55 v-10 M0,-80 v-8" stroke="#6fa3ff" stroke-width="3"/>'),
+  magonote:`${thick('M0,6 L0,-92','#d8b07a',5)}<path d="M-8,-92 Q-10,-106 0,-108 Q10,-106 8,-92 Q4,-98 0,-98 Q-4,-98 -8,-92 Z" fill="#d8b07a" ${OL}/>`,
+  piko:`${thick('M0,6 L0,-76','#ffd23f',6)}<rect x="-24" y="-102" width="48" height="26" rx="8" fill="#e8443a" ${OL}/><rect x="-24" y="-102" width="9" height="26" rx="4" fill="#ffd23f" ${OL}/><rect x="15" y="-102" width="9" height="26" rx="4" fill="#ffd23f" ${OL}/><path d="M-8,-102v26M0,-102v26M8,-102v26" stroke="#b92f27" stroke-width="2"/>`,
+  mahou:`${thick('M0,6 L0,-80','#ff8fc8',5)}<circle cx="0" cy="-2" r="5" fill="#ffd23f" ${OL}/><path d="M0,-112 L6,-98 L21,-97 L9,-88 L13,-73 L0,-81 L-13,-73 L-9,-88 L-21,-97 L-6,-98 Z" fill="#ffd23f" ${OL}/><circle cx="0" cy="-90" r="3.5" fill="#ff8fc8"/><path d="M-26,-116 l2,-6 l2,6 l6,2 l-6,2 l-2,6 l-2,-6 l-6,-2 Z M22,-118 l1.5,-4 l1.5,4 l4,1.5 l-4,1.5 l-1.5,4 l-1.5,-4 l-4,-1.5 Z" fill="#fff6b0" stroke="currentColor" stroke-width="1.5"/>`,
+  baguette:`<path d="M-9,8 Q-12,-50 -2,-110 Q8,-112 9,-100 Q12,-40 7,8 Q-1,14 -9,8 Z" fill="#e0a95b" ${OL}/><path d="M-6,-20 l10,-8 M-6,-45 l11,-8 M-5,-70 l10,-8 M-3,-93 l8,-7" stroke="#f6dcae" stroke-width="3" stroke-linecap="round"/>`,
   golden:stickWhip('#f2b705','#b5651d','#ffe27a','<path d="M4,-118 l3,-8 l3,8 l8,3 l-8,3 l-3,8 l-3,-8 l-8,-3 Z" fill="#fff6b0" '+OL+'/>')
 };
 
 /* ヘルメット（頭の上にかぶせる） */
+const HAIR_SHOW=['kingyo','oukan','hangure'];
 const DOME='M54,84 C54,30 146,30 146,84 Z';
 const RIM='<rect x="50" y="78" width="100" height="10" rx="5"';
 const HELMET_ART={
@@ -1045,6 +1077,10 @@ const HELMET_ART={
   koji:`<path d="${DOME}" fill="#ffd23f" ${OL}/><path d="M100,36 v44" stroke="#e8b400" stroke-width="5"/><path d="M42,86 Q100,74 158,86 Q100,96 42,86 Z" fill="#ffd23f" ${OL}/><path d="M74,52 h12 v-6 h6 v6 h6 v6 h-6 v6 h-6 v-6 h-12 Z" fill="#2f8f45" transform="translate(16,4) scale(.75)"/>`,
   joba_h:`<path d="${DOME}" fill="#2f2f36" ${OL}/><circle cx="100" cy="33" r="5" fill="#2f2f36" ${OL}/><path d="M64,82 Q100,74 136,82 L134,90 Q100,84 66,90 Z" fill="#1a1a1f" ${OL}/><path d="M70,66 Q74,48 90,42" fill="none" stroke="#5a5a66" stroke-width="4"/>`,
   race_h:`<path d="${DOME}" fill="#e8443a" ${OL}/><path d="M90,34 L88,82 L112,82 L110,34 Z" fill="#fff"/><path d="${DOME}" fill="none" ${OL}/><circle cx="100" cy="30" r="8" fill="#ffd23f" ${OL}/><path d="M66,82 Q100,74 134,82 L132,89 Q100,84 68,89 Z" fill="#1d1d1d" ${OL}/>`,
+  afro:c=>`<g fill="${c}" ${OL}>${[[60,70,20],[140,70,20],[72,46,22],[128,46,22],[100,34,26],[100,58,30],[56,92,14],[144,92,14]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g><g fill="${c}">${[[66,60,18],[134,60,18],[100,52,26],[86,40,18],[114,40,18]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g><path d="M78,40 q4,-4 8,0 M110,34 q4,-4 8,0 M124,58 q4,-4 8,0 M64,64 q4,-4 8,0" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>`,
+  hangure:`<path d="M58,80 C58,38 142,38 142,80 Z" fill="#1d1d22" ${OL}/><path d="M60,80 L62,118 M140,80 L138,118" stroke="#1d1d22" stroke-width="3"/><rect x="72" y="56" width="16" height="10" rx="2" fill="#e8443a" transform="rotate(-12 80 61)"/><circle cx="114" cy="56" r="7" fill="#ffd23f"/><path d="M110,56 h8 M114,52 v8" stroke="#1d1d22" stroke-width="2"/><rect x="92" y="68" width="18" height="7" rx="1" fill="#fff" transform="rotate(6 100 72)"/><path d="M70,52 Q76,44 86,42" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><path d="M58,80 Q100,72 142,80" fill="none" ${OL}/>`,
+  kingyo:`<circle cx="100" cy="94" r="58" fill="#bfe9ff" fill-opacity=".35" ${OL}/><path d="M48,74 Q100,64 152,74" fill="none" stroke="#5fc3ff" stroke-width="2.5"/><ellipse cx="100" cy="38" rx="30" ry="6" fill="#e6f7ff" ${OL}/><g transform="translate(128,62)"><ellipse cx="0" cy="0" rx="8" ry="5" fill="#ff7a1a" ${OL.replace('3','2')}/><path d="M7,0 L15,-6 L15,6 Z" fill="#ff7a1a" ${OL.replace('3','2')}/><circle cx="-4" cy="-1" r="1.3" fill="currentColor"/></g><circle cx="116" cy="50" r="2.5" fill="none" stroke="#5fc3ff" stroke-width="1.5"/><circle cx="112" cy="42" r="1.8" fill="none" stroke="#5fc3ff" stroke-width="1.5"/><path d="M62,104 Q60,80 74,62" fill="none" stroke="#fff" stroke-width="5" opacity=".7"/>`,
+  oukan:`<path d="M66,58 L66,28 L80,44 L92,20 L100,40 L108,20 L120,44 L134,28 L134,58 Z" fill="#f2b705" ${OL}/><rect x="64" y="54" width="72" height="10" rx="3" fill="#e3a000" ${OL}/><circle cx="100" cy="59" r="3.5" fill="#e8443a"/><circle cx="82" cy="59" r="3" fill="#2f6fd6"/><circle cx="118" cy="59" r="3" fill="#2f8f45"/><circle cx="92" cy="20" r="3" fill="#fff6b0" ${OL.replace('3','2')}/><circle cx="108" cy="20" r="3" fill="#fff6b0" ${OL.replace('3','2')}/>`,
   carbon_h:`<path d="${DOME}" fill="#3b3f47" ${OL}/><path d="M62,62 L82,40 M66,76 L100,36 M80,82 L118,38 M98,82 L134,48 M116,82 L142,62" stroke="#575c68" stroke-width="3"/><path d="M84,34 Q100,30 116,34 L116,84 L84,84 Z" fill="#e3b23c" opacity=".9"/><path d="${DOME}" fill="none" ${OL}/><path d="M64,82 Q100,74 136,82 L134,90 Q100,84 66,90 Z" fill="#1d1d1d" ${OL}/>`
 };
 
@@ -1053,6 +1089,8 @@ const GOGGLE_ART={
   sun:{eyes:true,svg:`<path d="M58,100 L70,98 M142,100 L130,98" stroke="currentColor" stroke-width="3"/><rect x="68" y="92" width="30" height="20" rx="8" fill="#1d1d1d" ${OL}/><rect x="102" y="92" width="30" height="20" rx="8" fill="#1d1d1d" ${OL}/><path d="M98,99 h4" stroke="currentColor" stroke-width="3"/><path d="M74,97 l6,0" stroke="#fff" stroke-width="2.5" opacity=".7"/>`},
   swim:{eyes:true,see:true,svg:`<path d="M56,102 Q56,96 70,100 M144,102 Q144,96 130,100" fill="none" stroke="#1f6fd6" stroke-width="5"/><ellipse cx="84" cy="102" rx="14" ry="11" fill="#5fc3ff" fill-opacity=".45" ${OL}/><ellipse cx="116" cy="102" rx="14" ry="11" fill="#5fc3ff" fill-opacity=".45" ${OL}/><path d="M98,102 h4" stroke="currentColor" stroke-width="3"/>`},
   hanamegane:{eyes:true,see:true,svg:`<circle cx="84" cy="102" r="12" fill="none" ${OL}/><circle cx="116" cy="102" r="12" fill="none" ${OL}/><path d="M96,100 Q100,96 104,100 M72,100 L58,98 M128,100 L142,98" fill="none" ${OL}/><ellipse cx="100" cy="114" rx="9" ry="8" fill="#f5a3a3" ${OL}/><path d="M80,124 Q90,118 100,123 Q110,118 120,124 Q110,130 100,126 Q90,130 80,124 Z" fill="#2b1d16" ${OL}/>`},
+  marumegane:{eyes:true,see:true,svg:`<circle cx="84" cy="103" r="13" fill="#fff" fill-opacity=".25" stroke="#1d1d1d" stroke-width="4.5"/><circle cx="116" cy="103" r="13" fill="#fff" fill-opacity=".25" stroke="#1d1d1d" stroke-width="4.5"/><path d="M97,101 Q100,98 103,101 M71,101 L58,98 M129,101 L142,98" fill="none" stroke="#1d1d1d" stroke-width="4"/>`},
+  glasses3d:{eyes:true,see:true,svg:`<rect x="66" y="92" width="68" height="22" rx="4" fill="#fff" ${OL}/><rect x="70" y="95" width="26" height="16" rx="3" fill="#e8443a" fill-opacity=".6"/><rect x="104" y="95" width="26" height="16" rx="3" fill="#2f9fff" fill-opacity=".6"/><path d="M66,100 L58,98 M134,100 L142,98" stroke="currentColor" stroke-width="3"/>`},
   joba_g:{svg:`<path d="M54,74 Q100,64 146,74" fill="none" stroke="#5b331d" stroke-width="5"/><rect x="70" y="60" width="26" height="16" rx="7" fill="#f5b041" ${OL}/><rect x="104" y="60" width="26" height="16" rx="7" fill="#f5b041" ${OL}/><path d="M96,68 h8" stroke="currentColor" stroke-width="3"/>`},
   race_g:{svg:`<path d="M54,74 Q100,64 146,74" fill="none" stroke="#1d1d1d" stroke-width="5"/>${[0,1,2].map(i=>`<rect x="${66+i*2}" y="${52+i*6}" width="${68-i*4}" height="16" rx="7" fill="${['#cfe9ff','#a7d6ff','#7fc3ff'][i]}" fill-opacity=".9" ${OL}/>`).join('')}`},
   anti_g:{svg:`<defs><linearGradient id="agL" x1="0" x2="1"><stop offset="0" stop-color="#5fd0ff"/><stop offset="1" stop-color="#b06bff"/></linearGradient></defs><path d="M54,74 Q100,64 146,74" fill="none" stroke="#2b2b33" stroke-width="5"/><path d="M68,58 Q100,52 132,58 L130,76 Q100,70 70,76 Z" fill="url(#agL)" ${OL}/><path d="M76,62 l10,-2" stroke="#fff" stroke-width="3" opacity=".8"/>`}
@@ -1064,6 +1102,9 @@ const SUIT_ART={
   sagyo:{body:'#3d5a99',sleeve:'#3d5a99',pants:'#3d5a99',deco:`<path d="M100,146 V204" stroke="#c9d3e8" stroke-width="2.5"/><rect x="76" y="160" width="16" height="13" rx="2" fill="#2f4a85" ${OL}/><rect x="108" y="160" width="16" height="13" rx="2" fill="#2f4a85" ${OL}/>`},
   jersey:{body:'#2f6fd6',sleeve:'#2f6fd6',pants:'#2f6fd6',stripe:'#fff',deco:`<path d="M100,146 V204" stroke="#fff" stroke-width="3"/><rect x="106" y="156" width="20" height="10" rx="2" fill="#fff" ${OL}/><path d="M109,161 h14" stroke="#2f6fd6" stroke-width="2"/>`},
   kigurumi:{body:'#a0612f',sleeve:'#a0612f',pants:'#a0612f',hand:'#3f2617',deco:`<ellipse cx="100" cy="182" rx="20" ry="18" fill="#f3e2c7" ${OL}/><path d="M86,144 Q100,152 114,144 L110,156 Q100,160 90,156 Z" fill="#3f2617"/>`},
+  biz:{body:'#2b3245',sleeve:'#2b3245',pants:'#2b3245',deco:`<path d="M88,144 L100,170 L112,144 Z" fill="#fff" ${OL}/><path d="M97,150 L103,150 L105,176 L100,182 L95,176 Z" fill="#e8443a" ${OL.replace('3','2')}/><path d="M86,146 L98,178 M114,146 L102,178" stroke="#4a5470" stroke-width="3"/><rect x="112" y="162" width="12" height="4" fill="#fff"/>`},
+  idol:{body:'#ff8fc8',sleeve:'#ffc2e2',pants:'#ffc2e2',deco:`<path d="M66,196 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 L134,204 Q100,214 66,204 Z" fill="#fff" ${OL}/><path d="M86,152 L100,158 L114,152 L114,166 L100,160 L86,166 Z" fill="#ffd23f" ${OL}/><circle cx="100" cy="159" r="4" fill="#e8443a" ${OL.replace('3','2')}/><path d="M84,182 l3,-3 a2.5,2.5 0 0 1 3,3 l-3,4 l-3,-4 a2.5,2.5 0 0 1 0,0 Z M112,178 l3,-3 a2.5,2.5 0 0 1 3,3 l-3,4 Z" fill="#fff"/><path d="M70,146 Q100,138 130,146" fill="none" stroke="#fff" stroke-width="5"/>`},
+  uchu:{body:'#f4f6fa',sleeve:'#f4f6fa',pants:'#f4f6fa',deco:`<rect x="84" y="160" width="32" height="24" rx="4" fill="#c9ced6" ${OL}/><circle cx="92" cy="168" r="3" fill="#e8443a"/><circle cx="100" cy="168" r="3" fill="#ffd23f"/><circle cx="108" cy="168" r="3" fill="#2f8f45"/><rect x="89" y="175" width="22" height="4" rx="2" fill="#2f6fd6"/><path d="M68,192 H132" stroke="#c9d3e8" stroke-width="4"/><path d="M80,146 Q100,154 120,146" fill="none" stroke="#c9ced6" stroke-width="6"/>`},
   shobu:{body:'#e8443a',sleeve:'#ffd23f',pants:'#ffffff',deco:`<rect x="68" y="164" width="64" height="12" fill="#ffd23f"/><rect x="66" y="184" width="68" height="12" fill="#ffd23f"/><path d="M70,146 Q100,138 130,146 L134,204 Q100,210 66,204 Z" fill="none" ${OL}/>`},
   aero:{body:'#f4f8ff',sleeve:'#2f6fd6',pants:'#ffffff',deco:`<path d="M72,148 L100,186 L128,148 L120,146 L100,172 L80,146 Z" fill="#2f6fd6"/><path d="M78,196 h18 M104,192 h22 M84,188 h10" stroke="#7fb3ff" stroke-width="3"/><path d="M70,146 Q100,138 130,146 L134,204 Q100,210 66,204 Z" fill="none" ${OL}/>`}
 };
@@ -1077,6 +1118,9 @@ const SHOE_ART={
   geta:(cx,skin)=>`${footBare(cx,skin,238)}<rect x="${cx-14}" y="243" width="28" height="7" rx="2" fill="#c8955a" ${OL}/><rect x="${cx-4}" y="250" width="8" height="12" fill="#a8743f" ${OL}/>`,
   joba_b:cx=>tallBoot(cx,'#6b3a1f','#8d5a2b'),
   spike:cx=>`<path d="M${cx-11},236 H${cx+9} Q${cx+16},244 ${cx+15},252 H${cx-11} Z" fill="#ff7a1a" ${OL}/><path d="M${cx-8},246 Q${cx},240 ${cx+10},244" fill="none" stroke="#fff" stroke-width="3"/><path d="M${cx-8},253 l2,5 l2,-5 M${cx},253 l2,5 l2,-5 M${cx+8},253 l2,5 l2,-5" fill="none" stroke="currentColor" stroke-width="2"/>`,
+  heel:cx=>`<path d="M${cx-10},238 Q${cx},232 ${cx+10},238 L${cx+16},250 Q${cx+4},254 ${cx-8},250 Z" fill="#e8443a" ${OL}/><path d="M${cx-8},250 L${cx-9},262" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M${cx-8},250 L${cx-9},262" stroke="#e8443a" stroke-width="2.5" stroke-linecap="round"/>`,
+  roller:cx=>`<path d="M${cx-10},226 H${cx+9} V240 Q${cx+16},242 ${cx+15},250 H${cx-11} Z" fill="#fff" ${OL}/><path d="M${cx-6},230 h12 M${cx-6},235 h12" stroke="#e8443a" stroke-width="2"/><rect x="${cx-13}" y="250" width="30" height="5" rx="2" fill="#5b6270" ${OL.replace('3','2')}/>${[-7,2,11].map(d=>`<circle cx="${cx+d}" cy="259" r="4" fill="#ffd23f" ${OL.replace('3','2')}/>`).join('')}`,
+  tabi:cx=>`<path d="M${cx-10},230 H${cx+10} V242 Q${cx+15},244 ${cx+14},252 H${cx-11} Z" fill="#2b3245" ${OL}/><path d="M${cx+6},244 V252" stroke="#7d8aa8" stroke-width="2"/><path d="M${cx-10},234 H${cx+10}" stroke="#7d8aa8" stroke-width="2"/>`,
   race_b:cx=>tallBoot(cx,'#1d1d1d','#d9a066'),
   light_b:cx=>tallBoot(cx,'#ffffff','#f2b705')
 };
@@ -1093,6 +1137,9 @@ const ACC_ART={
   belt:{belly:`<rect x="67" y="182" width="66" height="14" rx="3" fill="#2b2b33" ${OL}/><rect x="93" y="180" width="14" height="18" rx="2" fill="#c9ced6" ${OL}/><path d="M60,176 l6,6 l-4,2 l6,6 M140,176 l-6,6 l4,2 l-6,6" fill="none" stroke="#ffd23f" stroke-width="3"/>`},
   tengu:{head:`<g transform="translate(142,58) rotate(20)"><ellipse cx="0" cy="0" rx="17" ry="20" fill="#e0332b" ${OL}/><path d="M-2,2 L26,-4 L-2,10 Z" fill="#e0332b" ${OL}/><path d="M-12,-8 l8,3 M12,-8 l-8,3" stroke="currentColor" stroke-width="3"/><path d="M-10,-14 Q0,-20 10,-14" fill="none" stroke="#fff" stroke-width="3"/></g>`},
   sauna:{head:`<path d="M58,60 q-6,-8 0,-16 q6,-8 0,-16 M142,60 q6,-8 0,-16 q-6,-8 0,-16" fill="none" stroke="#9fb4d8" stroke-width="3"/><path d="M146,96 q4,8 0,12 q-4,-4 0,-12 Z M52,110 q4,8 0,12 q-4,-4 0,-12 Z" fill="#7fc3ff" ${OL.replace('3','2')}/>`,belly:`<path d="M70,146 Q100,138 130,146 L134,204 Q100,210 66,204 Z" fill="#c9ced6" fill-opacity=".7" ${OL}/><path d="M80,154 L90,196 M110,154 L118,196" stroke="#fff" stroke-width="3" opacity=".8"/>`},
+  fusen:{hand:`<path d="M156,196 Q150,150 168,112" fill="none" stroke="currentColor" stroke-width="1.5"/><ellipse cx="170" cy="92" rx="18" ry="21" fill="#e8443a" ${OL}/><path d="M166,113 l4,6 l4,-6 Z" fill="#e8443a" ${OL.replace('3','2')}/><path d="M160,84 Q162,76 168,74" fill="none" stroke="#fff" stroke-width="3" opacity=".7"/>`},
+  maneki:{floor:`<g transform="translate(166,236)"><ellipse cx="0" cy="10" rx="15" ry="13" fill="#fff" ${OL}/><circle cx="0" cy="-8" r="13" fill="#fff" ${OL}/><path d="M-11,-15 L-9,-26 L-2,-19 M11,-15 L9,-26 L2,-19" fill="#fff" ${OL}/><path d="M12,0 Q22,-8 18,-20" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/><path d="M12,0 Q22,-8 18,-20" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path d="M-5,-9 q2,-3 4,0 M3,-9 q2,-3 4,0 M-2,-3 q2,2 4,0" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M-11,2 Q0,7 11,2" fill="none" stroke="#e8443a" stroke-width="3.5"/><circle cx="0" cy="7" r="3.5" fill="#f2b705" ${OL.replace('3','2')}/><ellipse cx="-6" cy="-14" rx="3" ry="2" fill="#f5a3a3"/></g>`},
+  gips:{over:`<g fill="none" stroke="#7d8aa8" stroke-width="2.5" stroke-linejoin="round">${['M74,152 L50,196','M126,152 L152,196'].map(d=>`<path d="${d}" stroke="currentColor" stroke-width="5"/><path d="${d}" stroke="#c9ced6" stroke-width="2.5"/>`).join('')}<path d="M72,150 l6,6 l-6,6 l6,6 l-6,6 l6,6 l-6,6 l6,6 l-6,6" stroke="#5b6270"/><path d="M128,150 l-6,6 l6,6 l-6,6 l6,6 l-6,6 l6,6 l-6,6 l6,6" stroke="#5b6270"/><path d="M76,160 Q100,172 124,160 M74,178 Q100,190 126,178" stroke="currentColor" stroke-width="5"/><path d="M76,160 Q100,172 124,160 M74,178 Q100,190 126,178" stroke="#c9ced6" stroke-width="2.5"/></g>${[[76,160],[124,160],[74,178],[126,178]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="4" fill="#c9ced6" ${OL.replace('3','2')}/>`).join('')}`},
   teitetsu:{hand:`<g transform="translate(156,194)"><path d="M-12,8 Q-14,-14 0,-14 Q14,-14 12,8 L5,8 Q7,-6 0,-6 Q-7,-6 -5,8 Z" fill="#f2b705" ${OL}/><circle cx="-8" cy="-2" r="1.6" fill="#8a5a00"/><circle cx="8" cy="-2" r="1.6" fill="#8a5a00"/><path d="M16,-18 l2,-5 l2,5 l5,2 l-5,2 l-2,5 l-2,-5 l-5,-2 Z" fill="#fff6b0" ${OL.replace('3','2')}/></g>`}
 };
 
@@ -1150,12 +1197,14 @@ function avatarSVG(sv,bare){
   const acc=bare?{}:(ACC_ART[eq.acc]||{});
   const gog=bare?null:GOGGLE_ART[eq.goggle];
   const chon=!bare&&eq.helmet==='chonmage';
-  const helmet=!bare&&!chon?HELMET_ART[eq.helmet]:'';
+  const hArt=!bare&&!chon?HELMET_ART[eq.helmet]:'';
+  const helmet=typeof hArt==='function'?hArt(FACE_OPTS.hair.v[f.hair]):(hArt||'');
+  const hairShow=HAIR_SHOW.includes(eq.helmet)&&!bare; // 髪が隠れないかぶり物
   const hand=suit.hand||skin;
   let s='';
-  s+=hairSVG(hst,hcol,'back',!!helmet,chon);
+  s+=hairSVG(hst,hcol,'back',!!helmet&&!hairShow,chon);
   // 鞭（左手に持つ）
-  if(!bare)s+=`<g transform="translate(48,200) rotate(-16)">${WHIP_ART[eq.whip]||WHIP_ART.negi}</g>`;
+  if(!bare)s+=`<g transform="translate(48,200) rotate(-10)">${WHIP_ART[eq.whip]||WHIP_ART.negi}</g>`;
   // 足と靴
   s+=`<rect x="79" y="198" width="20" height="44" rx="8" fill="${suit.pants}" ${OL}/><rect x="101" y="198" width="20" height="44" rx="8" fill="${suit.pants}" ${OL}/>`;
   const shoe=bare?(cx=>footBare(cx,skin)):(SHOE_ART[eq.shoes]||SHOE_ART.zori);
@@ -1169,6 +1218,7 @@ function avatarSVG(sv,bare){
   if(suit.stripe)s+=`<path d="M74,152 L50,196 M126,152 L152,196" stroke="${suit.stripe}" stroke-width="3" fill="none"/>`;
   s+=`<circle cx="48" cy="200" r="9" fill="${hand}" ${OL}/><circle cx="154" cy="200" r="9" fill="${hand}" ${OL}/>`;
   if(acc.hand)s+=acc.hand;
+  if(acc.over)s+=acc.over;
   // 頭と顔
   s+=`<ellipse cx="57" cy="104" rx="7" ry="9" fill="${skin}" ${OL}/><ellipse cx="143" cy="104" rx="7" ry="9" fill="${skin}" ${OL}/>`;
   s+=`<ellipse cx="100" cy="98" rx="44" ry="41" fill="${skin}" ${OL}/>`;
@@ -1177,7 +1227,7 @@ function avatarSVG(sv,bare){
   if(!eyesHidden)s+=eyesSVG(FACE_OPTS.eye.v[f.eye]);
   s+=`<path d="M99,108 Q101,112 98,113" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".5"/>`;
   s+=acc.mouth||mouthSVG(FACE_OPTS.mouth.v[f.mouth]);
-  s+=hairSVG(hst,hcol,'front',!!helmet,chon,skin);
+  if(eq.helmet!=='afro'||bare)s+=hairSVG(hst,hcol,'front',!!helmet&&!hairShow,chon,skin);
   s+=browSVG(FACE_OPTS.brow.v[f.brow]);
   s+=helmet;
   if(gog)s+=gog.svg;
@@ -1661,6 +1711,8 @@ const ACT_LINES={
   whip_early:[c=>'仕掛けが早い！ 鞭の効きがいまひとつ',c=>`まだ早いぞ${c.jk}！ ${c.me}は反応薄`,c=>`ここで鞭？ ${c.me}は戸惑っている`],
   whip_tired:[c=>`鞭が入るが、${c.me}にはもう脚がない`,c=>`叩いても叩いても、${c.me}は伸びない…`],
   whip_much:[c=>`鞭の連打、${c.me}は慣れてしまったか`,c=>'鞭の効き目が薄れてきた'],
+  odoroki:[c=>`キラキラ〜！ ${c.me}がびっくりして急加速！`,c=>`魔法がかかった！ ${c.me}、目をまん丸にして飛んでいく！`,c=>`なんだ今の光は！ ${c.me}がグンと伸びる！`],
+  odoroki_early:[c=>`キラキラ〜…あっと、${c.me}が驚いて掛かってしまった！`,c=>`まだ早い魔法！ ${c.me}が興奮している`],
   yore:[c=>`鞭に反応してヨレた！ ${c.me}失速`,c=>`${c.me}、鞭に驚いて外にヨレる！`,c=>'あっと、斜行気味！ 立て直せるか']
 };
 function ctxNow(){
@@ -1717,6 +1769,8 @@ function act(a){
     else{key=S.equip.whip!=='negi'?'whip':'whip_negi';mood='good';label='ぐいっと伸びた';}
   }else if(res==='whip_early'){mood='bad';label='まだ早い';L.whipEarly++;if(L.spurtAt==null)L.spurtAt=remain;}
   else if(res==='yore'){mood='bad';label='ヨレた';L.yore++;}
+  else if(res==='odoroki'){mood='good';label='びっくり加速';if(L.spurtAt==null)L.spurtAt=remain;}
+  else if(res==='odoroki_early'){mood='bad';label='驚いて掛かった';L.kakari++;L.whipEarly++;}
   if(res==='hold_on'||res==='hold_off'||res==='urge_release')$('btnHold').setAttribute('aria-pressed',p.hold?'true':'false');
   if(mood)react(mood,label);
   if(mood==='bad'&&!p.fell){

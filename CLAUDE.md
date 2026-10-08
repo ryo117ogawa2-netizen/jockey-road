@@ -31,11 +31,11 @@
 
 1. `//SIM-START` 〜 `//SIM-END` — レースシミュレーション本体（DOM に触らない純粋なロジック）。`STYLE`（脚質）、`GOING`（馬場）、`createRaceState`、`step`（1 フレーム進める）、`playerAct`（抑える / 手綱 / 促す / 鞭）、`standings`。`tools/sim.mjs` がここを切り出して使うので、DOM 依存を入れないこと。
 2. `data` — `STAGES`（地方 → 中央 → 重賞 → GI → 海外）と `RACES`（全 18 レース、`lv` 必要レベル、`need` 解放条件、`R` 相手の強さ、`purse` 1 着賞金（万円））、馬の名前と生成 `genHorse`、レベル関連 `capOf`（乗れる馬の総合値上限 = 30 + Lv×3）、`needExp`。
-3. `items` — `SLOTS`（鞭・ヘルメット・ゴーグル・靴・服・小物）と `ITEMS`（48 種）。効果 `fx` のキーは
+3. `items` — `SLOTS`（鞭・ヘルメット・ゴーグル・靴・服・小物）と `ITEMS`（65 種）。効果 `fx` のキーは
    掛け算: `whip` 鞭の伸び / `kakari` 掛かり率 / `going` 重馬場の影響 / `speed` 巡航速度 / `kick` 末脚 / `fall` 落馬リスク / `yore` ヨレやすさ / `cost` 治療費、
-   足し算: `hand` 操縦性 / `stam` スタミナ% / `start` 好スタート判定の秒数。
+   足し算: `hand` 操縦性 / `stam` スタミナ% / `start` 好スタート判定の秒数（マイナスもあり）/ `odoroki` 鞭で馬がびっくりする確率（魔法のステッキ。直線なら `odorokiT` の間だけ急加速、直線前だと掛かる）。
    `gearFx()` が装備中アイテムを合算する。`weird:1` は「変」マーク付きの変なアイテム（靴下・入れ歯・筋肉増強ベルトなど）。
-   - `avatar` — 騎手アバター（SVG）。`avatarSVG(save, bare)` が顔 `S.face`（`FACE_OPTS` の各パーツ番号：肌・髪色・髪型・まゆ・目・口・ほっぺ）と装備 `S.equip` から描く。アイテムの絵は `WHIP_ART` / `HELMET_ART` / `GOGGLE_ART` / `SUIT_ART` / `SHOE_ART` / `ACC_ART`（アイテムを追加したらここにも絵を足す）。`bare=true` は装備なしの顔アップ（顔づくり画面のプレビュー）。「自分の成績」に表示し、「顔をカスタム」で編集。
+   - `avatar` — 騎手アバター（SVG）。`avatarSVG(save, bare)` が顔 `S.face`（`FACE_OPTS` の各パーツ番号：肌・髪色・髪型・まゆ・目・口・ほっぺ）と装備 `S.equip` から描く。アイテムの絵は `WHIP_ART` / `HELMET_ART` / `GOGGLE_ART` / `SUIT_ART` / `SHOE_ART` / `ACC_ART`（アイテムを追加したらここにも絵を足す。ヘルメットの絵は髪色を受け取る関数でもよい。髪を隠さないかぶり物は `HAIR_SHOW`、小物の描く場所は `belly` / `hand` / `over` / `head` / `floor` / `mouth`）。`bare=true` は装備なしの顔アップ（顔づくり画面のプレビュー）。「自分の成績」に表示し、「顔をカスタム」で編集。
 4. `save` — localStorage（キー `jockey-road-v2`）に複数の騎手アカウントを保存。`STORE = {current, list:[{id, save}], music, group}`。`fresh()` が騎手 1 人分の初期データ（`face` を含む）、`norm()` が古いデータの移行（旧 `gear` 段階制 → `owned` / `equip`）。v1 キー `jockey-road-v1` からの移行もある。
 5. `オンライン` — `/api/config` を取れたときだけ「みんな」ランキングを有効化。各騎手は端末で作った `cloud.id`（UUID）と `cloud.secret` を持ち、RPC `submit_jockey` / `delete_jockey` で送る。`group_code` は常に `'all'`（合言葉なし・全員公開がオーナーの希望）。
 6. `screens` — ホームの各パネル描画（`renderHome` / `renderShop` / `renderRanking` / `renderMenu`）と出馬表（`openCard` / `genOffers`）。
