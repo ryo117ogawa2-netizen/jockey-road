@@ -626,7 +626,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
     <div class="card howto">
       <div><b>抑える（Z）</b>ペースを落としてスタミナ消費を半分に。我慢した分だけ「溜め」がたまり、直線の伸びが増す。切り替え式。</div>
       <div><b>手綱を引く（X）</b>掛かった馬をなだめる。操縦性が高いほど成功しやすい。</div>
-      <div><b>スタート</b>ゲートが開いた瞬間にタップ（Space）。早すぎると暴れ、遅いと出遅れます。</div>
+      <div><b>スタート</b>「構えて…」が出たらもうすぐ。ゲートが開いた瞬間にタップ（Space）。早すぎると暴れ、遅いと出遅れます。</div>
       <div><b>促す（C）</b>手綱をしごいて押していく。鞭より伸びは小さいがスタミナ消費が軽く、ヨレない。位置取りにも。</div>
       <div><b>鞭（スペース）</b>加速するがスタミナを使う。直線手前より早いと効きが悪い。</div>
       <div><b>脚質</b>逃げは前半から飛ばし、追込は直線で一気に伸びる。</div>
@@ -1553,17 +1553,27 @@ function startRace(){
   resizeCv();draw();updateHud();
   const myRace=st;
   clearTimeout(gateTimer);
-  gateTimer=setTimeout(()=>{ if(st!==myRace)return;
+  const wait=1700+Math.random()*1800,ready=500+Math.random()*600;
+  gate.openPlan=performance.now()+wait;
+  // 開く少し前に「構えて…」を出す（タイミングの目安）
+  gateTimer=setTimeout(()=>{ if(st!==myRace||gate.phase!=='wait')return;
+    if(!gate.early){$('gateTxt').textContent='構えて…';$('gateSub').textContent='もうすぐ開くよ！';}
+    gateTimer=setTimeout(openGate,ready);
+  },wait-ready);
+  function openGate(){ if(st!==myRace)return;
     g.className='gate open';$('gateTxt').textContent='スタート！';$('gateSub').textContent='いまタップ！';renderGateMeter(null,false);
     gate.phase='open';gate.openAt=performance.now();
     running=true;last=performance.now();
     raf=requestAnimationFrame(loop);
+    if(gate.fly){startTap();return;}
     gateTimer=setTimeout(()=>{if(st===myRace&&gate.phase==='open')startTap();},1500);
-  },1700+Math.random()*1800);
+  }
 }
 let gate={phase:'none'},gateTimer=0;
 /* 反応時間メーター：早すぎ｜好｜五分｜出遅れ（0〜0.8秒） */
-function gateZones(){const b=(st&&st.fx&&st.fx.start)||0;return {good:0.2+b,ok:0.38+b,max:0.8};}
+/* スマホのタッチ遅れ（0.1秒前後）も見込んだ幅。開く直前 FLY 秒以内の早押しは「読み切った」扱いで好スタート */
+const GATE_FLY=0.2;
+function gateZones(){const b=(st&&st.fx&&st.fx.start)||0;return {good:0.38+b,ok:0.7+b,max:1.2};}
 function renderGateMeter(rt,early){
   const z=gateZones(),E=14,W=86;const pos=t=>E+Math.min(1,t/z.max)*W;
   const g=pos(z.good)-E,o=pos(z.ok)-pos(z.good),l=100-pos(z.ok);
@@ -1579,22 +1589,23 @@ function startTap(){
   const p=st.player,nm=p.name;
   if(gate.phase==='wait'){
     if(gate.early)return;
+    if(performance.now()>=gate.openPlan-GATE_FLY*1000){gate.fly=true;return;}
     gate.early=true;$('gateSub').textContent='早すぎた！ ゲートの中で暴れている';renderGateMeter(null,true);
     return;
   }
   if(gate.phase!=='open')return;
   gate.phase='done';
-  const rt=(performance.now()-gate.openAt)/1000;
+  const rt=gate.fly?0:(performance.now()-gate.openAt)/1000;
   let label,line;
-  if(gate.early){p.startDelay=1.1+rt*2;label='立ち遅れ';line=`${nm}、ゲートの中で暴れて出遅れた！`;}
+  if(gate.early){p.startDelay=0.6+rt;label='立ち遅れ';line=`${nm}、ゲートの中で暴れて出遅れた！`;}
   else if(rt<gateZones().good){p.goodStart=1.6;label='好スタート';line=`好スタート！ ${nm}がポンと飛び出した`;}
   else if(rt<gateZones().ok){label='五分のスタート';line=`${nm}、まずまずのスタート`;}
-  else{p.startDelay=Math.min(3,(rt-0.25)*2.6);label='出遅れ';line=`あっと、${nm}は出遅れた！`;}
+  else{p.startDelay=Math.min(2,0.3+(rt-gateZones().ok)*2);label='出遅れ';line=`あっと、${nm}は出遅れた！`;}
   p.gateWait=false;st.startInfo={rt,label};
   const g=$('gate');g.className='gate result';
   const icon=label==='好スタート'?'♪ ':label==='五分のスタート'?'':'〰 ';
   $('gateTxt').innerHTML=`<span class="gbig" style="color:${label==='好スタート'?'var(--gold)':label==='五分のスタート'?'var(--good)':'#d93a2f'}">${icon}${label}</span>`;
-  $('gateSub').textContent=gate.early?'ゲートが開く前にタップしてしまった':`反応 ${rt.toFixed(2)}秒（好スタートは${gateZones().good.toFixed(2)}秒以内）`;
+  $('gateSub').textContent=gate.early?'ゲートが開く前にタップしてしまった':gate.fly?'開く瞬間を読み切った！':`反応 ${rt.toFixed(2)}秒（好スタートは${gateZones().good.toFixed(2)}秒以内）`;
   renderGateMeter(rt,gate.early);
   setTimeout(()=>{if(gate.phase==='done')g.hidden=true;},1500);
   say(pick('start',LINES.start,{race:st.race.name})+' '+line,2);
@@ -1935,8 +1946,8 @@ function evaluateRide(order){
   // スタート
   const lab=st.startInfo?st.startInfo.label:'五分のスタート',rt=st.startInfo?st.startInfo.rt:0.3;
   items.push({k:'スタート',sc:lab==='好スタート'?3:lab==='五分のスタート'?2:lab==='出遅れ'?1:0,
-    txt:lab==='好スタート'?`反応${rt.toFixed(2)}秒の好スタート`:lab==='五分のスタート'?`反応${rt.toFixed(2)}秒。あと少し早ければ好スタート`:lab==='出遅れ'?`反応${rt.toFixed(2)}秒で出遅れ`:'ゲートが開く前に動いて立ち遅れ',
-    tip:'ゲートが金色になった瞬間（0.2秒以内）にタップしよう'});
+    txt:lab==='好スタート'?(rt===0?'開く瞬間を読み切った好スタート':`反応${rt.toFixed(2)}秒の好スタート`):lab==='五分のスタート'?`反応${rt.toFixed(2)}秒。あと少し早ければ好スタート`:lab==='出遅れ'?`反応${rt.toFixed(2)}秒で出遅れ`:'ゲートが開く前に動いて立ち遅れ',
+    tip:`「構えて…」が出たら準備。金色になった瞬間（${gateZones().good.toFixed(2)}秒以内）にタップしよう`});
   // 位置取り
   const avg=L.rankT>0?L.rankSum/L.rankT:n/2,frac=(avg-1)/Math.max(1,n-1);
   const ideal={nige:[0,0.12],senko:[0.08,0.4],sashi:[0.35,0.72],oikomi:[0.6,1]}[p.style];

@@ -39,7 +39,7 @@
 4. `save` — localStorage（キー `jockey-road-v2`）に複数の騎手アカウントを保存。`STORE = {current, list:[{id, save}], music, group}`。`fresh()` が騎手 1 人分の初期データ（`face` を含む）、`norm()` が古いデータの移行（旧 `gear` 段階制 → `owned` / `equip`）。v1 キー `jockey-road-v1` からの移行もある。
 5. `オンライン` — `/api/config` を取れたときだけ「みんな」ランキングを有効化。各騎手は端末で作った `cloud.id`（UUID）と `cloud.secret` を持ち、RPC `submit_jockey` / `delete_jockey` で送る。`group_code` は常に `'all'`（合言葉なし・全員公開がオーナーの希望）。
 6. `screens` — ホームの各パネル描画（`renderHome` / `renderShop` / `renderRanking` / `renderMenu`）と出馬表（`openCard` / `genOffers`）。
-7. `race runtime` — ゲートのタイミング判定（`startTap`、反応時間メーター `renderGateMeter`）、実況（`LINES` / `ACT_LINES`、`pick` で同じセリフの連続を避ける）、♪ / モヤモヤの反応マーク（`react`）、落馬（`fallOff`）、記録（`logTick` → `st.log`）、Canvas 描画（`draw` / `drawHorse` / `drawMood`）。
+7. `race runtime` — ゲートのタイミング判定（`startTap`、反応時間メーター `renderGateMeter`。判定幅は `gateZones()`：好 0.38 秒以内 / 五分 0.7 秒以内。開く 0.5〜1.1 秒前に「構えて…」を表示し、開く直前 `GATE_FLY`=0.2 秒以内の早押しは好スタート扱い）、実況（`LINES` / `ACT_LINES`、`pick` で同じセリフの連続を避ける）、♪ / モヤモヤの反応マーク（`react`）、落馬（`fallOff`）、記録（`logTick` → `st.log`）、Canvas 描画（`draw` / `drawHorse` / `drawMood`）。
 8. `result` — 着順・賞金（騎手の取り分 = 賞金の 5%）・経験値、騎乗評価表（`evaluateRide`：スタート / 位置取り / 折り合い / 仕掛け / スタミナ配分 / 鞭さばき を ◎○△× で採点、S〜D）、馬からのひとこと（`HORSE_SAYS` / `horseComment`、関西弁の荒ぶった口調）、落馬時の治療費。
 9. `音楽` — Web Audio でファンファーレと蹄の音をその場で合成（音源ファイルなし）。スマホは最初のタップまで鳴らせない。
 10. `タイトル映像` — Canvas で昼の競馬場と走る馬を描くアニメーション（`drawTitle` / `drawGallop`）。
