@@ -293,6 +293,53 @@ body.noscroll{overflow:hidden}
 .tile.go .vs-badge,.tile .vs-badge{border:2px solid #fff}
 .vs-res{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700}
 
+/* 魔界（body.makai のときだけ暗い色に入れかえる） */
+body.makai{--ground:#140a1c;--panel:#22152e;--panel-2:#2e1d3d;--line:#4a3360;--frame:#ff4d6d;--ivory:#f1e6ff;--muted:#b9a5d1;--sun:#ff4d6d;--gold:#ffb347;
+  background:radial-gradient(circle at 80% -10%,#5a1030 0,transparent 45%),linear-gradient(180deg,#0b0410 0,#1d0b24 60%,#140a1c 100%) #140a1c}
+body.makai h1,body.makai h2,body.makai h3{color:#ffd1dc}
+body.makai .card,body.makai .horse,body.makai .tbl,body.makai .races{background:var(--panel);border-color:var(--frame);box-shadow:0 4px 0 #5a1030}
+body.makai .btn{box-shadow:0 3px 0 #5a1030}
+body.makai .btn.ghost{background:var(--panel);color:var(--ivory)}
+body.makai canvas{background:#140a1c}
+html.makai{background:#140a1c}
+body.makai .ctl,body.makai .call,body.makai .chip,body.makai .acct{background:var(--panel);color:var(--ivory)}
+body.makai .ctl b{color:#ffd1dc}
+body.makai .ctl[aria-pressed="true"]{background:#5a1030}
+body.makai .ctl.whip{background:#b8323a}
+body.makai .ctl.whip b{color:#fff}
+body.makai .bar{background:var(--panel-2)}
+.makai-stage .races{background:#1d0b24;border-color:#ff4d6d}
+.makai-stage h2{color:#b8323a}
+.makai-stage .race-info b{color:#ffd1dc}
+.makai-stage .race-info .meta{color:#c9b3e0}
+.makai-rule{margin:0;font-size:13px;color:#b8323a;font-weight:700}
+.grade.gm{background:#1d0b24;color:#ff4d6d;border-color:#ff4d6d}
+.horse.cage{align-items:center;text-align:center;background:linear-gradient(180deg,#2e1d3d,#140a1c);color:#f1e6ff}
+.cage-bars{width:100%;height:90px;display:grid;place-items:center;font-family:var(--display);font-size:46px;color:#ff4d6d;border-radius:8px;
+  background:repeating-linear-gradient(90deg,#5b6270 0 6px,transparent 6px 22px),#0b0410;text-shadow:0 0 12px #ff3b3b}
+.makai-pay b{font-size:22px}.makai-pay.win b{color:var(--gold)}.makai-pay.lose b{color:#ff4d6d}
+.makai-letter .viewer-card{background:#1d0b24;border-color:#ff4d6d;box-shadow:0 5px 0 #5a1030;color:#f1e6ff}
+.makai-letter h2{color:#ff4d6d;font-size:26px}
+.makai-letter p{line-height:1.9}
+.makai-letter b{color:#ffb347}
+.mi-sign{text-align:right;color:#c9b3e0;font-style:italic;margin:0}
+.makai-letter .btn.ghost{background:#2e1d3d;color:#f1e6ff}
+
+/* betting */
+.bet{display:flex;flex-direction:column;gap:8px}
+.bet h3{font-size:18px}
+.bet-list{display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto}
+.bet-row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:8px;padding:5px 8px;color:var(--ivory);font:inherit;font-size:13px}
+.bet-row.on{border-color:var(--frame);background:var(--sun)}
+.bet-row.me .bet-name{color:var(--silk);font-weight:700}
+.bet-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bet-amts{display:flex;gap:6px;flex-wrap:wrap}
+.bet-done{font-weight:700;color:var(--good)}
+.bet-warn{margin:0;font-size:12px;color:#d93a2f}
+.bet-hit b{color:var(--good)}
+.busted{border-color:#d93a2f!important;background:#fff0ee!important}
+.busted b{color:#d93a2f}
+
 /* accounts */
 .acct-box{display:flex;flex-direction:column;gap:8px}
 .accts{display:flex;gap:8px;flex-wrap:wrap}
@@ -737,10 +784,11 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       <div class="chips" id="rcChips"></div>
     </div>
     <div>
-      <h3 style="font-size:18px">騎乗依頼</h3>
+      <h3 style="font-size:18px" id="rcOfferH">騎乗依頼</h3>
       <p style="margin:2px 0 10px;color:var(--muted);font-size:13px" id="rcNote"></p>
       <div class="offers" id="offers"></div>
     </div>
+    <div class="card bet" id="betBox" hidden></div>
     <div class="card howto">
       <div><b>抑える（Z）</b>ペースを落としてスタミナ消費を半分に。我慢した分だけ「溜め」がたまり、直線の伸びが増す。切り替え式。</div>
       <div><b>手綱を引く（X）</b>掛かった馬をなだめる。操縦性が高いほど成功しやすい。</div>
@@ -826,6 +874,16 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
 
 </div>
 
+<div class="viewer makai-letter" id="makaiInv" hidden role="dialog" aria-modal="true" aria-labelledby="miTitle">
+  <div class="viewer-card">
+    <span class="label">INVITATION FROM HELL</span>
+    <h2 id="miTitle">魔界からの招待状</h2>
+    <p>騎手収入が5億円を超えたおまえの噂は、魔界にまで届いている。<br>魔界のレースに招待しよう。勝てば <b>10億円</b>。負ければ <b>罰金10億円</b>。<br>乗りものは馬とは限らない。檻を開けるまで、何に乗るかはわからない……。</p>
+    <p class="mi-sign">— 魔王より</p>
+    <div class="rb-btns"><button class="btn" type="button" id="miGo">魔界へ行く</button><button class="btn ghost" type="button" id="miLater">あとで</button></div>
+  </div>
+</div>
+
 <div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="vwName">
   <div class="viewer-card">
     <div class="vw-head">
@@ -860,6 +918,32 @@ function makeRunner(h,num,n,isPlayer){
     noise:0,aiAgg:Math.random(),lane:0,laneT:0,whips:0,tired:false};
 }
 
+/* 魔界の乗りもの：sp=巡航速度× / st=持久力× / bu=瞬発力× / ha=操縦性+ / w=出やすさ */
+const BEASTS={
+  horse:{n:'馬',e:'🐎',sp:1,st:1,bu:1,ha:0,w:10},
+  dog:{n:'犬',e:'🐕',sp:.985,st:.9,bu:1.15,ha:12,w:10},
+  cow:{n:'牛',e:'🐄',sp:.95,st:1.5,bu:.8,ha:-5,w:9},
+  lion:{n:'ライオン',e:'🦁',sp:1.03,st:.75,bu:1.3,ha:-15,w:8},
+  rabbit:{n:'ウサギ',e:'🐇',sp:1,st:.6,bu:1.45,ha:5,w:9},
+  pig:{n:'ブタ',e:'🐖',sp:.96,st:1.1,bu:.95,ha:-8,w:8},
+  turtle:{n:'カメ',e:'🐢',sp:.84,st:2,bu:.5,ha:10,w:4},
+  elephant:{n:'ゾウ',e:'🐘',sp:.97,st:1.6,bu:.9,ha:-10,w:7},
+  kangaroo:{n:'カンガルー',e:'🦘',sp:1.01,st:.9,bu:1.2,ha:-5,w:7},
+  cheetah:{n:'チーター',e:'🐆',sp:1.06,st:.55,bu:1.2,ha:0,w:5},
+  dragon:{n:'ドラゴン',e:'🐉',sp:1.07,st:1.2,bu:1.25,ha:5,w:2}
+};
+const BEAST_KEYS=Object.keys(BEASTS);
+const DEMON_PRE=['ヘル','ダーク','ブラッド','ナイト','デス','カオス','シャドウ','ゴースト','ジゴク','マオウ'];
+/* luck>0 で当たり（速い乗りもの）が出やすくなる */
+function pickBeast(luck=0){
+  const ws=BEAST_KEYS.map(k=>BEASTS[k].w*(luck&&BEASTS[k].sp>=1.01?1+luck:1)*(luck&&BEASTS[k].sp<0.9?1/(1+luck):1));
+  let u=Math.random()*ws.reduce((a,b)=>a+b,0),i=0;while(u>ws[i]&&i<ws.length-1){u-=ws[i];i++;}
+  return BEAST_KEYS[i];
+}
+function applyBeast(h,k){
+  const b=BEASTS[k];
+  return Object.assign({},h,{beast:k,stam:Math.round(clamp(h.stam*b.st,10,200)),burst:Math.round(clamp(h.burst*b.bu,10,200)),hand:Math.round(clamp(h.hand+b.ha,10,140))});
+}
 /* 決まった種（seed）から同じ乱数列を作る：対戦ルームで全員が同じ相手・同じ馬で走るため */
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
 function withSeed(seed,fn){const orig=Math.random;Math.random=mulberry32(seed);try{return fn();}finally{Math.random=orig;}}
@@ -879,6 +963,12 @@ function createRaceState(race,playerHorse,lv,going,gear,opts){
     return {pnum,runners};
   };
   const {pnum,runners}=opts&&opts.seed?withSeed(opts.seed,build):build();
+  if(race.makai){ // 魔界：相手も何に乗っているかわからない
+    for(const r of runners){
+      if(!r.isPlayer){const k=pickBeast();Object.assign(r,makeRunner(applyBeast(r,k),r.num,n,false),{frame:r.frame,lane:r.lane,laneT:r.laneT,name:DEMON_PRE[(r.num*7+Math.floor(Math.random()*DEMON_PRE.length))%DEMON_PRE.length]+BEASTS[k].n});}
+      r.bSpeed=BEASTS[r.beast||'horse'].sp;
+    }
+  }
   if(opts&&opts.ghosts){
     let gi=0;
     for(const r of runners){
@@ -917,7 +1007,7 @@ function step(st,dt){
     if(r.gateWait){continue;}
     if(r.startDelay>0){r.startDelay-=dt;continue;}
     const remain=D-r.d,phase=r.d/D;
-    const cruise=(15.8+r.burst*0.008+r.stam*0.006)*st.goingSpeed*(r.gSuit||1)*(r.gSpeed||1);
+    const cruise=(15.8+r.burst*0.008+r.stam*0.006)*st.goingSpeed*(r.gSuit||1)*(r.gSpeed||1)*(r.bSpeed||1);
     const sty=STYLE[r.style];
     const ef=phase<0.55?sty.early:phase<0.75?1+(sty.early-1)*(0.75-phase)/0.2:1;
     let v=cruise*ef,dm=r.gDrain||1;
@@ -1027,7 +1117,8 @@ const STAGES=[
   {name:'GI',short:'GI'},
   {name:'海外遠征',short:'凱旋門'},
   {name:'世界ツアー',short:'世界'},
-  {name:'伝説への道',short:'伝説'}
+  {name:'伝説への道',short:'伝説'},
+  {name:'魔界',short:'魔界',secret:1}
 ];
 const RACES=[
   {id:'ooi_c3',stage:0,name:'C3 一般',course:'大井',surf:'ダ',dist:1200,straight:386,R:30,lv:1,field:8,grade:'',purse:70},
@@ -1056,7 +1147,10 @@ const RACES=[
   {id:'tenku',tough:1.25,stage:6,name:'天空ステークス',course:'雲の上',surf:'芝',dist:2400,straight:600,R:110,lv:36,field:12,grade:'GI',purse:80000,need:{stage:[5,3]}},
   {id:'ginga',tough:1.18,stage:6,name:'銀河ダービー',course:'銀河',surf:'芝',dist:2600,straight:520,R:113,lv:39,field:12,grade:'GI',purse:120000},
   {id:'ryuoh',tough:1.23,stage:6,name:'竜王賞',course:'竜の谷',surf:'ダ',dist:2200,straight:400,R:116,lv:42,field:12,grade:'GI',purse:150000},
-  {id:'legend',tough:1.27,stage:6,name:'レジェンドカップ',course:'伝説の丘',surf:'芝',dist:3000,straight:560,R:119,lv:45,field:14,grade:'GI',purse:300000,need:{stage:[6,3]}}
+  {id:'legend',tough:1.27,stage:6,name:'レジェンドカップ',course:'伝説の丘',surf:'芝',dist:3000,straight:560,R:119,lv:45,field:14,grade:'GI',purse:300000,need:{stage:[6,3]}},
+  {id:'makai_itchome',stage:7,name:'地獄の一丁目ステークス',course:'地獄の一丁目',surf:'ダ',dist:2000,straight:450,R:108,tough:1.12,lv:1,field:10,grade:'魔',purse:100000,makai:1},
+  {id:'makai_chinoike',stage:7,name:'血の池記念',course:'血の池',surf:'ダ',dist:2400,straight:500,R:112,tough:1.15,lv:1,field:12,grade:'魔',purse:100000,makai:1},
+  {id:'makai_maoh',stage:7,name:'魔王賞',course:'魔王城',surf:'芝',dist:3000,straight:560,R:117,tough:1.18,lv:1,field:12,grade:'魔',purse:100000,makai:1}
 ];
 const raceById=id=>RACES.find(r=>r.id===id);
 
@@ -1113,6 +1207,7 @@ const ITEMS=[
   {id:'piko',slot:'whip',name:'ピコピコハンマー',price:25,lv:3,fx:{whip:.98,kakari:.9},desc:'ピコッ。痛くないので馬も怒らない。',weird:1},
   {id:'mahou',slot:'whip',name:'魔法のステッキ',price:800,lv:8,fx:{whip:.95,odoroki:.25},desc:'振るとキラキラ。直線で馬がびっくりして急加速！ ただし直線前に振ると驚いて掛かる。',weird:1},
   {id:'baguette',slot:'whip',name:'フランスパン',price:1500,lv:13,fx:{whip:1.06,stam:3},desc:'凱旋門の国の鞭。カチカチに焼けている。',weird:1},
+  {id:'diamond',slot:'whip',name:'ダイヤモンドの鞭',price:30000,lv:25,fx:{whip:1.22,kick:1.05},desc:'3億円。キラキラしすぎて相手の馬がまぶしがる。'},
   {id:'golden',slot:'whip',name:'黄金のステッキ',price:15000,lv:22,fx:{whip:1.2,kick:1.05},desc:'凱旋門を目指す者だけが持てる。'},
 
   {id:'zaru',slot:'helmet',name:'ザル',price:0,lv:1,fx:{kakari:1.15},desc:'そうめんを茹でるやつ。風通しは最高。'},
@@ -1126,6 +1221,7 @@ const ITEMS=[
   {id:'kingyo',slot:'helmet',name:'金魚鉢',price:150,lv:6,fx:{going:.75,kakari:1.05},desc:'雨は一滴も入らない。中の金魚が気になって馬が少しそわそわ。',weird:1},
   {id:'race_h',slot:'helmet',name:'競走用ヘルメット',price:600,lv:10,fx:{kakari:.77},desc:'公式戦の標準装備。'},
   {id:'carbon_h',slot:'helmet',name:'特注カーボンヘルメット',price:4000,lv:16,fx:{kakari:.66,fall:.85},desc:'軽くて丈夫。'},
+  {id:'platinum_h',slot:'helmet',name:'プラチナヘルメット',price:20000,lv:25,fx:{kakari:.6,fall:.7},desc:'2億円。宝石がひとつ埋めこまれている。'},
   {id:'oukan',slot:'helmet',name:'王冠',price:6000,lv:18,fx:{kakari:.7,cost:2},desc:'王様気分で馬もひれ伏す。落馬したら治療費も王様価格。',weird:1},
 
   {id:'sun',slot:'goggle',name:'サングラス',price:0,lv:1,fx:{going:1},desc:'雰囲気だけは一流。'},
@@ -1135,6 +1231,7 @@ const ITEMS=[
   {id:'glasses3d',slot:'goggle',name:'3Dメガネ',price:250,lv:7,fx:{kick:1.04,yore:1.4},desc:'ゴール板が飛び出して見える。距離感がおかしくてヨレやすい。',weird:1},
   {id:'joba_g',slot:'goggle',name:'乗馬ゴーグル',price:40,lv:4,fx:{going:.7},desc:'視界良好。'},
   {id:'race_g',slot:'goggle',name:'競走用ゴーグル（3枚重ね）',price:600,lv:10,fx:{going:.55},desc:'汚れたら1枚ずつ下ろす。'},
+  {id:'gold_g',slot:'goggle',name:'純金ゴーグル',price:10000,lv:22,fx:{going:.35},desc:'1億円。重いけど泥ははじく。'},
   {id:'anti_g',slot:'goggle',name:'曇り止め特注ゴーグル',price:4000,lv:16,fx:{going:.4},desc:'不良馬場でも視界くっきり。'},
 
   {id:'zori',slot:'shoes',name:'草履',price:0,lv:1,fx:{hand:-6},desc:'すぐ脱げる。'},
@@ -1146,6 +1243,7 @@ const ITEMS=[
   {id:'spike',slot:'shoes',name:'陸上スパイク',price:200,lv:7,fx:{hand:4,start:.04},desc:'スタートダッシュ用。',weird:1},
   {id:'tabi',slot:'shoes',name:'忍者足袋',price:350,lv:8,fx:{hand:6,start:.02},desc:'音もなくあぶみに乗る。ニンニン。',weird:1},
   {id:'race_b',slot:'shoes',name:'競走用ブーツ',price:600,lv:10,fx:{hand:8},desc:'薄くて軽い。'},
+  {id:'jet_b',slot:'shoes',name:'ジェットブーツ',price:25000,lv:28,fx:{hand:15,start:.03},desc:'2.5億円。かかとから火が出る。',weird:1},
   {id:'light_b',slot:'shoes',name:'特注軽量ブーツ',price:4000,lv:16,fx:{hand:12},desc:'足の一部になる。'},
 
   {id:'hagire',slot:'suit',name:'端切れ',price:0,lv:1,fx:{speed:.994},desc:'布を巻いただけ。風でバタバタ。'},
@@ -1157,6 +1255,7 @@ const ITEMS=[
   {id:'kigurumi',slot:'suit',name:'馬の着ぐるみ',price:300,lv:8,fx:{speed:.998,kakari:.85},desc:'馬が仲間だと思って安心する。',weird:1},
   {id:'shobu',slot:'suit',name:'勝負服',price:600,lv:10,fx:{speed:1.008},desc:'馬主の色をまとう。'},
   {id:'aero',slot:'suit',name:'空力勝負服',price:4000,lv:16,fx:{speed:1.012},desc:'風洞実験済み。'},
+  {id:'gold_suit',slot:'suit',name:'金ピカ勝負服',price:40000,lv:30,fx:{speed:1.015},desc:'4億円。本物の金糸で織った勝負服。'},
   {id:'uchu',slot:'suit',name:'宇宙服',price:7000,lv:19,fx:{speed:.996,going:.5,fall:.6},desc:'雨も泥も無重力。ちょっと重いけど安全。',weird:1},
 
   {id:'acc_none',slot:'acc',name:'なし',price:0,lv:1,fx:{},desc:'手ぶら。'},
@@ -1173,12 +1272,13 @@ const ITEMS=[
   {id:'tengu',slot:'acc',name:'天狗のお面',price:500,lv:9,fx:{start:.05},desc:'鼻が高くなり、ゲートの反応が冴える。',weird:1},
   {id:'sauna',slot:'acc',name:'サウナスーツ',price:900,lv:12,fx:{stam:10,speed:.996},desc:'汗だくで減量。体は軽いが暑い。',weird:1},
   {id:'gips',slot:'acc',name:'大リーガー養成ギプス',price:1500,lv:11,fx:{stam:12,speed:.995,kick:1.05},desc:'バネで全身を締めつける特訓器具。苦しいが根性が付く。',weird:1},
+  {id:'contract',slot:'acc',name:'悪魔の契約書',price:66600,lv:30,fx:{luck:1.5,cost:3},desc:'6.66億円。魔界の檻で当たりが出やすくなる。代わりにケガをすると治療費が3倍。',weird:1},
   {id:'teitetsu',slot:'acc',name:'金の蹄鉄',price:9000,lv:20,fx:{kick:1.1,fall:.7},desc:'伝説の名馬が履いていたらしい。'}
 ];
 const itemById=id=>ITEMS.find(x=>x.id===id);
 const OLD_TIERS={whip:['negi','monosashi','kawa','stick','carbon'],helmet:['zaru','koji','joba_h','race_h','carbon_h'],goggle:['sun','swim','joba_g','race_g','anti_g'],shoes:['zori','nagagutsu','joba_b','race_b','light_b'],suit:['hagire','sagyo','jersey','shobu','aero']};
 const DEFAULT_EQUIP={whip:'negi',helmet:'zaru',goggle:'sun',shoes:'zori',suit:'hagire',acc:'acc_none'};
-const MULT_KEYS=['whip','kakari','going','speed','kick','fall','yore','cost'],ADD_KEYS=['hand','stam','start','odoroki'];
+const MULT_KEYS=['whip','kakari','going','speed','kick','fall','yore','cost'],ADD_KEYS=['hand','stam','start','odoroki','luck'];
 function gearFx(){
   const o={};MULT_KEYS.forEach(k=>o[k]=1);ADD_KEYS.forEach(k=>o[k]=0);
   for(const sl of SLOTS){const it=itemById(S.equip[sl.k])||itemById(DEFAULT_EQUIP[sl.k]);
@@ -1197,6 +1297,7 @@ function fxChips(fx){
     if(k==='fall'&&v!==1)out.push([v<1,`落馬 ${v<1?'-':'+'}${pct(v)}%`]);
     if(k==='yore')out.push([false,`ヨレやすさ ×${v}`]);
     if(k==='cost')out.push([v<1,`治療費 ${v<1?'-':'+'}${pct(v)}%`]);
+    if(k==='luck')out.push([true,'魔界で速い乗りものが出やすい']);
     if(k==='odoroki')out.push([true,`鞭で馬がびっくり ${Math.round(v*100)}%`]);
     if(k==='hand'&&v!==0)out.push([v>0,`操縦性 ${v>0?'+':''}${v}`]);
     if(k==='stam')out.push([v>0,`スタミナ +${v}%`]);
@@ -1236,6 +1337,7 @@ const WHIP_ART={
   piko:`${thick('M0,6 L0,-76','#ffd23f',6)}<rect x="-24" y="-102" width="48" height="26" rx="8" fill="#e8443a" ${OL}/><rect x="-24" y="-102" width="9" height="26" rx="4" fill="#ffd23f" ${OL}/><rect x="15" y="-102" width="9" height="26" rx="4" fill="#ffd23f" ${OL}/><path d="M-8,-102v26M0,-102v26M8,-102v26" stroke="#b92f27" stroke-width="2"/>`,
   mahou:`${thick('M0,6 L0,-80','#ff8fc8',5)}<circle cx="0" cy="-2" r="5" fill="#ffd23f" ${OL}/><path d="M0,-112 L6,-98 L21,-97 L9,-88 L13,-73 L0,-81 L-13,-73 L-9,-88 L-21,-97 L-6,-98 Z" fill="#ffd23f" ${OL}/><circle cx="0" cy="-90" r="3.5" fill="#ff8fc8"/><path d="M-26,-116 l2,-6 l2,6 l6,2 l-6,2 l-2,6 l-2,-6 l-6,-2 Z M22,-118 l1.5,-4 l1.5,4 l4,1.5 l-4,1.5 l-1.5,4 l-1.5,-4 l-4,-1.5 Z" fill="#fff6b0" stroke="currentColor" stroke-width="1.5"/>`,
   baguette:`<path d="M-9,8 Q-12,-50 -2,-110 Q8,-112 9,-100 Q12,-40 7,8 Q-1,14 -9,8 Z" fill="#e0a95b" ${OL}/><path d="M-6,-20 l10,-8 M-6,-45 l11,-8 M-5,-70 l10,-8 M-3,-93 l8,-7" stroke="#f6dcae" stroke-width="3" stroke-linecap="round"/>`,
+  diamond:stickWhip('#bfefff','#5b6270','#e6fbff','<path d="M0,-126 L10,-114 L0,-100 L-10,-114 Z" fill="#bfefff" '+OL+'/><path d="M-10,-114 H10 M0,-126 L-4,-114 L0,-100 M0,-126 L4,-114" stroke="#7fd0ff" stroke-width="1.5"/>'),
   golden:stickWhip('#f2b705','#b5651d','#ffe27a','<path d="M4,-118 l3,-8 l3,8 l8,3 l-8,3 l-3,8 l-3,-8 l-8,-3 Z" fill="#fff6b0" '+OL+'/>')
 };
 
@@ -1253,6 +1355,7 @@ const HELMET_ART={
   afro:c=>`<g fill="${c}" ${OL}>${[[60,70,20],[140,70,20],[72,46,22],[128,46,22],[100,34,26],[100,58,30],[56,92,14],[144,92,14]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g><g fill="${c}">${[[66,60,18],[134,60,18],[100,52,26],[86,40,18],[114,40,18]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g><path d="M78,40 q4,-4 8,0 M110,34 q4,-4 8,0 M124,58 q4,-4 8,0 M64,64 q4,-4 8,0" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>`,
   hangure:`<path d="M58,80 C58,38 142,38 142,80 Z" fill="#1d1d22" ${OL}/><path d="M60,80 L62,118 M140,80 L138,118" stroke="#1d1d22" stroke-width="3"/><rect x="72" y="56" width="16" height="10" rx="2" fill="#e8443a" transform="rotate(-12 80 61)"/><circle cx="114" cy="56" r="7" fill="#ffd23f"/><path d="M110,56 h8 M114,52 v8" stroke="#1d1d22" stroke-width="2"/><rect x="92" y="68" width="18" height="7" rx="1" fill="#fff" transform="rotate(6 100 72)"/><path d="M70,52 Q76,44 86,42" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><path d="M58,80 Q100,72 142,80" fill="none" ${OL}/>`,
   kingyo:`<circle cx="100" cy="94" r="58" fill="#bfe9ff" fill-opacity=".35" ${OL}/><path d="M48,74 Q100,64 152,74" fill="none" stroke="#5fc3ff" stroke-width="2.5"/><ellipse cx="100" cy="38" rx="30" ry="6" fill="#e6f7ff" ${OL}/><g transform="translate(128,62)"><ellipse cx="0" cy="0" rx="8" ry="5" fill="#ff7a1a" ${OL.replace('3','2')}/><path d="M7,0 L15,-6 L15,6 Z" fill="#ff7a1a" ${OL.replace('3','2')}/><circle cx="-4" cy="-1" r="1.3" fill="currentColor"/></g><circle cx="116" cy="50" r="2.5" fill="none" stroke="#5fc3ff" stroke-width="1.5"/><circle cx="112" cy="42" r="1.8" fill="none" stroke="#5fc3ff" stroke-width="1.5"/><path d="M62,104 Q60,80 74,62" fill="none" stroke="#fff" stroke-width="5" opacity=".7"/>`,
+  platinum_h:`<path d="${DOME}" fill="#eef1f6" ${OL}/><path d="M70,70 Q72,46 92,40" fill="none" stroke="#fff" stroke-width="6"/><path d="M100,44 L108,54 L100,64 L92,54 Z" fill="#e8443a" ${OL.replace('3','2')}/><path d="M64,82 Q100,74 136,82 L134,90 Q100,84 66,90 Z" fill="#c9ced6" ${OL}/>`,
   oukan:`<path d="M66,58 L66,28 L80,44 L92,20 L100,40 L108,20 L120,44 L134,28 L134,58 Z" fill="#f2b705" ${OL}/><rect x="64" y="54" width="72" height="10" rx="3" fill="#e3a000" ${OL}/><circle cx="100" cy="59" r="3.5" fill="#e8443a"/><circle cx="82" cy="59" r="3" fill="#2f6fd6"/><circle cx="118" cy="59" r="3" fill="#2f8f45"/><circle cx="92" cy="20" r="3" fill="#fff6b0" ${OL.replace('3','2')}/><circle cx="108" cy="20" r="3" fill="#fff6b0" ${OL.replace('3','2')}/>`,
   carbon_h:`<path d="${DOME}" fill="#3b3f47" ${OL}/><path d="M62,62 L82,40 M66,76 L100,36 M80,82 L118,38 M98,82 L134,48 M116,82 L142,62" stroke="#575c68" stroke-width="3"/><path d="M84,34 Q100,30 116,34 L116,84 L84,84 Z" fill="#e3b23c" opacity=".9"/><path d="${DOME}" fill="none" ${OL}/><path d="M64,82 Q100,74 136,82 L134,90 Q100,84 66,90 Z" fill="#1d1d1d" ${OL}/>`
 };
@@ -1266,6 +1369,7 @@ const GOGGLE_ART={
   glasses3d:{eyes:true,see:true,svg:`<rect x="66" y="92" width="68" height="22" rx="4" fill="#fff" ${OL}/><rect x="70" y="95" width="26" height="16" rx="3" fill="#e8443a" fill-opacity=".6"/><rect x="104" y="95" width="26" height="16" rx="3" fill="#2f9fff" fill-opacity=".6"/><path d="M66,100 L58,98 M134,100 L142,98" stroke="currentColor" stroke-width="3"/>`},
   joba_g:{svg:`<path d="M54,74 Q100,64 146,74" fill="none" stroke="#5b331d" stroke-width="5"/><rect x="70" y="60" width="26" height="16" rx="7" fill="#f5b041" ${OL}/><rect x="104" y="60" width="26" height="16" rx="7" fill="#f5b041" ${OL}/><path d="M96,68 h8" stroke="currentColor" stroke-width="3"/>`},
   race_g:{svg:`<path d="M54,74 Q100,64 146,74" fill="none" stroke="#1d1d1d" stroke-width="5"/>${[0,1,2].map(i=>`<rect x="${66+i*2}" y="${52+i*6}" width="${68-i*4}" height="16" rx="7" fill="${['#cfe9ff','#a7d6ff','#7fc3ff'][i]}" fill-opacity=".9" ${OL}/>`).join('')}`},
+  gold_g:{svg:`<path d="M54,74 Q100,64 146,74" fill="none" stroke="#e3a000" stroke-width="5"/><rect x="68" y="58" width="28" height="18" rx="8" fill="#f2c14e" ${OL}/><rect x="104" y="58" width="28" height="18" rx="8" fill="#f2c14e" ${OL}/><path d="M74,62 l8,0 M110,62 l8,0" stroke="#fff6b0" stroke-width="3"/><path d="M96,67 h8" stroke="currentColor" stroke-width="3"/>`},
   anti_g:{svg:`<defs><linearGradient id="agL" x1="0" x2="1"><stop offset="0" stop-color="#5fd0ff"/><stop offset="1" stop-color="#b06bff"/></linearGradient></defs><path d="M54,74 Q100,64 146,74" fill="none" stroke="#2b2b33" stroke-width="5"/><path d="M68,58 Q100,52 132,58 L130,76 Q100,70 70,76 Z" fill="url(#agL)" ${OL}/><path d="M76,62 l10,-2" stroke="#fff" stroke-width="3" opacity=".8"/>`}
 };
 
@@ -1278,6 +1382,7 @@ const SUIT_ART={
   biz:{body:'#2b3245',sleeve:'#2b3245',pants:'#2b3245',deco:`<path d="M88,144 L100,170 L112,144 Z" fill="#fff" ${OL}/><path d="M97,150 L103,150 L105,176 L100,182 L95,176 Z" fill="#e8443a" ${OL.replace('3','2')}/><path d="M86,146 L98,178 M114,146 L102,178" stroke="#4a5470" stroke-width="3"/><rect x="112" y="162" width="12" height="4" fill="#fff"/>`},
   rollerstar:{body:'#f4f6fa',sleeve:'#f4f6fa',pants:'#f4f6fa',deco:`<path d="M66,148 L74,140 L86,146 L80,158 Z M134,148 L126,140 L114,146 L120,158 Z" fill="#c9ced6" ${OL}/><path d="M88,144 L100,176 L112,144" fill="#2f6fd6" ${OL}/><path d="M88,144 L96,190 M112,144 L104,190" stroke="#f2b705" stroke-width="4"/>${[[76,170],[124,170],[80,188],[120,188],[72,182],[128,182],[84,160],[116,160]].map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${i%2?2.2:2.8}" fill="${i%3?'#f2b705':'#9fb4d8'}"/>`).join('')}<path d="M98,186 l2,-5 l2,5 l5,2 l-5,2 l-2,5 l-2,-5 l-5,-2 Z" fill="#ffe27a" ${OL.replace('3','1.5')}/><path d="M86,200 v38 M114,200 v38" stroke="#f2b705" stroke-width="3"/>`},
   idol:{body:'#ff8fc8',sleeve:'#ffc2e2',pants:'#ffc2e2',deco:`<path d="M66,196 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 L134,204 Q100,214 66,204 Z" fill="#fff" ${OL}/><path d="M86,152 L100,158 L114,152 L114,166 L100,160 L86,166 Z" fill="#ffd23f" ${OL}/><circle cx="100" cy="159" r="4" fill="#e8443a" ${OL.replace('3','2')}/><path d="M84,182 l3,-3 a2.5,2.5 0 0 1 3,3 l-3,4 l-3,-4 a2.5,2.5 0 0 1 0,0 Z M112,178 l3,-3 a2.5,2.5 0 0 1 3,3 l-3,4 Z" fill="#fff"/><path d="M70,146 Q100,138 130,146" fill="none" stroke="#fff" stroke-width="5"/>`},
+  gold_suit:{body:'#f2c14e',sleeve:'#f2b705',pants:'#fff6df',deco:`<path d="M70,146 Q100,138 130,146 L134,204 Q100,210 66,204 Z" fill="none" ${OL}/><path d="M86,146 L100,176 L114,146" fill="none" stroke="#fff6b0" stroke-width="4"/>${[[78,166],[122,166],[86,190],[114,190],[100,196]].map(([x,y])=>`<path d="M${x},${y-5} l2,4 l4,1 l-4,1 l-2,4 l-2,-4 l-4,-1 l4,-1 Z" fill="#fff"/>`).join('')}`},
   uchu:{body:'#f4f6fa',sleeve:'#f4f6fa',pants:'#f4f6fa',deco:`<rect x="84" y="160" width="32" height="24" rx="4" fill="#c9ced6" ${OL}/><circle cx="92" cy="168" r="3" fill="#e8443a"/><circle cx="100" cy="168" r="3" fill="#ffd23f"/><circle cx="108" cy="168" r="3" fill="#2f8f45"/><rect x="89" y="175" width="22" height="4" rx="2" fill="#2f6fd6"/><path d="M68,192 H132" stroke="#c9d3e8" stroke-width="4"/><path d="M80,146 Q100,154 120,146" fill="none" stroke="#c9ced6" stroke-width="6"/>`},
   shobu:{body:'#e8443a',sleeve:'#ffd23f',pants:'#ffffff',deco:`<rect x="68" y="164" width="64" height="12" fill="#ffd23f"/><rect x="66" y="184" width="68" height="12" fill="#ffd23f"/><path d="M70,146 Q100,138 130,146 L134,204 Q100,210 66,204 Z" fill="none" ${OL}/>`},
   aero:{body:'#f4f8ff',sleeve:'#2f6fd6',pants:'#ffffff',deco:`<path d="M72,148 L100,186 L128,148 L120,146 L100,172 L80,146 Z" fill="#2f6fd6"/><path d="M78,196 h18 M104,192 h22 M84,188 h10" stroke="#7fb3ff" stroke-width="3"/><path d="M70,146 Q100,138 130,146 L134,204 Q100,210 66,204 Z" fill="none" ${OL}/>`}
@@ -1296,6 +1401,7 @@ const SHOE_ART={
   roller:cx=>`<path d="M${cx-10},226 H${cx+9} V240 Q${cx+16},242 ${cx+15},250 H${cx-11} Z" fill="#fff" ${OL}/><path d="M${cx-6},230 h12 M${cx-6},235 h12" stroke="#e8443a" stroke-width="2"/><rect x="${cx-13}" y="250" width="30" height="5" rx="2" fill="#5b6270" ${OL.replace('3','2')}/>${[-7,2,11].map(d=>`<circle cx="${cx+d}" cy="259" r="4" fill="#ffd23f" ${OL.replace('3','2')}/>`).join('')}`,
   tabi:cx=>`<path d="M${cx-10},230 H${cx+10} V242 Q${cx+15},244 ${cx+14},252 H${cx-11} Z" fill="#2b3245" ${OL}/><path d="M${cx+6},244 V252" stroke="#7d8aa8" stroke-width="2"/><path d="M${cx-10},234 H${cx+10}" stroke="#7d8aa8" stroke-width="2"/>`,
   race_b:cx=>tallBoot(cx,'#1d1d1d','#d9a066'),
+  jet_b:cx=>`${tallBoot(cx,'#5b6270','#e8443a')}<path d="M${cx-8},254 Q${cx-4},270 ${cx},258 Q${cx+4},270 ${cx+8},254 Z" fill="#ff8a1f" ${OL.replace('3','2')}/><path d="M${cx-3},255 Q${cx},264 ${cx+3},255 Z" fill="#ffe27a"/>`,
   light_b:cx=>tallBoot(cx,'#ffffff','#f2b705')
 };
 
@@ -1314,6 +1420,7 @@ const ACC_ART={
   fusen:{hand:`<path d="M156,196 Q150,150 168,112" fill="none" stroke="currentColor" stroke-width="1.5"/><ellipse cx="170" cy="92" rx="18" ry="21" fill="#e8443a" ${OL}/><path d="M166,113 l4,6 l4,-6 Z" fill="#e8443a" ${OL.replace('3','2')}/><path d="M160,84 Q162,76 168,74" fill="none" stroke="#fff" stroke-width="3" opacity=".7"/>`},
   maneki:{floor:`<g transform="translate(166,236)"><ellipse cx="0" cy="10" rx="15" ry="13" fill="#fff" ${OL}/><circle cx="0" cy="-8" r="13" fill="#fff" ${OL}/><path d="M-11,-15 L-9,-26 L-2,-19 M11,-15 L9,-26 L2,-19" fill="#fff" ${OL}/><path d="M12,0 Q22,-8 18,-20" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/><path d="M12,0 Q22,-8 18,-20" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path d="M-5,-9 q2,-3 4,0 M3,-9 q2,-3 4,0 M-2,-3 q2,2 4,0" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M-11,2 Q0,7 11,2" fill="none" stroke="#e8443a" stroke-width="3.5"/><circle cx="0" cy="7" r="3.5" fill="#f2b705" ${OL.replace('3','2')}/><ellipse cx="-6" cy="-14" rx="3" ry="2" fill="#f5a3a3"/></g>`},
   gips:{over:`<g fill="none" stroke="#7d8aa8" stroke-width="2.5" stroke-linejoin="round">${['M74,152 L50,196','M126,152 L152,196'].map(d=>`<path d="${d}" stroke="currentColor" stroke-width="5"/><path d="${d}" stroke="#c9ced6" stroke-width="2.5"/>`).join('')}<path d="M72,150 l6,6 l-6,6 l6,6 l-6,6 l6,6 l-6,6 l6,6 l-6,6" stroke="#5b6270"/><path d="M128,150 l-6,6 l6,6 l-6,6 l6,6 l-6,6 l6,6 l-6,6 l6,6" stroke="#5b6270"/><path d="M76,160 Q100,172 124,160 M74,178 Q100,190 126,178" stroke="currentColor" stroke-width="5"/><path d="M76,160 Q100,172 124,160 M74,178 Q100,190 126,178" stroke="#c9ced6" stroke-width="2.5"/></g>${[[76,160],[124,160],[74,178],[126,178]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="4" fill="#c9ced6" ${OL.replace('3','2')}/>`).join('')}`},
+  contract:{hand:`<g transform="translate(158,196) rotate(-8)"><rect x="-12" y="-22" width="24" height="30" rx="2" fill="#f3e2c7" ${OL}/><path d="M-7,-14 h14 M-7,-8 h14 M-7,-2 h9" stroke="#8a5a2b" stroke-width="1.5"/><circle cx="6" cy="3" r="5" fill="#b8323a" ${OL.replace('3','1.5')}/><path d="M-12,-22 q-4,-6 2,-8 M12,-22 q4,-6 -2,-8" fill="none" stroke="#b8323a" stroke-width="2"/></g>`},
   teitetsu:{hand:`<g transform="translate(156,194)"><path d="M-12,8 Q-14,-14 0,-14 Q14,-14 12,8 L5,8 Q7,-6 0,-6 Q-7,-6 -5,8 Z" fill="#f2b705" ${OL}/><circle cx="-8" cy="-2" r="1.6" fill="#8a5a00"/><circle cx="8" cy="-2" r="1.6" fill="#8a5a00"/><path d="M16,-18 l2,-5 l2,5 l5,2 l-5,2 l-2,5 l-2,-5 l-5,-2 Z" fill="#fff6b0" ${OL.replace('3','2')}/></g>`}
 };
 
@@ -1378,7 +1485,7 @@ function avatarParts(sv,bare){
   let s='';
   s+=hairSVG(hst,hcol,'back',!!helmet&&!hairShow,chon);
   // 鞭（左手に持つ）
-  if(!bare)s+=`<g transform="translate(48,200) rotate(-10)">${WHIP_ART[eq.whip]||WHIP_ART.negi}</g>`;
+  if(!bare&&eq.whip!=='none')s+=`<g transform="translate(48,200) rotate(-10)">${WHIP_ART[eq.whip]||WHIP_ART.negi}</g>`;
   // 足と靴
   s+=`<rect x="79" y="198" width="20" height="44" rx="8" fill="${suit.pants}" ${OL}/><rect x="101" y="198" width="20" height="44" rx="8" fill="${suit.pants}" ${OL}/>`;
   const shoe=bare?(cx=>footBare(cx,skin)):(SHOE_ART[eq.shoes]||SHOE_ART.zori);
@@ -1460,8 +1567,22 @@ const FURN=[
   {id:'mirrorball',kind:'w',name:'ミラーボール',price:250,weird:1,w:50,h:80,desc:'勝った夜はパーティー。',svg:`<path d="M0,-80 V-44" stroke="currentColor" stroke-width="2"/><circle cx="0" cy="-24" r="22" fill="#c9ced6" ${OL}/>${range(5,i=>`<path d="M-20,${-36+i*6} H20" stroke="#8a93a6" stroke-width="1.2"/><path d="M${-16+i*8},-44 V-4" stroke="#8a93a6" stroke-width="1.2"/>`)}<path d="M-30,-40 l-8,-4 M30,-40 l8,-4 M-28,-12 l-10,4 M28,-12 l10,4" stroke="#ffd23f" stroke-width="3" stroke-linecap="round"/>`},
   {id:'lei',kind:'w',name:'優勝レイ',price:400,w:80,h:70,desc:'勝った馬の首にかける花輪。',svg:`<path d="M-32,-64 Q-34,-10 0,-6 Q34,-10 32,-64" fill="none" stroke="#2f8f45" stroke-width="10" stroke-linecap="round"/>${range(11,i=>{const t=i/10,a=Math.PI*(1-t);return `<circle cx="${Math.cos(a)*32}" cy="${-64+Math.sin(a)*58}" r="6" fill="${['#e8443a','#ffd23f','#fff','#ff8fc8'][i%4]}" stroke="currentColor" stroke-width="1.5"/>`})}<path d="M-6,-6 L-12,10 M6,-6 L12,10" stroke="#e8443a" stroke-width="5"/>`}
 ];
+/* ぜいたく品（賞金がたくさんある人向け）。家族はアバターと同じしくみで描く */
+const famSVG=(face,equip,sc)=>`<g transform="scale(${sc}) translate(-100,-258)">${avatarParts({face,equip:Object.assign({whip:'none',helmet:'none',goggle:'none',acc:'acc_none'},equip)})}</g>`;
+const carSVG=(len,body,roof,extra='')=>`<path d="M${-len/2},-12 Q${-len/2},-30 ${-len/2+14},-32 L${-len/4},-34 Q${-len/8},-56 ${len/8},-56 L${len/4},-54 Q${len/3},-36 ${len/2-8},-32 Q${len/2},-30 ${len/2},-12 Z" fill="${body}" ${OL}/><path d="M${-len/4+6},-36 Q${-len/8+2},-50 ${len/8},-50 L${len/4-2},-48 Q${len/4+4},-40 ${len/4+6},-36 Z" fill="${roof}" ${W2}/><path d="M${len/16},-50 V-36" stroke="currentColor" stroke-width="2"/>${extra}<circle cx="${-len/3}" cy="-10" r="11" fill="#2b2b33" ${OL}/><circle cx="${len/3}" cy="-10" r="11" fill="#2b2b33" ${OL}/><circle cx="${-len/3}" cy="-10" r="4" fill="#c9ced6"/><circle cx="${len/3}" cy="-10" r="4" fill="#c9ced6"/><rect x="${len/2-8}" y="-26" width="7" height="5" rx="2" fill="#ffe27a"/>`;
+FURN.push(
+  {id:'car_kei',kind:'f',cat:'lux',name:'軽トラ',price:300,w:130,h:62,desc:'田舎の騎手の必需品。荷台にわらを積める。',svg:`<rect x="-64" y="-38" width="74" height="26" fill="#f4f6fa" ${OL}/><path d="M10,-12 V-52 Q10,-58 18,-58 L42,-58 Q56,-56 62,-38 L64,-12 Z" fill="#f4f6fa" ${OL}/><path d="M18,-52 H40 Q50,-50 54,-40 H18 Z" fill="#bfe9ff" ${W2}/><path d="M-60,-40 q8,-10 16,-2 q8,-10 16,-2 q8,-10 16,-2" fill="#f2c14e" stroke="#c8955a" stroke-width="2"/><circle cx="-40" cy="-10" r="10" fill="#2b2b33" ${OL}/><circle cx="42" cy="-10" r="10" fill="#2b2b33" ${OL}/>`},
+  {id:'pet_cat',kind:'f',cat:'lux',name:'ペット（ねこ）',price:10000,w:62,h:56,desc:'1億円のねこ。気まぐれで、レースの日だけ甘えてくる。',svg:`<path d="M24,-14 Q40,-30 34,-46" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M24,-14 Q40,-30 34,-46" fill="none" stroke="#9aa3b5" stroke-width="4" stroke-linecap="round"/><ellipse cx="4" cy="-16" rx="24" ry="15" fill="#9aa3b5" ${OL}/><circle cx="-18" cy="-32" r="14" fill="#9aa3b5" ${OL}/><path d="M-30,-40 L-28,-54 L-20,-44 M-14,-45 L-8,-54 L-6,-40" fill="#9aa3b5" ${OL}/><circle cx="-23" cy="-33" r="2" fill="currentColor"/><circle cx="-13" cy="-33" r="2" fill="currentColor"/><path d="M-20,-27 q2,2 4,0" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M-6,-2 v4 M14,-2 v4" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>`},
+  {id:'pet_dog',kind:'f',cat:'lux',name:'ペット（いぬ）',price:10000,w:70,h:60,desc:'1億円のいぬ。いっしょに朝の調教に走ってくれる。',svg:`<path d="M26,-30 Q40,-40 38,-52" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M26,-30 Q40,-40 38,-52" fill="none" stroke="#c8955a" stroke-width="4" stroke-linecap="round"/><path d="M-16,-2 V-18 M16,-2 V-18 M-6,-2 V-18 M24,-2 V-18" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><path d="M-16,-2 V-18 M16,-2 V-18 M-6,-2 V-18 M24,-2 V-18" stroke="#c8955a" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="4" cy="-26" rx="26" ry="13" fill="#c8955a" ${OL}/><circle cx="-24" cy="-40" r="14" fill="#c8955a" ${OL}/><ellipse cx="-34" cy="-36" rx="8" ry="6" fill="#f3e2c7" ${W2}/><circle cx="-39" cy="-38" r="2.5" fill="currentColor"/><ellipse cx="-20" cy="-48" rx="6" ry="10" fill="#8a5a2b" transform="rotate(20 -20 -48)" ${W2}/><circle cx="-26" cy="-43" r="2" fill="currentColor"/><path d="M-12,-32 q8,4 12,-2" fill="none" stroke="#e8443a" stroke-width="4"/>`},
+  {id:'car_sports',kind:'f',cat:'lux',name:'スポーツカー',price:20000,w:150,h:60,desc:'2億円。レース場に一番乗り。',svg:carSVG(150,'#e8443a','#bfe9ff','<path d="M-60,-24 H60" stroke="#fff" stroke-width="3"/>')},
+  {id:'child',kind:'f',cat:'lux',name:'子供',price:30000,w:60,h:96,desc:'将来の夢は騎手。必勝はちまきがお気に入り。',svg:famSVG({skin:1,hair:0,hairStyle:0,brow:3,eye:1,mouth:1,cheek:0},{suit:'jersey',shoes:'spike',helmet:'hachimaki'},.36)},
+  {id:'car_limo',kind:'f',cat:'lux',name:'リムジン',price:40000,w:220,h:60,desc:'4億円。中でパーティーができる長さ。',svg:carSVG(220,'#1d1d22','#7f8aa6','<path d="M-100,-26 H100" stroke="#c9ced6" stroke-width="2"/><path d="M-20,-48 V-36 M30,-48 V-36" stroke="currentColor" stroke-width="2"/>')},
+  {id:'partner',kind:'f',cat:'lux',name:'パートナー',price:50000,w:84,h:132,desc:'いつも応援してくれる人生のパートナー。',svg:famSVG({skin:0,hair:1,hairStyle:2,brow:0,eye:2,mouth:0,cheek:0},{suit:'idol',shoes:'heel'},.5)},
+  {id:'devil_statue',kind:'f',cat:'lux',name:'悪魔の像',price:66600,weird:1,w:76,h:120,desc:'魔界のおみやげ。夜中に目が光る。',svg:`<rect x="-30" y="-16" width="60" height="16" fill="#5b6270" ${OL}/><path d="M-22,-16 Q-26,-60 -14,-80 L-26,-108 L-8,-88 Q0,-92 8,-88 L26,-108 L14,-80 Q26,-60 22,-16 Z" fill="#3a3f4a" ${OL}/><path d="M-22,-60 Q-48,-80 -40,-104 Q-30,-84 -18,-72 M22,-60 Q48,-80 40,-104 Q30,-84 18,-72" fill="#3a3f4a" ${OL}/><circle cx="-6" cy="-74" r="3" fill="#ff4d4d"/><circle cx="6" cy="-74" r="3" fill="#ff4d4d"/><path d="M-6,-64 Q0,-60 6,-64" fill="none" stroke="#ff4d4d" stroke-width="2"/>`},
+  {id:'car_gold',kind:'f',cat:'lux',name:'金のスーパーカー',price:100000,weird:1,w:160,h:58,desc:'10億円。魔界の賞金でしか買えない色。',svg:carSVG(160,'#f2c14e','#fff6b0','<path d="M-64,-22 H64" stroke="#e3a000" stroke-width="3"/><path d="M-50,-60 l2,-5 l2,5 l5,2 l-5,2 l-2,5 l-2,-5 l-5,-2 Z M56,-58 l2,-4 l2,4 l4,2 l-4,2 l-2,4 l-2,-4 l-4,-2 Z" fill="#fff6b0" stroke="currentColor" stroke-width="1.5"/>')}
+);
 const furnById=id=>FURN.find(x=>x.id===id);
-const ROOM_TABS=[{k:'f',n:'家具'},{k:'w',n:'壁かざり'},{k:'wp',n:'壁紙'},{k:'fl',n:'床'}];
+const ROOM_TABS=[{k:'f',n:'家具'},{k:'w',n:'壁かざり'},{k:'wp',n:'壁紙'},{k:'fl',n:'床'},{k:'lux',n:'ぜいたく'}];
 const freshRoom=()=>({wp:'wp_plain',fl:'fl_wood',items:[{id:'me',x:180,y:280}]});
 function normRoom(o){
   o.furn=Array.isArray(o.furn)?o.furn.filter(furnById):[];
@@ -1542,7 +1663,7 @@ function renderRoom(){
   else bar=`<span class="rb-hint">家具や自分をドラッグして好きな場所に動かせます。タップで選ぶと反転・しまうができます。</span>`;
   $('roomBar').innerHTML=bar;
   $('roomTabs').innerHTML=ROOM_TABS.map(t=>`<button type="button" role="tab" class="tab" data-rtab="${t.k}" aria-selected="${t.k===roomTab}">${t.n}</button>`).join('');
-  const list=FURN.filter(f=>f.kind===roomTab).sort((a,b)=>a.price-b.price);
+  const list=FURN.filter(f=>roomTab==='lux'?f.cat==='lux':f.kind===roomTab&&!f.cat).sort((a,b)=>a.price-b.price);
   $('furnList').innerHTML=list.map(f=>{
     const own=S.furn.includes(f.id),placed=S.room.items.some(it=>it.id===f.id);
     const using=f.kind==='wp'?S.room.wp===f.id:f.kind==='fl'?S.room.fl===f.id:placed;
@@ -1628,6 +1749,10 @@ const ACHV=[
   {id:'weird',name:'変なもの好き',hint:'「変」アイテムを全部そろえる',ok:s=>ITEMS.filter(x=>x.weird).every(x=>s.owned.includes(x.id))},
   {id:'items',name:'道具コレクター',hint:'アイテムを全部そろえる',ok:s=>ITEMS.every(x=>s.owned.includes(x.id))},
   {id:'furn',name:'インテリア王',hint:'家具を全部そろえる',ok:s=>FURN.every(x=>(s.furn||[]).includes(x.id))},
+  {id:'makai1',name:'魔界の勝者',hint:'魔界のレースを1つ勝つ',ok:s=>RACES.some(r=>r.makai&&s.won[r.id])},
+  {id:'makaiAll',name:'魔王',hint:'魔界の全レースを勝つ',ok:s=>stageAll(s,7)},
+  {id:'busted',name:'協会にバレた',hint:'馬券のもうけを没収される',ok:s=>(s.confiscated||0)>=1},
+  {id:'family',name:'家族ができた',hint:'パートナー・子供・ペットをそろえる',ok:s=>['partner','child'].every(x=>(s.furn||[]).includes(x))&&['pet_dog','pet_cat'].some(x=>(s.furn||[]).includes(x))},
   {id:'fall10',name:'不死身',hint:'落馬10回（それでも乗る）',ok:s=>(s.falls||0)>=10}
 ];
 const achvCount=sv=>ACHV.filter(a=>a.ok(sv)).length;
@@ -1761,6 +1886,8 @@ function renderRanking(){
   if(!online)$('rankNote').textContent=STORE.list.length<2?'「＋ 騎手を追加」で家族の騎手を登録すると、ここで順位を競えます。名前をタップするとアバターと部屋が見られます。':'この端末に登録した騎手の順位です。名前をタップするとアバターと部屋が見られます。';
   else $('rankNote').textContent=onlineMsg||(onlineRows===null?'読み込み中…':'遊んでいる全員のランキング（上位200人）。名前をタップするとアバターと部屋が見られます。この端末の騎手の成績と見た目は自動で送られます。');
 }
+function showMakaiInvite(){$('makaiInv').hidden=false;document.body.classList.add('noscroll');}
+function closeMakaiInvite(go){$('makaiInv').hidden=true;document.body.classList.remove('noscroll');if(go)showPanel('races');}
 let rankRows=[];
 /* ランキングから騎手の部屋をのぞく */
 function openViewer(i){
@@ -1790,6 +1917,7 @@ function renderAccounts(){
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function lockReason(r){
+  if(r.makai&&!S.makaiInv)return '魔界からの招待が必要';
   if(S.lv<r.lv)return `騎手Lv.${r.lv}で騎乗依頼が来ます`;
   if(r.need&&r.need.win&&!S.won[r.need.win])return `${raceById(r.need.win).name}を勝つと挑戦できます`;
   if(r.need&&r.need.stage){
@@ -1846,7 +1974,7 @@ function renderVersus(){
   if(!$('vsBody'))return;
   if(!ONLINE.ok){$('vsBody').innerHTML=`<div class="card"><p style="margin:0">対戦はインターネットにつながっているときだけ遊べます（本番のページ https://jockey-road.vercel.app で開いてね）。</p></div>`;return;}
   if(vsRoom){renderRoomDetail();return;}
-  const races=RACES.filter(r=>!lockReason(r));
+  const races=RACES.filter(r=>!lockReason(r)&&!r.makai);
   let h='';
   if(vsMsg)h+=`<div class="vs-msg">${esc(vsMsg)}</div>`;
   if(vsChallenges.length)h+=`<div class="stage"><div class="stage-h"><span class="label">CHALLENGE</span><h2>届いた申し込み</h2></div>${vsChallenges.map(c=>{const r=c.race_rooms&&raceById(c.race_rooms.race_id);
@@ -1951,6 +2079,8 @@ let homePanel='menu';
 function show(id){
   if(id==='home'||id==='card'||id==='title')stopVoice();renderVoiceBtn();
   for(const s of ['title','home','card','raceScr','result'])$(s).hidden=s!==id;
+  const mk=!!(curRace&&curRace.makai)&&['card','raceScr','result'].includes(id);
+  document.body.classList.toggle('makai',mk);document.documentElement.classList.toggle('makai',mk);
   if(id==='raceScr')Music.stop();else if(id==='title'||id==='home')Music.resume();
   if(id==='title')Title.start();else Title.stop();
   window.scrollTo(0,0);
@@ -2008,6 +2138,7 @@ function renderHome(){
   const stageDone=i=>i<cur||(i===4&&S.arc)||(i===6&&S.won.legend);
   let h='';
   STAGES.forEach((s,i)=>{
+    if(s.secret&&!S.makaiInv)return;
     if(i)h+=`<div class="seg ${stageDone(i-1)||i<=cur?'done':''}"></div>`;
     h+=`<div class="node ${stageDone(i)?'done':''} ${i===cur&&!stageDone(i)?'now':''}"><div class="dot"></div>${s.short}</div>`;
   });
@@ -2025,16 +2156,18 @@ function renderHome(){
   // list
   let out='';
   STAGES.forEach((s,i)=>{
+    if(s.secret&&!S.makaiInv)return;
     const rs=RACES.filter(r=>r.stage===i);
-    out+=`<div class="stage"><div class="stage-h"><span class="label">STAGE ${i+1}</span><h2>${s.name}</h2></div><div class="races">`;
+    out+=s.secret?`<div class="stage makai-stage"><div class="stage-h"><span class="label">HELL</span><h2>${s.name}</h2></div><p class="makai-rule">優勝すれば <b>+10億円</b>。2着以下と落馬は <b>罰金10億円</b>。乗りものは檻を開けるまでわからない。</p><div class="races">`
+      :`<div class="stage"><div class="stage-h"><span class="label">STAGE ${i+1}</span><h2>${s.name}</h2></div><div class="races">`;
     for(const r of rs){
       const lock=lockReason(r);
-      const g=r.grade==='GI'||r.grade==='JpnI'?'g1':r.grade?'g2':'';
+      const g=r.makai?'gm':r.grade==='GI'||r.grade==='JpnI'?'g1':r.grade?'g2':'';
       const wins=S.won[r.id]||0;
       const best=S.best[r.id];
       out+=`<div class="race"><span class="grade ${g}">${r.grade||'一般'}</span>
         <div class="race-info"><b>${r.name}</b>
-        <div class="meta">${r.course} ${r.surf==='ダ'?'ダート':'芝'}${r.dist}m ・ ${r.field}頭 ・ 1着 ${money(r.purse)} ・ 相手 ${rankOf(r.R)}
+        <div class="meta">${r.course} ${r.makai?'魔界の道':r.surf==='ダ'?'ダート':'芝'}${r.dist}m ・ ${r.field}頭 ・ 1着 ${money(r.purse)}${r.makai?' ・ 負けたら罰金10億':''} ・ 相手 ${rankOf(r.R)}
         ${wins?` ・ <span class="won">${wins}勝</span>`:best?` ・ 最高${best}着`:''}</div></div>
         ${lock?`<span class="lock">${lock}</span>`:`<button class="btn" data-race="${r.id}" type="button">出走</button>`}</div>`;
     }
@@ -2090,6 +2223,31 @@ function renderShop(){
   }).join('');
 }
 let curRace=null,offers=[],picked=-1,curGoing='良';
+/* ------ 馬券（単勝）：出馬表の段階で seed を決めておき、見せた相手とオッズのままレースを走る ------ */
+let cardSeed=0,curBet=null,betNum=null,betAmt=100;
+const BET_AMTS=[10,100,1000,10000],BET_LIMIT=10000; // もうけが1億円（10000万円）を超えると没収
+function betField(){
+  const ph=picked>=0?offers[picked]:offers[Math.min(2,offers.length-1)];
+  usedNames.clear();usedNames.add(ph.name);
+  const rs=createRaceState(curRace,ph,S.lv,curGoing,null,{seed:cardSeed}).runners;
+  const rate=r=>overallOf(r)+(r.isPlayer?Math.min(S.lv,25)*0.3:0);
+  const mx=Math.max(...rs.map(rate)),ws=rs.map(r=>Math.exp((rate(r)-mx)/4)),sum=ws.reduce((a,b)=>a+b,0);
+  return rs.map((r,i)=>({num:r.num,frame:r.frame,name:r.name,me:r.isPlayer,odds:clamp(Math.round(0.8/(ws[i]/sum)*10)/10,1.1,999)}));
+}
+function renderBet(){
+  const box=$('betBox');
+  if(!curRace||curRace.makai||curRoom){box.hidden=true;return;}
+  box.hidden=false;
+  const f=betField(),sel=f.find(x=>x.num===betNum);
+  const prof=S.betProfit||0;
+  box.innerHTML=`<div class="stage-h"><span class="label">BETTING</span><h3>馬券を買う（単勝）</h3></div>
+    <p class="vs-sub">1着になる馬を当てると、買ったお金×オッズが戻ってきます。${picked<0?'（あなたの馬のオッズは、馬を選ぶと決まります）':''}</p>
+    <div class="bet-list">${f.map(x=>`<button type="button" class="bet-row ${betNum===x.num?'on':''} ${x.me?'me':''}" data-bnum="${x.num}"><span class="waku" style="background:${FRAME_COLORS[x.frame]};color:${FRAME_TEXT[x.frame]}">${x.num}</span><span class="bet-name">${x.me?(picked<0?'（あなたの馬）':esc(x.name)+'（あなた）'):esc(x.name)}</span><b class="num">${x.odds.toFixed(1)}倍</b></button>`).join('')}</div>
+    <div class="bet-amts">${BET_AMTS.map(a=>`<button type="button" class="fe-opt" data-bamt="${a}" aria-pressed="${betAmt===a}">${money(a)}</button>`).join('')}</div>
+    <div class="rb-btns">${curBet?`<span class="bet-done">購入済み：${curBet.num}番 単勝 ${money(curBet.amt)}（${curBet.odds.toFixed(1)}倍）</span><button class="btn ghost" type="button" id="betCancel">やめる</button>`
+      :`<button class="btn" type="button" id="betBuy" ${sel&&S.money>=betAmt?'':'disabled'}>${sel?`${sel.num}番に ${money(betAmt)} 賭ける`:'馬を選んでね'}</button>${S.money<betAmt?'<span class="vs-sub">所持金が足りません</span>':''}`}</div>
+    <p class="bet-warn">⚠ 騎手が馬券を買うのは本当は禁止。馬券のもうけが1億円を超えると競馬協会に見つかって没収されます。（いまのもうけ：${prof<0?'-':''}${money(Math.abs(prof))}）</p>`;
+}
 function pickGoing(r){
   const w=r.course==='パリロンシャン'?[.25,.35,.3,.1]:r.surf==='ダ'?[.5,.25,.15,.1]:[.65,.2,.1,.05];
   const keys=Object.keys(GOING);let u=Math.random(),k=0;
@@ -2107,22 +2265,37 @@ function genOffers(r){
   }
   return list.sort((a,b)=>overallOf(a)-overallOf(b));
 }
+/* 魔界の檻：中身（乗りもの）は出走するまでわからない */
+function makaiCages(r){
+  const luck=gearFx().luck||0;
+  return [0,1,2,3,4].map(()=>{const k=pickBeast(luck);const h=applyBeast(genHorse(r.R+rnd(-3,3),false),k);h.name=DEMON_PRE[Math.floor(Math.random()*DEMON_PRE.length)]+BEASTS[k].n;return h;});
+}
 function openCard(id){
   curRoom=null;
   curRace=raceById(id);curGoing=pickGoing(curRace);
-  offers=genOffers(curRace);picked=-1;
+  offers=curRace.makai?makaiCages(curRace):genOffers(curRace);picked=-1;
+  cardSeed=1+Math.floor(Math.random()*2147483646);curBet=null;
   const r=curRace;
   $('rcLabel').textContent=`${STAGES[r.stage].name} ・ ${r.grade||'一般戦'}`;
   $('rcName').textContent=r.name;
   const chips=[`${r.course}`,`${r.surf==='ダ'?'ダート':'芝'} ${r.dist}m`,`馬場：${curGoing}`,`直線 ${r.straight}m`,`${r.field}頭立て`,`1着 ${money(r.purse)}`,`相手関係 ${rankOf(r.R)}`];
   if(r.course==='パリロンシャン')chips.push('フォルスストレートあり');
   $('rcChips').innerHTML=chips.map((c,i)=>`<span class="chip ${i===2&&curGoing!=='良'?'on':''}">${c}</span>`).join('');
-  $('rcNote').textContent=`いまの騎手Lv.${S.lv}では総合${capOf(S.lv)}までの馬に乗れます。装備：${SLOTS.map(sl=>itemById(S.equip[sl.k]).name).filter(n=>n!=='なし').join('・')}`;
-  renderOffers();show('card');
+  $('rcNote').textContent=r.makai?'5つの檻のどれかを選んでください。中にいるのは馬か、犬か、牛か、ライオンか……。開けるのはゲートインのとき。':`いまの騎手Lv.${S.lv}では総合${capOf(S.lv)}までの馬に乗れます。装備：${SLOTS.map(sl=>itemById(S.equip[sl.k]).name).filter(n=>n!=='なし').join('・')}`;
+  $('rcOfferH').textContent=r.makai?'魔界の檻':'騎乗依頼';
+  $('btnReroll').hidden=!!r.makai;
+  renderOffers();renderBet();show('card');
 }
 function statRow(lbl,v){const rk=rankOf(v);return `<div class="srow"><span>${lbl}</span><div class="bar"><i style="width:${clamp(v/120*100,0,100)}%"></i></div><span class="rank r-${rk}">${rk}</span></div>`;}
 function renderOffers(){
   const cap=capOf(S.lv);
+  if(curRace&&curRace.makai){
+    $('offers').innerHTML=offers.map((h,i)=>`<button type="button" class="horse cage ${picked===i?'sel':''}" data-i="${i}"><div class="cage-bars" aria-hidden="true">？</div><div class="hname"><b>檻 ${i+1}</b><span class="style">中身は秘密</span></div><span class="vs-sub">なにかがうなっている……</span></button>`).join('');
+    $('btnGo').disabled=picked<0;$('btnGo').textContent='この檻で出走';
+    $('pickTxt').textContent=picked<0?'檻を1つ選んでください':`檻 ${picked+1} を選びました`;
+    return;
+  }
+  $('btnGo').textContent='この馬で出走';
   $('offers').innerHTML=offers.map((h,i)=>{
     const o=overallOf(h),locked=o>cap,sty=STYLE[h.style];
     return `<button type="button" class="horse ${locked?'locked':''} ${picked===i?'sel':''}" data-i="${i}" ${locked?'aria-disabled="true"':''}>
@@ -2170,14 +2343,16 @@ function say(t,pri=1){$('hCall').textContent='実況：'+t;lastSayReal=performan
 function startRace(){
   const h=offers[picked];
   usedNames.clear();usedNames.add(h.name);
-  st=createRaceState(curRace,h,S.lv,curGoing,gearFx(),curRoom?{seed:curRoom.seed,ghosts:curRoom.ghosts}:null);st.fx=gearFx();
+  st=createRaceState(curRace,h,S.lv,curGoing,gearFx(),curRoom?{seed:curRoom.seed,ghosts:curRoom.ghosts}:{seed:cardSeed});st.fx=gearFx();
+  if(curBet&&!curRoom&&!curRace.makai&&S.money>=curBet.amt){S.money-=curBet.amt;st.bet=curBet;save();}
+  curBet=null;
   if(curRoom){st.room=curRoom;st.rec={s:[],next:0};}
   const r=curRace;
   $('rsName').textContent=r.name;
   $('rsMeta').textContent=`${r.course} ${r.surf==='ダ'?'ダ':'芝'}${r.dist}m ${st.going}`;
   const field=standings(st).map(x=>x);
   const pop=[...st.runners].sort((a,b)=>overallOf(b)-overallOf(a)+ (Math.random()-0.5)*4).indexOf(st.player)+1;
-  $('hHorse').textContent=`${st.player.num}番 ${h.name}（${STYLE[h.style].label}・${pop}番人気）`+(curRoom?` ・ 対戦（ゴースト${curRoom.ghosts.length}人）`:'');
+  $('hHorse').textContent=`${st.player.num}番 ${h.name}（${STYLE[h.style].label}・${pop}番人気）`+(curRoom?` ・ 対戦（ゴースト${curRoom.ghosts.length}人）`:'')+(h.beast?` ・ ${BEASTS[h.beast].e} ${BEASTS[h.beast].n}`:'');
   $('btnHold').setAttribute('aria-pressed','false');
   speedMul=1;$('btnSpeed').textContent='早送り ×1';
   finishWait=0;running=false;
@@ -2188,6 +2363,7 @@ function startRace(){
   st.player.gateWait=true;
   const g=$('gate');g.hidden=false;g.className='gate';
   $('gateTxt').textContent='ゲートイン';$('gateSub').textContent='金色になった瞬間にタップ！ 早すぎると暴れます';renderGateMeter(null,false);
+  if(h.beast){const b=BEASTS[h.beast];$('gateTxt').innerHTML=`<span class="gbig">${b.e}</span>檻が開いた！ 相棒は「${b.n}」`;say(`檻の中から現れたのは……${b.n}だ！ ${b.sp>=1.03?'これは当たりか！':b.sp<0.9?'これは……大丈夫か？':'さあどうなる！'}`,1);}
   resizeCv();draw();updateHud();
   const myRace=st;
   clearTimeout(gateTimer);
@@ -2466,10 +2642,10 @@ function draw(){
   const ppm=clamp(W/46,7,15);
   const cam=p.fell?Math.min(p.d,p.fallD+Math.max(0,st.t-st.fallT-1.5)*14):p.d;
   const px=d=>W*0.55+(d-cam)*ppm;
-  const dirt=R.surf==='ダ';
+  const dirt=R.surf==='ダ',mk=!!R.makai;
   ctx.clearRect(0,0,W,H);
   // minimap
-  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,34);
+  ctx.fillStyle=mk?'#1a0f22':'#ffffff';ctx.fillRect(0,0,W,34);
   const mx0=14,mx1=W-14,mm=d=>mx0+(mx1-mx0)*clamp(d/D,0,1.02);
   ctx.fillStyle='rgba(220,173,66,.18)';ctx.fillRect(mm(D-R.straight),9,mm(D)-mm(D-R.straight),12);
   ctx.strokeStyle='#c9d8f0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(mx0,15);ctx.lineTo(mx1,15);ctx.stroke();
@@ -2480,16 +2656,18 @@ function draw(){
   ctx.fillStyle='#dcad42';ctx.beginPath();ctx.arc(mm(p.d),15,5.5,0,7);ctx.fill();
   ctx.strokeStyle='#1d3b8b';ctx.lineWidth=1.5;ctx.stroke();
   // track
-  const y0=40,y1=H-6;
-  ctx.fillStyle=dirt?'#c98d54':'#4cb85c';ctx.fillRect(0,y0,W,y1-y0);
+  const y0=mk?84:40,y1=H-6;
+  if(mk)drawHellSky(W,y0,cam,ppm);
+  ctx.fillStyle=mk?'#2b1834':dirt?'#c98d54':'#4cb85c';ctx.fillRect(0,y0,W,y1-y0);
   const stripe=10;
   const dStart=cam-(W*0.55)/ppm-stripe,dEnd=cam+(W*0.45)/ppm+stripe;
   for(let d=Math.floor(dStart/stripe)*stripe;d<dEnd;d+=stripe){
-    if(Math.floor(d/stripe)%2===0){ctx.fillStyle=dirt?'rgba(0,0,0,.06)':'rgba(255,255,255,.045)';ctx.fillRect(px(d),y0,stripe*ppm,y1-y0);}
+    if(Math.floor(d/stripe)%2===0){ctx.fillStyle=mk?'rgba(255,40,70,.07)':dirt?'rgba(0,0,0,.06)':'rgba(255,255,255,.045)';ctx.fillRect(px(d),y0,stripe*ppm,y1-y0);}
   }
-  if(dirt){ctx.fillStyle='rgba(0,0,0,.12)';for(let d=Math.floor(dStart/3)*3;d<dEnd;d+=3){const k=Math.sin(d*12.9898)*43758.5453;const f=k-Math.floor(k);ctx.fillRect(px(d)+f*ppm*3,y0+8+f*(y1-y0-16),2,2);}}
+  if(mk){for(let d=Math.floor(dStart/9)*9;d<dEnd;d+=9){const k=Math.sin(d*12.9898)*43758.5453;const f=k-Math.floor(k);if(f<0.5)continue;const gx=px(d)+f*ppm*6,gy=y0+10+f*(y1-y0-20);ctx.strokeStyle=`rgba(255,${80+Math.round(f*90)},40,${0.35+0.25*Math.sin(st.t*3+d)})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(gx+8,gy+3);ctx.lineTo(gx+5,gy+9);ctx.stroke();}}
+  else if(dirt){ctx.fillStyle='rgba(0,0,0,.12)';for(let d=Math.floor(dStart/3)*3;d<dEnd;d+=3){const k=Math.sin(d*12.9898)*43758.5453;const f=k-Math.floor(k);ctx.fillRect(px(d)+f*ppm*3,y0+8+f*(y1-y0-16),2,2);}}
   // rails
-  ctx.fillStyle='#f2efe6';ctx.fillRect(0,y0,W,3);ctx.fillRect(0,y1-3,W,3);
+  ctx.fillStyle=mk?'#d9cfe6':'#f2efe6';ctx.fillRect(0,y0,W,3);ctx.fillRect(0,y1-3,W,3);
   ctx.fillStyle='rgba(242,239,230,.5)';
   for(let d=Math.floor(dStart/4)*4;d<dEnd;d+=4){ctx.fillRect(px(d),y0+3,2,4);ctx.fillRect(px(d),y1-7,2,4);}
   // hallon posts
@@ -2549,7 +2727,42 @@ function drawMood(x,y,m){
   }
   ctx.restore();
 }
+/* 魔界の乗りもの：絵文字で描く（右向きにするため左右反転） */
+function drawBeast(x,y,len,r){
+  const b=BEASTS[r.beast],bx=x-len*0.55,sz=len*(r.beast==='dragon'||r.beast==='elephant'?1.5:r.beast==='rabbit'||r.beast==='turtle'?1.05:1.3);
+  ctx.save();
+  if(r.ghost)ctx.globalAlpha=0.6;
+  if(r.isPlayer){ctx.strokeStyle='#ffd23f';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(bx,y,len*0.75,len*0.36,0,0,7);ctx.stroke();}
+  const hop=r.beast==='rabbit'||r.beast==='kangaroo'?Math.abs(Math.sin(st.t*7+r.num))*len*0.25:0;
+  ctx.save();ctx.translate(bx,y-hop);ctx.scale(-1,1);ctx.font=`${sz}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(b.e,0,0);ctx.restore();
+  ctx.beginPath();ctx.arc(bx+len*0.05,y-hop-sz*0.38,len*0.12,0,7);ctx.fillStyle=FRAME_COLORS[r.frame];ctx.fill();ctx.lineWidth=1.2;ctx.strokeStyle='rgba(0,0,0,.5)';ctx.stroke();
+  ctx.fillStyle=FRAME_TEXT[r.frame];ctx.font=`600 ${Math.max(8,len*0.15)}px "IBM Plex Mono",monospace`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(r.num,bx+len*0.05,y-hop-sz*0.38+0.5);
+  ctx.textBaseline='alphabetic';
+  if(r.isPlayer){ctx.fillStyle='#ffd23f';ctx.font='12px "Dela Gothic One",sans-serif';ctx.fillText(r.fell?'カラ'+b.n:'あなた',bx,y-hop-sz*0.62);}
+  if(r.isPlayer&&r.react)drawMood(bx+len*0.55,y-len*0.5,r.react);
+  ctx.restore();
+}
+/* 魔界の空：赤い月・コウモリ・観客席の悪魔たち（観客はゆっくり流れる） */
+function drawHellSky(W,y0,cam,ppm){
+  const g=ctx.createLinearGradient(0,34,0,y0);g.addColorStop(0,'#12061a');g.addColorStop(1,'#4a1030');
+  ctx.fillStyle=g;ctx.fillRect(0,34,W,y0-34);
+  ctx.save();ctx.shadowColor='#ff3b3b';ctx.shadowBlur=18;ctx.fillStyle='#ff4d4d';ctx.beginPath();ctx.arc(W*0.82,52,12,0,7);ctx.fill();ctx.restore();
+  ctx.fillStyle='#12061a';ctx.beginPath();ctx.arc(W*0.82+5,49,10,0,7);ctx.fill();
+  for(let i=0;i<5;i++){ // コウモリ
+    const bx=((i*97+st.t*(18+i*4))%(W+60))-30,by=44+((i*23)%22)+Math.sin(st.t*3+i)*3,f=Math.sin(st.t*14+i)*4;
+    ctx.fillStyle='#0b0410';ctx.beginPath();ctx.moveTo(bx,by);ctx.quadraticCurveTo(bx-6,by-4-f,bx-12,by-1);ctx.quadraticCurveTo(bx-6,by+1,bx,by+3);ctx.quadraticCurveTo(bx+6,by+1,bx+12,by-1);ctx.quadraticCurveTo(bx+6,by-4-f,bx,by);ctx.fill();
+  }
+  const step=26,off=(cam*ppm*0.35)%step; // 観客の悪魔
+  for(let x=-step-off,i=0;x<W+step;x+=step,i++){
+    const k=Math.floor((cam*ppm*0.35)/step)+i,h=10+(k*7%5)*2,cx=x+(k*13%7),cy=y0-2;
+    ctx.fillStyle='#0b0410';ctx.beginPath();ctx.ellipse(cx,cy-h*0.4,8,h*0.6,0,0,7);ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy-h-3,6,0,7);ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx-5,cy-h-6);ctx.lineTo(cx-8,cy-h-14);ctx.lineTo(cx-2,cy-h-8);ctx.moveTo(cx+5,cy-h-6);ctx.lineTo(cx+8,cy-h-14);ctx.lineTo(cx+2,cy-h-8);ctx.fill();
+    ctx.fillStyle=(k+Math.floor(st.t*1.3))%9===0?'#0b0410':'#ff4d4d';ctx.fillRect(cx-3,cy-h-4,2,2);ctx.fillRect(cx+1,cy-h-4,2,2);
+  }
+}
 function drawHorse(x,y,len,r){
+  if(r.beast){drawBeast(x,y,len,r);return;}
   const bx=x-len*0.55;
   ctx.save();
   if(r.ghost)ctx.globalAlpha=0.6;
@@ -2705,6 +2918,7 @@ function horseFaceSVG(angry,coat){
       <ellipse cx="30" cy="62" rx="5" ry="3" fill="#ff9aa2" opacity=".8"/><ellipse cx="70" cy="62" rx="5" ry="3" fill="#ff9aa2" opacity=".8"/>`}
   </svg>`;
 }
+const BEAST_CRY={dog:'ワンッ！ ',cow:'モ〜〜。 ',lion:'ガオォー！ ',rabbit:'ピョン！ ',pig:'ブヒッ！ ',turtle:'……のそ〜。 ',elephant:'パオーン！ ',kangaroo:'ボヨン！ ',cheetah:'シャーッ！ ',dragon:'グオオォォ！ '};
 function renderHorseSay(hc){
   const p=st.player;
   $('horseSay').innerHTML=`<div class="hs-face">${horseFaceSVG(hc.angry,p.coat||'#8d5a2b')}</div>
@@ -2731,8 +2945,9 @@ function finishRace(){
   const mult=[1,.6,.45,.32,.25][place-1]??.12;
   const ev=evaluateRide(order);
   const expBase=fell?3:Math.round(R.R*mult*4),exp=fell?3:Math.round(expBase*(1+ev.bonus));
-  const room=st.room,practice=!!(room&&lockReason(R)); // まだ出られないレースのルームは練習あつかい（賞金なし・経験値少し）
-  const prize=!practice&&!fell&&place<=5?R.purse*[1,.4,.25,.15,.1][place-1]:0;
+  const room=st.room,practice=!!(room&&lockReason(R)),makai=!!R.makai; // まだ出られないレースのルームは練習あつかい（賞金なし・経験値少し）
+  const prize=!makai&&!practice&&!fell&&place<=5?R.purse*[1,.4,.25,.15,.1][place-1]:0;
+  const makaiDelta=makai?(place===1&&!fell?R.purse:-R.purse):0; // 魔界：勝てば丸ごと、負ければ罰金
   const jk=prize*0.05;
   let injury=null;
   if(fell){
@@ -2746,11 +2961,24 @@ function finishRace(){
   if(ev.grade==='S')S.sCount=(S.sCount||0)+1;
   if(practice){S.exp+=Math.round(exp*0.3);}
   else{
-    S.starts++;S.exp+=exp;S.income+=jk;S.money+=jk;
+    S.starts++;S.exp+=exp;S.income+=jk+Math.max(0,makaiDelta);S.money+=jk+makaiDelta;
     if(place===1){S.wins++;S.won[R.id]=(S.won[R.id]||0)+1;if(R.grade)S.gradeWins++;}
     if(!fell&&(!S.best[R.id]||place<S.best[R.id]))S.best[R.id]=place;
   }
   while(S.exp>=needExp(S.lv)){S.exp-=needExp(S.lv);S.lv++;}
+  // 馬券の精算と、もうけすぎの没収
+  let betCards='';
+  if(st.bet){
+    const b=st.bet,w=order[0],hit=w&&w.num===b.num&&!(w.isPlayer&&fell);
+    const pay=hit?Math.round(b.amt*b.odds*10)/10:0;
+    S.money+=pay;S.betProfit=(S.betProfit||0)+pay-b.amt;
+    betCards+=hit?`<div class="card stat bet-hit"><b>+${money(pay)}</b><span>馬券的中！ ${b.num}番 単勝 ${b.odds.toFixed(1)}倍</span></div>`
+      :`<div class="card stat"><b style="color:#d93a2f">-${money(b.amt)}</b><span>馬券はずれ（${b.num}番 単勝）</span></div>`;
+    if(S.betProfit>=BET_LIMIT){
+      const amt=S.betProfit;S.money-=amt;S.betProfit=0;S.confiscated=(S.confiscated||0)+1;
+      betCards+=`<div class="card stat busted"><b>🚨 -${money(amt)}</b><span>競馬協会に見つかった！ 騎手が馬券を買うのは禁止です。馬券のもうけをすべて没収されました</span></div>`;
+    }
+  }
   const firstArc=!practice&&R.id==='arc'&&place===1&&!S.arc;
   if(!practice&&R.id==='arc'&&place===1)S.arc=true;
   // 対戦ルーム：タイムとゴーストを送る
@@ -2765,9 +2993,12 @@ function finishRace(){
   }
   save();
   syncSave(S).then(()=>{if(rankScope==='online')fetchOnline();});
+  if(!S.makaiInv&&S.income>=50000){S.makaiInv=true;save();setTimeout(showMakaiInvite,1800);}
   // render
   renderEval(ev);
-  renderHorseSay(horseComment(place,fell,ev));
+  const hc=horseComment(place,fell,ev);
+  if(st.player.beast&&st.player.beast!=='horse')hc.text=BEAST_CRY[st.player.beast]+hc.text;
+  renderHorseSay(hc);
   $('resPlace').textContent=fell?'落馬':place+'着';
   $('resPlace').className='place num'+(place===1?' win':'')+(fell?' fell':'');
   $('resLabel').textContent=`${R.course} ${R.surf==='ダ'?'ダート':'芝'}${R.dist}m ・ ${st.going}${st.startInfo?` ・ ${st.startInfo.label}（反応${st.startInfo.rt.toFixed(2)}秒）`:''}`;
@@ -2780,7 +3011,9 @@ function finishRace(){
     <div class="card stat"><b>+${exp}</b><span>経験値（競走中止）</span></div>
     <div class="card stat"><b style="color:${S.money<0?'#d93a2f':'var(--ivory)'}">${S.money<0?'借金 '+money(-S.money):money(S.money)}</b><span>所持金</span></div>`;
   if(S.lv>lvBefore)rw+=`<div class="card stat"><b class="lvup">Lv.${lvBefore} → ${S.lv}</b><span>レベルアップ！ 総合${capOf(S.lv)}まで騎乗可</span></div>`;
+  rw+=betCards;
   for(const a of ACHV)if(!achBefore.has(a.id)&&a.ok(S))rw+=`<div class="card stat achv-new"><b>★ ${esc(a.name)}</b><span>称号ゲット！（${esc(a.hint)}）</span></div>`;
+  if(makai)rw=`<div class="card stat makai-pay ${makaiDelta>0?'win':'lose'}"><b>${makaiDelta>0?'+':'-'}${money(Math.abs(makaiDelta))}</b><span>${makaiDelta>0?'魔界の優勝賞金！':'魔界の罰金……'}（所持金 ${S.money<0?'借金 '+money(-S.money):money(S.money)}）</span></div>`+rw;
   $('rewards').innerHTML=rw;
   const t0=order[0].time;
   $('resBody').innerHTML=order.map((r,i)=>`<tr class="${r.isPlayer?'me':''}"><td class="num">${r.isPlayer&&fell?'中止':i+1}</td>
@@ -2829,9 +3062,17 @@ $('roomBar').addEventListener('click',roomClick);
 $('raceList').addEventListener('click',e=>{const b=e.target.closest('[data-race]');if(b)openCard(b.dataset.race);});
 $('offers').addEventListener('click',e=>{
   const b=e.target.closest('.horse');if(!b||b.classList.contains('locked'))return;
-  picked=+b.dataset.i;renderOffers();
+  if(picked!==+b.dataset.i)curBet=null;
+  picked=+b.dataset.i;renderOffers();renderBet();
 });
-$('btnReroll').onclick=()=>{offers=genOffers(curRace);picked=-1;renderOffers();};
+$('btnReroll').onclick=()=>{offers=genOffers(curRace);picked=-1;curBet=null;renderOffers();renderBet();};
+$('betBox').addEventListener('click',e=>{
+  const t=e.target,n=t.closest('[data-bnum]'),a=t.closest('[data-bamt]');
+  if(n&&!curBet){betNum=+n.dataset.bnum;renderBet();}
+  else if(a&&!curBet){betAmt=+a.dataset.bamt;renderBet();}
+  else if(t.closest('#betBuy')){const x=betField().find(y=>y.num===betNum);if(x&&S.money>=betAmt){curBet={num:x.num,amt:betAmt,odds:x.odds,name:x.name};renderBet();}}
+  else if(t.closest('#betCancel')){curBet=null;renderBet();}
+});
 $('btnBack1').onclick=()=>showPanel('races');
 $('btnGo').onclick=()=>{if(picked>=0){if(voiceOn()){try{TTS.cancel();const u=new SpeechSynthesisUtterance('');TTS.speak(u);}catch(e){}}startRace();}};
 $('btnVoice').onclick=toggleVoice;$('btnVoice2').onclick=toggleVoice;
@@ -2862,6 +3103,7 @@ $('groupForm').addEventListener('submit',async e=>{
 $('rankBody').addEventListener('click',e=>{const r=e.target.closest('[data-view]');if(r)openViewer(+r.dataset.view);});
 $('rankBody').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const r=e.target.closest('[data-view]');if(r){e.preventDefault();openViewer(+r.dataset.view);}});
 $('vwClose').onclick=closeViewer;
+$('miGo').onclick=()=>closeMakaiInvite(true);$('miLater').onclick=()=>closeMakaiInvite(false);
 $('vwChallenge').onclick=()=>{const b=$('vwChallenge');vsInvite={id:b.dataset.to,name:b.dataset.name};vsRoom=null;vsMsg='';closeViewer();showPanel('versus');};
 $('vsResGo').onclick=()=>{const id=vsLastRoom;showPanel('versus');vsLoad().then(()=>{if(id)vsOpenRoom(id);});};
 $('vsBody').addEventListener('click',e=>{
