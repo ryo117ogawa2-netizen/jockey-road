@@ -212,6 +212,31 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .fe-opt.sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--sun);border-color:var(--frame)}
 @media (max-width:380px){.ava-card{grid-template-columns:118px minmax(0,1fr);gap:12px}.ava-box.sm{width:100px}}
 
+/* shop try-on */
+.tryon{position:sticky;top:6px;z-index:5;display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:center;background:#fff;border:3px solid var(--frame);box-shadow:0 4px 0 var(--frame);border-radius:14px;padding:8px 12px}
+.tryava{padding:2px}
+.try-side{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:13px}
+.try-side b{font-size:15px}
+.try-side .fx{display:flex;flex-wrap:wrap;gap:4px}
+.try-side .fx i{font-style:normal;font-size:12px;border-radius:4px;padding:1px 6px;background:var(--panel-2)}
+.try-side .fx i.up{color:var(--good)}.try-side .fx i.down{color:#d93a2f}
+.try-side .btn{padding:5px 12px;font-size:13px}
+.item.trying{border-color:var(--sun);box-shadow:0 4px 0 var(--frame),0 0 0 3px var(--sun) inset}
+
+/* my room */
+.room-box{border:3px solid var(--frame);box-shadow:0 4px 0 var(--frame);border-radius:14px;overflow:hidden;background:var(--panel)}
+.room-svg{display:block;width:100%;height:auto;color:var(--frame);touch-action:none;user-select:none;-webkit-user-select:none}
+.room-svg .ri{cursor:grab}
+.room-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;min-height:40px}
+.rb-btns{display:flex;gap:6px;flex-wrap:wrap}
+.rb-btns .btn{padding:6px 12px;font-size:13px}
+.rb-hint{color:var(--muted)}
+.item.furn .fprev{display:block;width:100%;height:90px;color:var(--frame);background:var(--panel-2);border-radius:8px}
+#furnList{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+.item.furn{padding:10px}
+.item.furn .ib{flex-wrap:wrap}
+.item.furn .fprev{height:76px}
+
 /* accounts */
 .acct-box{display:flex;flex-direction:column;gap:8px}
 .accts{display:flex;gap:8px;flex-wrap:wrap}
@@ -464,6 +489,10 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16l-1.5 12h-13zM9 8V6a3 3 0 0 1 6 0v2"/></svg>
           <b>アイテムを買う</b><span id="tileShop">装備を整える</span>
         </button>
+        <button type="button" class="tile" data-go="room">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-5h4v5"/></svg>
+          <b>マイルーム</b><span id="tileRoom">家具を買って部屋をかざる</span>
+        </button>
         <button type="button" class="tile" data-go="profile">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8"/></svg>
           <b>自分の成績</b><span id="tileProfile">成績・ランキング・騎手の切り替え</span>
@@ -594,12 +623,29 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       <div id="raceList" class="wrap" style="gap:24px"></div>
     </div>
 
+    <!-- マイルーム -->
+    <div class="panel" data-panel="room" hidden>
+      <div><button class="btn ghost back" type="button" data-go="menu">← メニュー</button></div>
+      <div class="stage-h" style="justify-content:space-between">
+        <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span class="label">MY ROOM</span><h2>マイルーム</h2></div>
+        <span>所持金 <b class="num" id="roomWallet" style="color:var(--gold);font-size:18px">0円</b></span>
+      </div>
+      <div class="room-box"><svg id="roomSvg" class="room-svg" viewBox="0 0 360 300" role="img" aria-label="マイルーム"></svg></div>
+      <div class="room-bar" id="roomBar"></div>
+      <div class="tabs" id="roomTabs" role="tablist"></div>
+      <div class="items" id="furnList"></div>
+    </div>
+
     <!-- アイテムを買う -->
     <div class="panel" data-panel="shop" hidden>
       <div><button class="btn ghost back" type="button" data-go="menu">← メニュー</button></div>
       <div class="stage-h" style="justify-content:space-between">
         <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span class="label">TACK SHOP</span><h2>アイテムを買う</h2></div>
         <span>所持金 <b class="num" id="wallet" style="color:var(--gold);font-size:18px">0円</b></span>
+      </div>
+      <div class="tryon" id="tryon">
+        <div class="ava-box tryava" id="tryAva"></div>
+        <div class="try-side" id="trySide"></div>
       </div>
       <div class="equip-row" id="equipRow"></div>
       <div class="tabs" id="shopTabs" role="tablist"></div>
@@ -1190,7 +1236,7 @@ function hairSVG(style,col,part,helmet,chon,skin){
 }
 
 /* bare=true で装備を外した姿（顔づくりのプレビュー用） */
-function avatarSVG(sv,bare){
+function avatarParts(sv,bare){
   const f=faceOf(sv),eq=Object.assign({},DEFAULT_EQUIP,sv&&sv.equip||{});
   const skin=FACE_OPTS.skin.v[f.skin],hcol=FACE_OPTS.hair.v[f.hair],hst=FACE_OPTS.hairStyle.v[f.hairStyle];
   const suit=bare?{body:'#ffffff',sleeve:'#ffffff',pants:'#ffffff',deco:''}:(SUIT_ART[eq.suit]||SUIT_ART.hagire);
@@ -1233,12 +1279,181 @@ function avatarSVG(sv,bare){
   if(gog)s+=gog.svg;
   if(acc.head)s+=acc.head;
   if(acc.floor)s+=acc.floor;
-  return `<svg class="ava" viewBox="${bare?'28 22 144 150':'0 0 200 270'}" role="img" aria-label="${esc(sv&&sv.name||'騎手')}のアバター">${s}</svg>`;
+  return s;
+}
+function avatarSVG(sv,bare){
+  return `<svg class="ava" viewBox="${bare?'28 22 144 150':'0 0 200 270'}" role="img" aria-label="${esc(sv&&sv.name||'騎手')}のアバター">${avatarParts(sv,bare)}</svg>`;
+}
+
+/* ------------ マイルーム（家具・インテリア） ------------ */
+/* 部屋は SVG（幅 360 × 高さ 300、壁 0〜190 / 床 190〜300）。家具は足もと中央を原点に描き、ドラッグで動かす。
+   S.furn = 持っている家具の id、S.room = {wp:壁紙, fl:床, items:[{id,x,y,flip}]}（id 'me' は自分のアバター） */
+const ROOM_W=360,ROOM_H=300,WALL_H=190;
+const W2='stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"';
+const range=(n,f)=>Array.from({length:n},(_,i)=>f(i)).join('');
+/* kind: wp=壁紙 / fl=床 / f=床に置く家具 / w=壁に掛けるもの。w,h は絵の大きさ（プレビュー用） */
+const FURN=[
+  {id:'wp_plain',kind:'wp',name:'クリームの壁紙',price:0,desc:'最初の部屋。落ち着く。',draw:(w,h)=>`<rect width="${w}" height="${h}" fill="#fff6df"/>`},
+  {id:'wp_stripe',kind:'wp',name:'ストライプの壁紙',price:5,desc:'さわやかな水色。',draw:(w,h)=>`<rect width="${w}" height="${h}" fill="#e6f3ff"/>${range(Math.ceil(w/24),i=>`<rect x="${i*24}" width="10" height="${h}" fill="#cfe6ff"/>`)}`},
+  {id:'wp_sky',kind:'wp',name:'青空の壁紙',price:20,desc:'部屋にいても外にいる気分。',draw:(w,h)=>`<rect width="${w}" height="${h}" fill="#8fd3ff"/>${[[0.2,0.25],[0.62,0.18],[0.85,0.5],[0.38,0.6]].map(([x,y])=>`<g transform="translate(${x*w},${y*h})" fill="#fff"><ellipse rx="22" ry="10"/><ellipse cx="-14" cy="4" rx="14" ry="8"/><ellipse cx="14" cy="4" rx="16" ry="8"/></g>`).join('')}`},
+  {id:'wp_washitsu',kind:'wp',name:'和室のふすま',price:40,desc:'畳と合わせたい。',draw:(w,h)=>`<rect width="${w}" height="${h}" fill="#f3e7c9"/><rect width="${w}" height="${h*0.22}" fill="#8a5a2b"/>${range(Math.ceil(w/40),i=>`<rect x="${i*40+6}" y="${h*0.06}" width="28" height="${h*0.1}" fill="#f3e7c9" opacity=".5"/>`)}${range(Math.ceil(w/90),i=>`<rect x="${i*90}" y="${h*0.22}" width="90" height="${h*0.78}" fill="none" stroke="#8a5a2b" stroke-width="4"/><circle cx="${i*90+78}" cy="${h*0.62}" r="4" fill="none" stroke="#8a5a2b" stroke-width="2"/><path d="M${i*90+20},${h*0.5} q12,-14 24,0 t24,0" fill="none" stroke="#7fb3a0" stroke-width="3" opacity=".7"/>`)}`},
+  {id:'wp_star',kind:'wp',name:'星空の壁紙',price:60,desc:'夜みたいに暗い。よく眠れる。',draw:(w,h)=>`<rect width="${w}" height="${h}" fill="#1d2b5a"/>${range(26,i=>`<circle cx="${(i*67)%w}" cy="${(i*41)%h}" r="${1+i%3*0.8}" fill="#fff6b0"/>`)}<circle cx="${w*0.82}" cy="${h*0.25}" r="16" fill="#ffe27a"/><circle cx="${w*0.82+8}" cy="${h*0.25-5}" r="14" fill="#1d2b5a"/>`},
+  {id:'wp_gold',kind:'wp',name:'金ピカの壁紙',price:3000,weird:1,desc:'成金の部屋。目がチカチカする。',draw:(w,h)=>`<rect width="${w}" height="${h}" fill="#f2c14e"/>${range(Math.ceil(w/30)+1,i=>`<path d="M${i*30},0 L${i*30-h},${h} M${i*30},0 L${i*30+h},${h}" stroke="#e3a000" stroke-width="2"/>`)}`},
+
+  {id:'fl_wood',kind:'fl',name:'フローリング',price:0,desc:'ふつうの木の床。',draw:(w,h)=>`<rect width="${w}" height="${h}" fill="#d9a066"/>${range(Math.ceil(h/18),i=>`<path d="M0,${i*18} H${w}" stroke="#b8834a" stroke-width="2"/>${range(4,j=>`<path d="M${(j*100+(i%2)*50)%w},${i*18} v18" stroke="#b8834a" stroke-width="2"/>`)}`)}`},
+  {id:'fl_tatami',kind:'fl',name:'畳',price:20,desc:'い草のいい匂い。',draw:(w,h)=>`<rect width="${w}" height="${h}" fill="#cfd99a"/>${range(Math.ceil(w/90),i=>`<rect x="${i*90}" y="0" width="90" height="${h/2}" fill="none" stroke="#6b7a3a" stroke-width="4"/><rect x="${i*90-45}" y="${h/2}" width="90" height="${h/2}" fill="none" stroke="#6b7a3a" stroke-width="4"/>`)}`},
+  {id:'fl_check',kind:'fl',name:'市松もようの床',price:80,desc:'白と黒のチェック。',draw:(w,h)=>`<rect width="${w}" height="${h}" fill="#fff"/>${range(Math.ceil(w/30)*Math.ceil(h/30),k=>{const c=Math.ceil(w/30),i=k%c,j=Math.floor(k/c);return (i+j)%2?`<rect x="${i*30}" y="${j*30}" width="30" height="30" fill="#2b2b33"/>`:''})}`},
+  {id:'fl_turf',kind:'fl',name:'芝生',price:40,desc:'部屋の中で調教ができる。',draw:(w,h)=>`<rect width="${w}" height="${h}" fill="#6fc35a"/>${range(Math.ceil(w/80),i=>`<rect x="${i*80}" width="40" height="${h}" fill="#62b44e"/>`)}`},
+  {id:'fl_red',kind:'fl',name:'赤じゅうたん',price:200,desc:'GIジョッキーの風格。',draw:(w,h)=>`<rect width="${w}" height="${h}" fill="#c8323a"/><rect x="0" y="6" width="${w}" height="5" fill="#f2b705"/><rect x="0" y="${h-12}" width="${w}" height="5" fill="#f2b705"/>`},
+
+  {id:'chabudai',kind:'f',name:'ちゃぶ台',price:3,w:90,h:40,desc:'ひっくり返したくなる。',svg:`<path d="M-30,0 L-26,-26 M30,0 L26,-26" ${W2} stroke-width="6"/><path d="M-30,0 L-26,-26 M30,0 L26,-26" stroke="#8a5a2b" stroke-width="3"/><ellipse cx="0" cy="-30" rx="44" ry="9" fill="#a8743f" ${OL}/><ellipse cx="0" cy="-33" rx="44" ry="8" fill="#c8955a" ${OL}/><path d="M-8,-36 h16 v-6 h-16 Z" fill="#fff" ${W2}/>`},
+  {id:'plant',kind:'f',name:'観葉植物',price:8,w:46,h:86,desc:'水やりを忘れずに。',svg:`<path d="M0,-30 Q-26,-50 -20,-80 Q-4,-62 0,-30 Z M0,-30 Q24,-56 20,-84 Q4,-62 0,-30 Z M0,-32 Q-6,-70 4,-86 Q8,-60 0,-32 Z" fill="#4caf50" ${OL}/><path d="M-14,0 L-18,-30 H18 L14,0 Z" fill="#e07b3a" ${OL}/>`},
+  {id:'daruma',kind:'f',name:'だるま',price:5,w:34,h:38,desc:'勝ったら目を入れよう。',svg:`<ellipse cx="0" cy="-17" rx="16" ry="18" fill="#e0332b" ${OL}/><ellipse cx="0" cy="-20" rx="10" ry="9" fill="#ffe3cc" ${W2}/><circle cx="-4" cy="-21" r="2.5" fill="currentColor"/><circle cx="4" cy="-21" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M-6,-6 h12" stroke="#f2b705" stroke-width="2"/>`},
+  {id:'kotatsu',kind:'f',name:'こたつ',price:15,w:110,h:56,desc:'一度入ると出られない。',svg:`<path d="M-54,0 L-46,-38 H46 L54,0 Z" fill="#e8443a" ${OL}/><path d="M-50,-14 H50" stroke="#ffd23f" stroke-width="3"/><rect x="-50" y="-48" width="100" height="10" rx="2" fill="#c8955a" ${OL}/><circle cx="-10" cy="-52" r="6" fill="#ff8a1f" ${W2}/><circle cx="6" cy="-52" r="6" fill="#ff8a1f" ${W2}/>`},
+  {id:'shelf',kind:'f',name:'本棚',price:25,w:72,h:120,desc:'競馬の本がぎっしり。',svg:`<rect x="-34" y="-118" width="68" height="118" fill="#a8743f" ${OL}/>${[0,1,2].map(r=>`<path d="M-30,${-80+r*38} H30" stroke="currentColor" stroke-width="3"/>${range(7,i=>`<rect x="${-28+i*8}" y="${-110+r*38}" width="7" height="${24+(i*5)%8}" fill="${['#e8443a','#2f6fd6','#ffd23f','#2f8f45','#fff','#ff8fc8','#7d62c4'][(i+r)%7]}" stroke="currentColor" stroke-width="1.2"/>`)}`).join('')}`},
+  {id:'sofa',kind:'f',name:'ソファ',price:30,w:130,h:70,desc:'ふかふか。レースの疲れがとれる。',svg:`<rect x="-62" y="-66" width="124" height="40" rx="12" fill="#2f6fd6" ${OL}/><rect x="-56" y="-34" width="112" height="24" rx="8" fill="#4b8cf0" ${OL}/><rect x="-66" y="-46" width="20" height="40" rx="8" fill="#2f6fd6" ${OL}/><rect x="46" y="-46" width="20" height="40" rx="8" fill="#2f6fd6" ${OL}/><path d="M-58,-6 v6 M58,-6 v6" stroke="currentColor" stroke-width="4"/>`},
+  {id:'tv',kind:'f',name:'テレビ',price:40,w:96,h:86,desc:'競馬中継が見放題。',svg:`<rect x="-34" y="-24" width="68" height="24" fill="#5b331d" ${OL}/><rect x="-46" y="-84" width="92" height="56" rx="4" fill="#2b2b33" ${OL}/><rect x="-40" y="-78" width="80" height="44" fill="#6fc35a"/><path d="M-40,-48 Q0,-60 40,-48 V-34 H-40 Z" fill="#d9a066"/><path d="M-6,-50 l6,-8 l6,8" fill="none" stroke="#5b331d" stroke-width="3"/>`},
+  {id:'fridge',kind:'f',name:'冷蔵庫',price:35,w:62,h:132,desc:'にんじんがたくさん冷えている。',svg:`<rect x="-30" y="-130" width="60" height="130" rx="6" fill="#f4f6fa" ${OL}/><path d="M-30,-82 H30" stroke="currentColor" stroke-width="3"/><path d="M20,-120 v24 M20,-72 v30" stroke="#9fb4d8" stroke-width="4" stroke-linecap="round"/><path d="M-16,-104 l6,-8 M-12,-104 l2,-10" stroke="#ff8a1f" stroke-width="3"/>`},
+  {id:'bed',kind:'f',name:'ベッド',price:50,w:150,h:76,desc:'よく寝て次のレースに備える。',svg:`<rect x="-72" y="-76" width="14" height="76" rx="4" fill="#a8743f" ${OL}/><rect x="-60" y="-40" width="132" height="26" rx="4" fill="#fff" ${OL}/><rect x="-56" y="-54" width="34" height="16" rx="7" fill="#fff" ${OL}/><path d="M-20,-42 H70 V-18 H-20 Z" fill="#ff8fc8" ${OL}/><path d="M-6,-42 v24 M14,-42 v24 M34,-42 v24 M54,-42 v24" stroke="#ffc2e2" stroke-width="3"/><path d="M-60,-14 V0 M68,-14 V0" stroke="currentColor" stroke-width="5"/>`},
+  {id:'bonsai',kind:'f',name:'盆栽',price:50,w:52,h:50,desc:'渋い趣味。',svg:`<rect x="-20" y="-12" width="40" height="12" rx="2" fill="#3d5a99" ${OL}/><path d="M-2,-12 Q-6,-26 4,-34 Q10,-40 6,-46" fill="none" stroke="#6b3a1f" stroke-width="5" stroke-linecap="round"/><ellipse cx="-12" cy="-34" rx="14" ry="8" fill="#2f8f45" ${OL}/><ellipse cx="12" cy="-44" rx="13" ry="7" fill="#2f8f45" ${OL}/>`},
+  {id:'mokuba',kind:'f',name:'木馬',price:60,w:96,h:84,desc:'騎乗フォームの練習用。',svg:`<path d="M-44,-6 Q0,10 44,-6" fill="none" stroke="#8a5a2b" stroke-width="9" stroke-linecap="round"/><path d="M-44,-6 Q0,10 44,-6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M-26,-6 L-20,-34 M26,-6 L20,-34" stroke="#8a5a2b" stroke-width="6"/><rect x="-30" y="-46" width="54" height="18" rx="9" fill="#c8955a" ${OL}/><path d="M18,-42 L32,-74 L46,-66 L30,-38 Z" fill="#c8955a" ${OL}/><path d="M30,-76 L24,-86 L34,-80" fill="#c8955a" ${OL}/><circle cx="36" cy="-68" r="2.5" fill="currentColor"/><path d="M26,-74 Q18,-66 20,-48" fill="none" stroke="#5b331d" stroke-width="4"/><rect x="-10" y="-50" width="16" height="8" rx="2" fill="#e8443a" ${W2}/><path d="M-30,-40 Q-42,-34 -40,-22" fill="none" stroke="#5b331d" stroke-width="4" stroke-linecap="round"/>`},
+  {id:'drum',kind:'f',name:'ドラム缶風呂',price:120,weird:1,w:76,h:96,desc:'部屋の中で露天風呂気分。床がびしょびしょ。',svg:`<path d="M-26,0 V-64 H26 V0 Z" fill="#5b6270" ${OL}/><path d="M-26,-44 H26 M-26,-20 H26" stroke="#3a3f4a" stroke-width="3"/><ellipse cx="0" cy="-64" rx="26" ry="6" fill="#7fc3ff" ${OL}/><path d="M-30,6 L-22,-6 L22,-6 L30,6 Z" fill="#8a5a2b" ${W2}/><path d="M-10,-74 q-6,-8 0,-14 q6,-6 0,-12 M8,-74 q-6,-8 0,-14 q6,-6 0,-12" fill="none" stroke="#9fb4d8" stroke-width="3"/>`},
+  {id:'runner',kind:'f',name:'ルームランナー',price:150,w:120,h:90,desc:'騎手は体重管理が命。',svg:`<path d="M-56,0 L50,0 L56,-12 L-50,-12 Z" fill="#2b2b33" ${OL}/><path d="M-46,-6 H48" stroke="#5b6270" stroke-width="3" stroke-dasharray="6 4"/><path d="M40,-12 L46,-76" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><path d="M40,-12 L46,-76" stroke="#9fb4d8" stroke-width="3"/><rect x="28" y="-90" width="36" height="16" rx="3" fill="#5b6270" ${OL}/><rect x="32" y="-86" width="16" height="8" fill="#6fe07a"/><path d="M20,-70 H52" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>`},
+  {id:'jihanki',kind:'f',name:'自動販売機',price:300,weird:1,w:72,h:140,desc:'自分の部屋なのにお金を払う。',svg:`<rect x="-34" y="-138" width="68" height="138" rx="4" fill="#e8443a" ${OL}/><rect x="-28" y="-130" width="56" height="62" fill="#e6f7ff" ${W2}/>${[0,1,2].map(r=>range(4,i=>`<rect x="${-24+i*13}" y="${-126+r*20}" width="9" height="14" rx="2" fill="${['#2f6fd6','#ffd23f','#2f8f45','#ff8a1f'][(i+r)%4]}" stroke="currentColor" stroke-width="1.2"/>`)).join('')}<rect x="-28" y="-30" width="56" height="16" rx="2" fill="#2b2b33" ${W2}/><rect x="16" y="-60" width="10" height="16" rx="2" fill="#fff" ${W2}/>`},
+  {id:'trophy',kind:'f',name:'トロフィー棚',price:500,w:96,h:112,desc:'勝利の証を飾ろう。',svg:`<rect x="-46" y="-110" width="92" height="110" fill="#6b3a1f" ${OL}/><rect x="-40" y="-104" width="80" height="98" fill="#3f2617"/><path d="M-40,-56 H40" stroke="#a8743f" stroke-width="5"/>${[[-20,-60],[14,-60],[-20,-10],[18,-10]].map(([x,y],i)=>`<g transform="translate(${x},${y})"><path d="M-9,-30 H9 Q9,-14 0,-12 Q-9,-14 -9,-30 Z" fill="${i===1?'#c9ced6':'#f2b705'}" ${W2}/><path d="M-9,-26 q-6,0 -5,6 q1,4 5,3 M9,-26 q6,0 5,6 q-1,4 -5,3" fill="none" stroke="${i===1?'#c9ced6':'#f2b705'}" stroke-width="2.5"/><rect x="-6" y="-6" width="12" height="6" fill="#2b2b33" ${W2}/><path d="M0,-12 V-6" stroke="#f2b705" stroke-width="3"/></g>`).join('')}`},
+  {id:'piano',kind:'f',name:'グランドピアノ',price:3000,w:150,h:110,desc:'ファンファーレを生演奏。',svg:`<path d="M-60,-62 Q-70,-108 -10,-108 Q30,-108 40,-86 Q46,-74 70,-70 L70,-56 L-60,-56 Z" fill="#1d1d22" ${OL}/><path d="M-40,-100 L30,-104" stroke="#e8e8f0" stroke-width="2" opacity=".5"/><rect x="-64" y="-58" width="134" height="16" fill="#1d1d22" ${OL}/><rect x="-58" y="-54" width="70" height="8" fill="#fff" ${W2}/>${range(9,i=>`<rect x="${-55+i*7.5}" y="-54" width="3.5" height="5" fill="#1d1d22"/>`)}<path d="M-56,-42 V0 M60,-42 V0 M0,-42 V-6" stroke="currentColor" stroke-width="5"/><path d="M-6,-6 h12" stroke="#f2b705" stroke-width="3"/>`},
+  {id:'pony',kind:'f',name:'本物のポニー',price:8000,weird:1,w:130,h:110,desc:'毎朝にんじんを要求してくる。部屋が少し馬くさい。',svg:`<path d="M-40,0 V-36 M-26,0 V-36 M26,0 V-36 M40,0 V-36" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M-40,0 V-36 M-26,0 V-36 M26,0 V-36 M40,0 V-36" stroke="#a0612f" stroke-width="4" stroke-linecap="round"/><ellipse cx="0" cy="-50" rx="50" ry="22" fill="#a0612f" ${OL}/><path d="M-48,-56 Q-66,-50 -62,-22" fill="none" stroke="#3f2617" stroke-width="7" stroke-linecap="round"/><path d="M34,-62 L48,-96 Q60,-104 66,-92 L70,-76 Q72,-68 62,-68 L50,-66 Z" fill="#a0612f" ${OL}/><path d="M50,-98 L48,-110 L56,-102" fill="#a0612f" ${OL}/><circle cx="58" cy="-88" r="2.6" fill="currentColor"/><path d="M48,-98 Q36,-84 34,-62" fill="none" stroke="#3f2617" stroke-width="6"/><ellipse cx="66" cy="-72" rx="5" ry="4" fill="#f3e2c7"/><path d="M-14,-72 h28 v14 h-28 Z" fill="#e8443a" ${W2}/>`},
+
+  {id:'clock',kind:'w',name:'掛け時計',price:5,w:44,h:44,desc:'レースの時間に遅れない。',svg:`<circle cx="0" cy="-22" r="20" fill="#fff" ${OL}/><circle cx="0" cy="-22" r="16" fill="none" stroke="#e8443a" stroke-width="2"/><path d="M0,-22 V-34 M0,-22 L9,-18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`},
+  {id:'poster',kind:'w',name:'馬のポスター',price:3,w:64,h:84,desc:'あこがれの名馬（だれかは不明）。',svg:`<rect x="-30" y="-82" width="60" height="80" fill="#ffd23f" ${OL}/><path d="M-20,-20 L-14,-40 L-24,-44 L-18,-52 L6,-50 L14,-64 L22,-58 L18,-44 L14,-20 M-8,-20 V-38 M6,-20 V-40" fill="#5b331d" stroke="#5b331d" stroke-width="4" stroke-linejoin="round"/><path d="M-22,-74 H22" stroke="#e8443a" stroke-width="5"/><circle cx="-26" cy="-78" r="2" fill="#9fb4d8"/><circle cx="26" cy="-78" r="2" fill="#9fb4d8"/>`},
+  {id:'window',kind:'w',name:'窓',price:20,w:96,h:86,desc:'お日さまが入る。',svg:`<rect x="-44" y="-82" width="88" height="78" fill="#bfe9ff" ${OL}/><path d="M0,-82 V-4 M-44,-43 H44" stroke="currentColor" stroke-width="3"/><circle cx="-24" cy="-64" r="8" fill="#ffd23f"/><path d="M14,-26 q6,-6 12,0 q6,-6 12,0" fill="none" stroke="#fff" stroke-width="4"/><path d="M-48,-86 Q-30,-60 -46,-2 L-52,-2 L-52,-86 Z M48,-86 Q30,-60 46,-2 L52,-2 L52,-86 Z" fill="#ff8fc8" ${W2}/><rect x="-54" y="-90" width="108" height="6" rx="3" fill="#a8743f" ${W2}/>`},
+  {id:'kakejiku',kind:'w',name:'掛け軸「一着」',price:30,w:44,h:118,desc:'毎朝ながめて気合いを入れる。',svg:`<path d="M0,-116 L-10,-108 M0,-116 L10,-108" stroke="currentColor" stroke-width="1.5"/><rect x="-20" y="-108" width="40" height="100" fill="#3d5a99" ${W2}/><rect x="-15" y="-104" width="30" height="88" fill="#fbf4e2"/><text x="0" y="-74" font-size="20" text-anchor="middle" fill="#1d1d1d" font-weight="900">一</text><text x="0" y="-44" font-size="20" text-anchor="middle" fill="#1d1d1d" font-weight="900">着</text><rect x="-24" y="-10" width="48" height="6" rx="3" fill="#6b3a1f" ${W2}/><rect x="-24" y="-112" width="48" height="5" rx="2" fill="#6b3a1f" ${W2}/>`},
+  {id:'kamidana',kind:'w',name:'神棚',price:100,w:96,h:56,desc:'無事に帰ってこられますように。',svg:`<rect x="-46" y="-8" width="92" height="8" fill="#e6c27a" ${OL}/><path d="M-30,-8 V-34 H30 V-8" fill="#f3e2c7" ${OL}/><path d="M-38,-34 L0,-52 L38,-34 Z" fill="#c8955a" ${OL}/><rect x="-8" y="-28" width="16" height="20" fill="#fff" ${W2}/><path d="M-26,-40 Q0,-30 26,-40" fill="none" stroke="#fff" stroke-width="3"/><path d="M-18,-37 v6 M0,-34 v6 M18,-37 v6" stroke="#fff" stroke-width="2"/>`},
+  {id:'mirrorball',kind:'w',name:'ミラーボール',price:250,weird:1,w:50,h:80,desc:'勝った夜はパーティー。',svg:`<path d="M0,-80 V-44" stroke="currentColor" stroke-width="2"/><circle cx="0" cy="-24" r="22" fill="#c9ced6" ${OL}/>${range(5,i=>`<path d="M-20,${-36+i*6} H20" stroke="#8a93a6" stroke-width="1.2"/><path d="M${-16+i*8},-44 V-4" stroke="#8a93a6" stroke-width="1.2"/>`)}<path d="M-30,-40 l-8,-4 M30,-40 l8,-4 M-28,-12 l-10,4 M28,-12 l10,4" stroke="#ffd23f" stroke-width="3" stroke-linecap="round"/>`},
+  {id:'lei',kind:'w',name:'優勝レイ',price:400,w:80,h:70,desc:'勝った馬の首にかける花輪。',svg:`<path d="M-32,-64 Q-34,-10 0,-6 Q34,-10 32,-64" fill="none" stroke="#2f8f45" stroke-width="10" stroke-linecap="round"/>${range(11,i=>{const t=i/10,a=Math.PI*(1-t);return `<circle cx="${Math.cos(a)*32}" cy="${-64+Math.sin(a)*58}" r="6" fill="${['#e8443a','#ffd23f','#fff','#ff8fc8'][i%4]}" stroke="currentColor" stroke-width="1.5"/>`})}<path d="M-6,-6 L-12,10 M6,-6 L12,10" stroke="#e8443a" stroke-width="5"/>`}
+];
+const furnById=id=>FURN.find(x=>x.id===id);
+const ROOM_TABS=[{k:'f',n:'家具'},{k:'w',n:'壁かざり'},{k:'wp',n:'壁紙'},{k:'fl',n:'床'}];
+const freshRoom=()=>({wp:'wp_plain',fl:'fl_wood',items:[{id:'me',x:180,y:280}]});
+function normRoom(o){
+  o.furn=Array.isArray(o.furn)?o.furn.filter(furnById):[];
+  for(const id of ['wp_plain','fl_wood'])if(!o.furn.includes(id))o.furn.push(id);
+  const r=o.room&&typeof o.room==='object'?o.room:freshRoom();
+  if(!furnById(r.wp))r.wp='wp_plain';if(!furnById(r.fl))r.fl='fl_wood';
+  r.items=(Array.isArray(r.items)?r.items:[]).filter(it=>it&&(it.id==='me'||(furnById(it.id)&&o.furn.includes(it.id))));
+  if(!r.items.some(it=>it.id==='me'))r.items.push({id:'me',x:180,y:280});
+  o.room=r;
+}
+/* 置ける範囲：床の家具は床の上、壁のものは壁の中 */
+function roomClamp(it){
+  const f=furnById(it.id),half=f?f.w/2:50;
+  it.x=Math.round(clamp(it.x,half*0.6,ROOM_W-half*0.6));
+  if(f&&f.kind==='w')it.y=Math.round(clamp(it.y,f.h+6,WALL_H-6));
+  else it.y=Math.round(clamp(it.y,WALL_H+18,ROOM_H-4));
+}
+let roomTab='f',roomSel=-1,roomTrial=null;
+function roomItemSVG(it,i){
+  const sel=i===roomSel;
+  if(it.id==='me')return `<g class="ri" data-ri="${i}" transform="translate(${it.x},${it.y}) scale(${it.flip?-0.5:0.5},0.5)"><g transform="translate(-100,-258)">${avatarParts(S)}</g>${sel?'<rect x="-56" y="-262" width="112" height="268" rx="10" fill="none" stroke="#e8443a" stroke-width="5" stroke-dasharray="12 8"/>':''}</g>`;
+  const f=furnById(it.id);
+  return `<g class="ri${it.trial?' trial':''}" data-ri="${i}" transform="translate(${it.x},${it.y}) scale(${it.flip?-1:1},1)">${sel||it.trial?`<rect x="${-f.w/2-5}" y="${-f.h-5}" width="${f.w+10}" height="${f.h+10}" rx="6" fill="${it.trial?'rgba(255,210,63,.25)':'none'}" stroke="${it.trial?'#e3a000':'#e8443a'}" stroke-width="2.5" stroke-dasharray="6 4"/>`:''}${f.svg}</g>`;
+}
+function roomItems(){
+  const items=S.room.items.map(it=>Object.assign({},it));
+  const t=roomTrial&&furnById(roomTrial);
+  if(t&&(t.kind==='f'||t.kind==='w')&&!items.some(it=>it.id===t.id))
+    items.push(Object.assign({id:t.id,x:t.kind==='w'?250:110,y:t.kind==='w'?120:262,trial:true},roomDragTrial||{}));
+  return items;
+}
+function roomSVGInner(){
+  const t=roomTrial&&furnById(roomTrial);
+  const wp=furnById(t&&t.kind==='wp'?t.id:S.room.wp),fl=furnById(t&&t.kind==='fl'?t.id:S.room.fl);
+  const items=roomItems().map((it,i)=>({it,i}));
+  const order=(a)=>{const f=furnById(a.it.id);return (f&&f.kind==='w'?0:10000)+a.it.y;};
+  items.sort((a,b)=>order(a)-order(b));
+  return `${wp.draw(ROOM_W,WALL_H)}<g transform="translate(0,${WALL_H})">${fl.draw(ROOM_W,ROOM_H-WALL_H)}</g><rect x="0" y="${WALL_H-6}" width="${ROOM_W}" height="8" fill="#fff" stroke="currentColor" stroke-width="2"/>${items.map(o=>roomItemSVG(o.it,o.i)).join('')}`;
+}
+function furnPreview(f){
+  if(f.kind==='wp'||f.kind==='fl')return `<svg class="fprev" viewBox="0 0 120 70" aria-hidden="true">${f.draw(120,70)}<rect x="1" y="1" width="118" height="68" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+  return `<svg class="fprev" viewBox="${-f.w/2-8} ${-f.h-8} ${f.w+16} ${f.h+16}" aria-hidden="true">${f.svg}</svg>`;
+}
+function renderRoom(){
+  if(!$('roomSvg'))return;
+  $('roomSvg').innerHTML=roomSVGInner();
+  const w=$('roomWallet');w.textContent=S.money<0?`借金 ${money(-S.money)}`:money(S.money);
+  // 選んでいるもの／おためし中の操作
+  const items=roomItems(),sel=items[roomSel];
+  let bar;
+  if(roomTrial){const f=furnById(roomTrial);
+    bar=`<span>おためし中：<b>${esc(f.name)}</b>（${money(f.price)}）</span><span class="rb-btns"><button class="btn" type="button" data-fbuy="${f.id}" ${S.money>=f.price?'':'disabled'}>${S.money>=f.price?'買う':'資金不足'}</button><button class="btn ghost" type="button" id="btnTrialOff">やめる</button></span>`;}
+  else if(sel){const nm=sel.id==='me'?S.name:furnById(sel.id).name;
+    bar=`<span>えらんでいる：<b>${esc(nm)}</b></span><span class="rb-btns"><button class="btn ghost" type="button" id="btnFlip">左右反転</button>${sel.id==='me'?'':'<button class="btn ghost" type="button" id="btnStow">しまう</button>'}</span>`;}
+  else bar=`<span class="rb-hint">家具や自分をドラッグして好きな場所に動かせます。タップで選ぶと反転・しまうができます。</span>`;
+  $('roomBar').innerHTML=bar;
+  $('roomTabs').innerHTML=ROOM_TABS.map(t=>`<button type="button" role="tab" class="tab" data-rtab="${t.k}" aria-selected="${t.k===roomTab}">${t.n}</button>`).join('');
+  const list=FURN.filter(f=>f.kind===roomTab).sort((a,b)=>a.price-b.price);
+  $('furnList').innerHTML=list.map(f=>{
+    const own=S.furn.includes(f.id),placed=S.room.items.some(it=>it.id===f.id);
+    const using=f.kind==='wp'?S.room.wp===f.id:f.kind==='fl'?S.room.fl===f.id:placed;
+    let act;
+    if(own){
+      if(f.kind==='wp'||f.kind==='fl')act=using?`<span class="need" style="color:var(--gold)">使用中</span>`:`<button class="btn ghost" type="button" data-fuse="${f.id}">これにする</button>`;
+      else act=placed?`<button class="btn ghost" type="button" data-fstow="${f.id}">しまう</button>`:`<button class="btn ghost" type="button" data-fput="${f.id}">部屋に置く</button>`;
+    }else act=`<span class="rb-btns"><button class="btn ghost" type="button" data-ftry="${f.id}">${roomTrial===f.id?'おためし中':'おためし'}</button><button class="btn" type="button" data-fbuy="${f.id}" ${S.money>=f.price?'':'disabled'}>${S.money>=f.price?'買う':'資金不足'}</button></span>`;
+    return `<div class="item furn ${using?'on':''}">${furnPreview(f)}
+      <div class="ih"><b>${esc(f.name)}</b>${f.weird?'<span class="weird">変</span>':''}</div>
+      <div class="desc">${esc(f.desc)}</div>
+      <div class="ib"><span class="price">${own?'所持':f.price?money(f.price):'無料'}</span>${act}</div></div>`;
+  }).join('');
+}
+function roomPut(id){
+  const f=furnById(id);if(!f||!S.furn.includes(id))return;
+  if(f.kind==='wp'){S.room.wp=id;}
+  else if(f.kind==='fl'){S.room.fl=id;}
+  else if(!S.room.items.some(it=>it.id===id)){
+    const it={id,x:60+Math.random()*240,y:f.kind==='w'?60+f.h*0.6+Math.random()*40:236+Math.random()*50};roomClamp(it);S.room.items.push(it);
+    roomSel=S.room.items.length-1;
+  }
+  save();
+}
+function roomBuy(id){
+  const f=furnById(id);if(!f||S.furn.includes(id)||S.money<f.price)return;
+  // おためしで動かした位置があればそのまま置く
+  const tr=roomTrial===id?roomDragTrial:null;
+  S.money-=f.price;S.furn.push(id);roomTrial=null;roomDragTrial=null;roomPut(id);
+  if(tr&&(f.kind==='f'||f.kind==='w')){const it=S.room.items.find(x=>x.id===id);Object.assign(it,{x:tr.x,y:tr.y});save();}
+  renderRoom();renderMenu();
+}
+/* ドラッグ */
+let roomDrag=null,roomDragTrial=null;
+function roomPt(e){const svg=$('roomSvg'),p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+function roomDown(e){
+  const g=e.target.closest('.ri');
+  if(!g){if(roomSel>=0){roomSel=-1;renderRoom();}return;}
+  e.preventDefault();
+  const i=+g.dataset.ri,items=roomItems(),it=items[i],p=roomPt(e);
+  roomSel=it.trial?-1:i;
+  roomDrag={i,trial:!!it.trial,dx:it.x-p.x,dy:it.y-p.y,g,it,moved:false};
+  try{$('roomSvg').setPointerCapture(e.pointerId);}catch(err){}
+  if(!it.trial)renderRoom(),roomDrag.g=$('roomSvg').querySelector(`[data-ri="${i}"]`);
+}
+function roomMove(e){
+  if(!roomDrag)return;e.preventDefault();
+  const p=roomPt(e),it=roomDrag.it;it.x=p.x+roomDrag.dx;it.y=p.y+roomDrag.dy;roomClamp(it);roomDrag.moved=true;
+  const sc=it.id==='me'?0.5:1;
+  roomDrag.g.setAttribute('transform',`translate(${it.x},${it.y}) scale(${it.flip?-sc:sc},${sc})`);
+}
+function roomUp(){
+  if(!roomDrag)return;
+  const d=roomDrag;roomDrag=null;
+  if(d.trial){roomDragTrial={x:d.it.x,y:d.it.y};}
+  else if(d.moved){Object.assign(S.room.items[d.i],{x:d.it.x,y:d.it.y});save();}
+  renderRoom();
 }
 
 /* ------------ save ------------ */
 const KEY='jockey-road-v1';
-function fresh(){return {v:1,name:'若手騎手',lv:1,exp:0,starts:0,wins:0,gradeWins:0,income:0,money:0,owned:Object.values(DEFAULT_EQUIP),equip:Object.assign({},DEFAULT_EQUIP),falls:0,medical:0,won:{},best:{},arc:false,face:Object.assign({},DEFAULT_FACE)};}
+function fresh(){return {v:1,name:'若手騎手',lv:1,exp:0,starts:0,wins:0,gradeWins:0,income:0,money:0,owned:Object.values(DEFAULT_EQUIP),equip:Object.assign({},DEFAULT_EQUIP),falls:0,medical:0,won:{},best:{},arc:false,face:Object.assign({},DEFAULT_FACE),furn:['wp_plain','fl_wood'],room:freshRoom()};}
 let S=fresh();
 const KEY2='jockey-road-v2';
 /* 騎手アカウント：この端末のブラウザに複数の騎手データを保存 */
@@ -1253,7 +1468,7 @@ function norm(s){
   }
   o.equip=Object.assign({},DEFAULT_EQUIP,o.equip||{});
   for(const id of Object.values(DEFAULT_EQUIP))if(!o.owned.includes(id))o.owned.push(id);
-  o.face=faceOf(o);
+  o.face=faceOf(o);normRoom(o);
   delete o.gear;return o;
 }
 function load(){
@@ -1400,6 +1615,8 @@ function showPanel(name){
     $('nameInput').value=first?'':S.name;$('nameErr').hidden=true;
     setTimeout(()=>{try{$('nameInput').focus();}catch(e){}},50);
   }
+  if(name!=='shop')tryId=null;
+  if(name!=='room'){roomTrial=null;roomDragTrial=null;roomSel=-1;}
   for(const el of document.querySelectorAll('#home .panel'))el.hidden=el.dataset.panel!==name;
   renderHome();show('home');
   if(name==='profile'&&rankScope==='online')fetchOnline();
@@ -1412,6 +1629,7 @@ function renderMenu(){
   $('tileRaces').textContent=`出走できるレース ${open} / ${RACES.length}`;
   const buyable=ITEMS.filter(it=>!S.owned.includes(it.id)&&S.lv>=it.lv&&S.money>=it.price).length;
   $('tileShop').textContent=buyable?`いま買えるアイテム ${buyable}個`:'装備を整える';
+  $('tileRoom').textContent=`家具 ${S.furn.length-2} / ${FURN.length-2}個 ・ 部屋をかざる`;
   $('tileProfile').textContent=`${S.starts}戦${S.wins}勝 ・ ランキング・騎手の切り替え`;
 }
 
@@ -1428,7 +1646,7 @@ function renderHome(){
   $('stGrade').textContent=S.gradeWins;
   $('stIncome').textContent=money(S.income);
   $('stFalls').textContent=S.falls||0;$('stMedical').textContent=money(S.medical||0);
-  renderShop();renderAccounts();renderRanking();renderMenu();renderAvatar();
+  renderShop();renderAccounts();renderRanking();renderMenu();renderAvatar();renderRoom();
   // stage progress
   let cur=0;
   for(let i=0;i<STAGES.length;i++){if(RACES.some(r=>r.stage===i&&!lockReason(r)))cur=i;}
@@ -1483,11 +1701,22 @@ function renderFaceEdit(){
       :`<button type="button" class="fe-opt sw" data-fk="${k}" data-fi="${i}" aria-pressed="${f[k]===i}" aria-label="${o.n} ${i+1}" style="background:${v}"></button>`).join('')
   }</div></div>`).join('');
 }
-let shopSlot='whip';
+let shopSlot='whip',tryId=null;
+/* 試着：買う前にアバターで見た目を確かめる */
+function renderTryOn(){
+  const it=tryId&&itemById(tryId);
+  const eq=Object.assign({},S.equip);if(it)eq[it.slot]=it.id;
+  $('tryAva').innerHTML=avatarSVG({name:S.name,face:S.face,equip:eq});
+  if(!it){$('trySide').innerHTML=`<span class="label">いまの姿</span><span style="color:var(--muted)">アイテムの「試着」を押すと、買う前に見た目を確かめられます。</span>`;return;}
+  const own=S.owned.includes(it.id),lock=S.lv<it.lv;
+  const btn=own?`<button class="btn" type="button" data-equip="${it.id}">装備する</button>`:lock?`<span class="need">騎手Lv.${it.lv}で解放</span>`:`<button class="btn" type="button" data-buy="${it.id}" ${S.money>=it.price?'':'disabled'}>${S.money>=it.price?`買う（${money(it.price)}）`:'資金不足'}</button>`;
+  $('trySide').innerHTML=`<span class="label">試着中</span><b>${esc(it.name)}</b><div class="fx">${fxChips(it.fx)}</div><span class="rb-btns">${btn}<button class="btn ghost" type="button" data-try="">もどす</button></span>`;
+}
 function renderShop(){
   const w=$('wallet');w.textContent=S.money<0?`借金 ${money(-S.money)}`:money(S.money);w.style.color=S.money<0?'#d93a2f':'var(--gold)';
   $('equipRow').innerHTML=SLOTS.map(sl=>`<div class="eq"><span>${sl.n}</span><b>${esc(itemById(S.equip[sl.k]).name)}</b></div>`).join('');
   $('shopTabs').innerHTML=SLOTS.map(sl=>`<button type="button" role="tab" class="tab" data-slot="${sl.k}" aria-selected="${sl.k===shopSlot}">${sl.n}</button>`).join('');
+  renderTryOn();
   const list=ITEMS.filter(x=>x.slot===shopSlot).sort((a,b)=>a.lv-b.lv||a.price-b.price);
   $('items').innerHTML=list.map(it=>{
     const own=S.owned.includes(it.id),on=S.equip[it.slot]===it.id,lock=S.lv<it.lv;
@@ -1496,7 +1725,8 @@ function renderShop(){
     else if(own)act=`<button class="btn ghost" type="button" data-equip="${it.id}">装備する</button>`;
     else if(lock)act=`<span class="need">騎手Lv.${it.lv}で解放</span>`;
     else act=`<button class="btn" type="button" data-buy="${it.id}" ${S.money>=it.price?'':'disabled'}>${S.money>=it.price?'買う':'資金不足'}</button>`;
-    return `<div class="item ${on?'on':''} ${lock&&!own?'locked':''}">
+    if(!on)act=`<span class="rb-btns"><button class="btn ghost" type="button" data-try="${it.id}">${tryId===it.id?'試着中':'試着'}</button>${act}</span>`;
+    return `<div class="item ${on?'on':''} ${lock&&!own?'locked':''} ${tryId===it.id?'trying':''}">
       <div class="ih"><b>${esc(it.name)}</b>${it.weird?'<span class="weird">変</span>':''}</div>
       <div class="fx">${fxChips(it.fx)}</div>
       <div class="desc">${esc(it.desc)}</div>
@@ -2187,12 +2417,37 @@ function finishRace(){
 
 /* ------------ events ------------ */
 $('shopTabs').addEventListener('click',e=>{const b=e.target.closest('[data-slot]');if(b){shopSlot=b.dataset.slot;renderShop();}});
-$('items').addEventListener('click',e=>{
+function shopClick(e){
+  const bt=e.target.closest('[data-try]');
+  if(bt){tryId=bt.dataset.try&&bt.dataset.try!==tryId?bt.dataset.try:null;renderShop();return;}
   const bb=e.target.closest('[data-buy]'),be=e.target.closest('[data-equip]');
   if(bb){const it=itemById(bb.dataset.buy);if(!it||S.lv<it.lv||S.money<it.price||S.owned.includes(it.id))return;
     S.money-=it.price;S.owned.push(it.id);S.equip[it.slot]=it.id;save();renderShop();renderMenu();}
   if(be){const it=itemById(be.dataset.equip);if(it&&S.owned.includes(it.id)){S.equip[it.slot]=it.id;save();renderShop();}}
-});
+  if((bb||be)&&tryId&&S.equip[itemById(tryId).slot]===tryId){tryId=null;renderShop();}
+}
+$('items').addEventListener('click',shopClick);
+$('trySide').addEventListener('click',shopClick);
+/* マイルーム */
+$('roomSvg').addEventListener('pointerdown',roomDown);
+$('roomSvg').addEventListener('pointermove',roomMove);
+$('roomSvg').addEventListener('pointerup',roomUp);
+$('roomSvg').addEventListener('pointercancel',roomUp);
+$('roomTabs').addEventListener('click',e=>{const b=e.target.closest('[data-rtab]');if(b){roomTab=b.dataset.rtab;renderRoom();}});
+function roomClick(e){
+  const g=k=>{const b=e.target.closest(`[data-${k}]`);return b&&b.dataset[k];};
+  let id;
+  if((id=g('fbuy')))roomBuy(id);
+  else if((id=g('ftry'))){roomTrial=roomTrial===id?null:id;roomDragTrial=null;roomSel=-1;renderRoom();}
+  else if((id=g('fput'))){roomPut(id);renderRoom();}
+  else if((id=g('fuse'))){roomPut(id);roomTrial=null;renderRoom();}
+  else if((id=g('fstow'))){S.room.items=S.room.items.filter(it=>it.id!==id);roomSel=-1;save();renderRoom();}
+  else if(e.target.closest('#btnTrialOff')){roomTrial=null;roomDragTrial=null;renderRoom();}
+  else if(e.target.closest('#btnFlip')){const it=S.room.items[roomSel];if(it){it.flip=!it.flip;save();renderRoom();}}
+  else if(e.target.closest('#btnStow')){const it=S.room.items[roomSel];if(it&&it.id!=='me'){S.room.items.splice(roomSel,1);roomSel=-1;save();renderRoom();}}
+}
+$('furnList').addEventListener('click',roomClick);
+$('roomBar').addEventListener('click',roomClick);
 $('raceList').addEventListener('click',e=>{const b=e.target.closest('[data-race]');if(b)openCard(b.dataset.race);});
 $('offers').addEventListener('click',e=>{
   const b=e.target.closest('.horse');if(!b||b.classList.contains('locked'))return;
