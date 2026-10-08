@@ -186,6 +186,32 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .gate.open .gm-lab{color:#1b1404}
 .gate.fall{background:rgba(216,71,58,.85)}
 
+/* avatar */
+.ava{display:block;width:100%;height:auto;color:var(--frame)}
+.ava-card{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:center}
+.ava-box{background:radial-gradient(circle at 50% 38%,var(--panel) 0,var(--panel-2) 72%);border:3px solid var(--frame);border-radius:16px;padding:6px 4px 2px}
+.ava-box.sm{width:120px;flex:none}
+.ava-side{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ava-gear{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;font-size:13px}
+.ava-gear li{display:flex;gap:8px;align-items:baseline;min-width:0}
+.ava-gear li span{font-size:11px;color:var(--muted);width:5.5em;flex:none}
+.ava-gear li b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ava-btns{display:flex;gap:8px;flex-wrap:wrap}
+.ava-btns .btn{padding:8px 14px}
+.face-edit{display:flex;flex-direction:column;gap:14px}
+.fe-top{display:flex;gap:14px;align-items:center}
+.fe-head{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fe-head h3{font-size:20px}
+.fe-head p{margin:0;font-size:13px;color:var(--muted)}
+.fe-rows{display:flex;flex-direction:column;gap:10px}
+.fe-row{display:flex;flex-direction:column;gap:4px}
+.fe-opts{display:flex;flex-wrap:wrap;gap:6px}
+.fe-opt{background:var(--panel);border:2px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700;color:var(--ivory);min-height:36px}
+.fe-opt[aria-pressed="true"]{border-color:var(--frame);background:var(--sun)}
+.fe-opt.sw{width:38px;height:38px;padding:0;border-radius:50%}
+.fe-opt.sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--sun);border-color:var(--frame)}
+@media (max-width:380px){.ava-card{grid-template-columns:118px minmax(0,1fr);gap:12px}.ava-box.sm{width:100px}}
+
 /* accounts */
 .acct-box{display:flex;flex-direction:column;gap:8px}
 .accts{display:flex;gap:8px;flex-wrap:wrap}
@@ -237,6 +263,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .rs-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .rs-top h2{font-size:20px}
 canvas{display:block;width:100%;height:280px;border-radius:10px;background:var(--panel)}
+.tame{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;font-size:11px;color:var(--muted);margin-top:4px}
+.tame .bar{height:6px}
+.tame .bar i{background:var(--sun)}
 .hud{display:grid;grid-template-columns:auto auto 1fr;gap:16px;align-items:center}
 .hud .big{font-family:var(--display);font-size:26px;line-height:1}
 .hud .big small{font-family:var(--body);font-size:12px;color:var(--muted);margin-left:4px}
@@ -477,6 +506,32 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
         </form>
       </div>
 
+      <div class="card ava-card">
+        <div class="ava-box" id="avaBox"></div>
+        <div class="ava-side">
+          <span class="label">MY JOCKEY</span>
+          <ul class="ava-gear" id="avaGear"></ul>
+          <div class="ava-btns">
+            <button class="btn" id="btnFace" type="button">顔をカスタム</button>
+            <button class="btn ghost" type="button" data-go="shop">装備を変える</button>
+          </div>
+        </div>
+      </div>
+      <div class="card face-edit" id="faceEdit" hidden>
+        <div class="fe-top">
+          <div class="ava-box sm" id="facePrev"></div>
+          <div class="fe-head">
+            <h3>顔をつくる</h3>
+            <p>好きなパーツを選ぼう。選んだらすぐ保存されます。</p>
+            <div class="ava-btns">
+              <button class="btn ghost" id="btnFaceRnd" type="button">おまかせ</button>
+              <button class="btn" id="btnFaceDone" type="button">完成</button>
+            </div>
+          </div>
+        </div>
+        <div class="fe-rows" id="faceRows"></div>
+      </div>
+
       <div class="card jockey">
         <div class="lvbadge"><div><small>LEVEL</small><b id="lv">1</b></div></div>
         <div class="jk-main">
@@ -569,7 +624,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       <div class="offers" id="offers"></div>
     </div>
     <div class="card howto">
-      <div><b>抑える（Z）</b>ペースを落としてスタミナを温存。切り替え式。</div>
+      <div><b>抑える（Z）</b>ペースを落としてスタミナ消費を半分に。我慢した分だけ「溜め」がたまり、直線の伸びが増す。切り替え式。</div>
       <div><b>手綱を引く（X）</b>掛かった馬をなだめる。操縦性が高いほど成功しやすい。</div>
       <div><b>スタート</b>ゲートが開いた瞬間にタップ（Space）。早すぎると暴れ、遅いと出遅れます。</div>
       <div><b>促す（C）</b>手綱をしごいて押していく。鞭より伸びは小さいがスタミナ消費が軽く、ヨレない。位置取りにも。</div>
@@ -602,6 +657,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       <div class="stam">
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted)"><span>スタミナ</span><span class="num" id="hStamTxt">100%</span></div>
         <div class="bar"><i id="hStam" style="width:100%"></i></div>
+        <div class="tame" id="hTameRow" hidden><span>溜め</span><div class="bar"><i id="hTame" style="width:0%"></i></div></div>
       </div>
     </div>
     <div class="status" id="hStatus"></div>
@@ -660,13 +716,14 @@ const STYLE={
   oikomi:{label:'追込',early:0.975,kick:1.26,kakari:0.85,ideal:'後方待機'}
 };
 const STYLE_KEYS=['nige','senko','sashi','oikomi'];
+const TAME_MAX=25,TAME_KICK=0.33;
 const GOING={'良':1,'稍重':1.06,'重':1.12,'不良':1.18};
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 
 function makeRunner(h,num,n,isPlayer){
   return {...h,num,isPlayer,d:0,v:0,maxS:55+h.stam*0.6,S:55+h.stam*0.6,
-    kakari:0,whipT:0,whipCd:0,yore:0,rein:0,hold:false,fin:false,time:0,
+    kakari:0,tame:0,whipT:0,whipCd:0,yore:0,rein:0,hold:false,fin:false,time:0,
     noise:0,aiAgg:Math.random(),lane:0,laneT:0,whips:0,tired:false};
 }
 
@@ -720,7 +777,8 @@ function step(st,dt){
         if(r.isPlayer)st.events.push({k:'kakari'});
       }
     }
-    if(r.isPlayer&&r.hold){v*=0.982;dm*=0.7;}
+    // 抑える：スタミナ消費を半分にし、我慢した時間だけ「脚を溜める」（直線での伸びに上乗せ）
+    if(r.isPlayer&&r.hold){v*=0.982;dm*=0.5;if(!late&&r.kakari<=0)r.tame=Math.min(TAME_MAX,r.tame+dt);}
     if(r.goodStart>0){r.goodStart-=dt;v*=1.025;}
     if(r.urgeT>0){
       r.urgeT-=dt;
@@ -732,7 +790,7 @@ function step(st,dt){
     if(!r.isPlayer){
       if(late&&r.S>0){v+=kick*(0.85+r.aiAgg*0.3)*(0.65+0.7*r.S/r.maxS);dm*=1.3;}
     }else{
-      if(late&&r.S>0)v+=kick*0.25;
+      if(late&&r.S>0)v+=kick*(0.25+TAME_KICK*r.tame/TAME_MAX);
       if(r.whipT>0){
         r.whipT-=dt;
         if(r.S>0){
@@ -949,9 +1007,188 @@ function fxChips(fx){
   return out.map(([up,t])=>`<i class="${up===null?'':up?'up':'down'}">${t}</i>`).join('');
 }
 
+/* ------------ avatar ------------ */
+/* 騎手アバター：顔は S.face（各パーツの番号）、装備は S.equip をそのまま絵にする（SVG） */
+const FACE_OPTS={
+  skin:{n:'肌の色',v:['#ffe3cc','#f7c9a0','#e6ab7c','#c48756','#8a5a3b']},
+  hair:{n:'髪の色',v:['#2b1d16','#6b3e22','#c58b3d','#f0cf5e','#d6d6d6','#e8443a','#4b7be0']},
+  hairStyle:{n:'髪型',v:['short','bob','long','bouzu'],l:['短め','ボブ','ロング','坊主']},
+  brow:{n:'まゆ',v:['futsu','futo','komari','kiri'],l:['ふつう','太め','困り','キリッ']},
+  eye:{n:'目',v:['maru','kira','niko','tare','jito'],l:['まる','キラキラ','にこっ','たれ目','ジト目']},
+  mouth:{n:'口',v:['nico','ooguchi','mu','neko','ha'],l:['にっこり','大笑い','むっ','ねこ口','歯を見せる']},
+  cheek:{n:'ほっぺ',v:[1,0],l:['あり','なし']}
+};
+const DEFAULT_FACE={skin:1,hair:0,hairStyle:0,brow:0,eye:0,mouth:0,cheek:0};
+const OL='stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+/* 太い線（ふち取り付き）：腕や棒に使う */
+const thick=(d,col,w)=>`<path d="${d}" fill="none" stroke="currentColor" stroke-width="${w+6}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+
+/* 鞭：左手（48,200）を原点に、上へ向かって描く */
+const stickWhip=(col,grip,flap,extra='')=>`${thick('M0,6 L0,-96',col,6)}<rect x="-5" y="-14" width="10" height="20" rx="3" fill="${grip}" ${OL}/><path d="M-1,-96 L-9,-108 L5,-110 Z" fill="${flap}" ${OL}/>${extra}`;
+const WHIP_ART={
+  negi:`<path d="M-5,-40 L-14,-104 Q-6,-100 -1,-46 Z" fill="#4caf50" ${OL}/><path d="M4,-40 L12,-108 Q3,-102 1,-46 Z" fill="#5fc35a" ${OL}/><rect x="-6" y="-44" width="12" height="50" rx="6" fill="#f6f6e6" ${OL}/><path d="M-3,8 l-3,7 M0,8 v8 M3,8 l3,7" stroke="currentColor" stroke-width="2"/>`,
+  monosashi:`<rect x="-6" y="-104" width="12" height="110" rx="2" fill="#e9c77b" ${OL}/>${Array.from({length:12},(_,i)=>`<path d="M-6,${-96+i*8} h${i%2?3:6}" stroke="currentColor" stroke-width="1.5"/>`).join('')}`,
+  haetataki:`${thick('M0,6 L0,-62','#3aa0e0',5)}<rect x="-18" y="-106" width="36" height="44" rx="6" fill="#8fd6ff" ${OL}/><path d="M-9,-106v44M0,-106v44M9,-106v44M-18,-95h36M-18,-84h36M-18,-73h36" stroke="#3aa0e0" stroke-width="1.5"/>`,
+  harisen:`<path d="M-6,-28 L-28,-104 L28,-104 L6,-28 Z" fill="#fff" ${OL}/><path d="M-3,-28 L-19,-104 M0,-28 L-9,-104 M0,-28 L1,-104 M0,-28 L10,-104 M3,-28 L19,-104" stroke="#9fb4d8" stroke-width="1.5"/><rect x="-6" y="-30" width="12" height="36" rx="3" fill="#e8443a" ${OL}/>`,
+  kawa:stickWhip('#8a4f26','#5b331d','#8a4f26'),
+  stick:stickWhip('#262626','#c99a5b','#c99a5b'),
+  carbon:stickWhip('#3a3f4a','#1f6fff','#1f6fff','<path d="M0,-30 v-10 M0,-55 v-10 M0,-80 v-8" stroke="#6fa3ff" stroke-width="3"/>'),
+  golden:stickWhip('#f2b705','#b5651d','#ffe27a','<path d="M4,-118 l3,-8 l3,8 l8,3 l-8,3 l-3,8 l-3,-8 l-8,-3 Z" fill="#fff6b0" '+OL+'/>')
+};
+
+/* ヘルメット（頭の上にかぶせる） */
+const DOME='M54,84 C54,30 146,30 146,84 Z';
+const RIM='<rect x="50" y="78" width="100" height="10" rx="5"';
+const HELMET_ART={
+  zaru:`<path d="${DOME}" fill="#e6c27a" ${OL}/><path d="M64,80 C64,46 80,38 100,36 M136,80 C136,46 120,38 100,36 M82,82 C80,52 90,40 100,36 M118,82 C120,52 110,40 100,36 M60,64 Q100,52 140,64 M56,74 Q100,62 144,74 M70,48 Q100,40 130,48" fill="none" stroke="#b8893a" stroke-width="2"/>${RIM} fill="#d4a654" ${OL}/>`,
+  nabe:`<rect x="140" y="62" width="50" height="11" rx="5" fill="#333" ${OL}/><path d="${DOME}" fill="#c9ced6" ${OL}/><path d="M70,70 Q72,46 92,40" fill="none" stroke="#fff" stroke-width="5" opacity=".8"/>${RIM} fill="#aab1bc" ${OL}/>`,
+  koji:`<path d="${DOME}" fill="#ffd23f" ${OL}/><path d="M100,36 v44" stroke="#e8b400" stroke-width="5"/><path d="M42,86 Q100,74 158,86 Q100,96 42,86 Z" fill="#ffd23f" ${OL}/><path d="M74,52 h12 v-6 h6 v6 h6 v6 h-6 v6 h-6 v-6 h-12 Z" fill="#2f8f45" transform="translate(16,4) scale(.75)"/>`,
+  joba_h:`<path d="${DOME}" fill="#2f2f36" ${OL}/><circle cx="100" cy="33" r="5" fill="#2f2f36" ${OL}/><path d="M64,82 Q100,74 136,82 L134,90 Q100,84 66,90 Z" fill="#1a1a1f" ${OL}/><path d="M70,66 Q74,48 90,42" fill="none" stroke="#5a5a66" stroke-width="4"/>`,
+  race_h:`<path d="${DOME}" fill="#e8443a" ${OL}/><path d="M90,34 L88,82 L112,82 L110,34 Z" fill="#fff"/><path d="${DOME}" fill="none" ${OL}/><circle cx="100" cy="30" r="8" fill="#ffd23f" ${OL}/><path d="M66,82 Q100,74 134,82 L132,89 Q100,84 68,89 Z" fill="#1d1d1d" ${OL}/>`,
+  carbon_h:`<path d="${DOME}" fill="#3b3f47" ${OL}/><path d="M62,62 L82,40 M66,76 L100,36 M80,82 L118,38 M98,82 L134,48 M116,82 L142,62" stroke="#575c68" stroke-width="3"/><path d="M84,34 Q100,30 116,34 L116,84 L84,84 Z" fill="#e3b23c" opacity=".9"/><path d="${DOME}" fill="none" ${OL}/><path d="M64,82 Q100,74 136,82 L134,90 Q100,84 66,90 Z" fill="#1d1d1d" ${OL}/>`
+};
+
+/* ゴーグル：目にかけるもの（eyes:true）と、ヘルメットの上に載せるもの */
+const GOGGLE_ART={
+  sun:{eyes:true,svg:`<path d="M58,100 L70,98 M142,100 L130,98" stroke="currentColor" stroke-width="3"/><rect x="68" y="92" width="30" height="20" rx="8" fill="#1d1d1d" ${OL}/><rect x="102" y="92" width="30" height="20" rx="8" fill="#1d1d1d" ${OL}/><path d="M98,99 h4" stroke="currentColor" stroke-width="3"/><path d="M74,97 l6,0" stroke="#fff" stroke-width="2.5" opacity=".7"/>`},
+  swim:{eyes:true,see:true,svg:`<path d="M56,102 Q56,96 70,100 M144,102 Q144,96 130,100" fill="none" stroke="#1f6fd6" stroke-width="5"/><ellipse cx="84" cy="102" rx="14" ry="11" fill="#5fc3ff" fill-opacity=".45" ${OL}/><ellipse cx="116" cy="102" rx="14" ry="11" fill="#5fc3ff" fill-opacity=".45" ${OL}/><path d="M98,102 h4" stroke="currentColor" stroke-width="3"/>`},
+  hanamegane:{eyes:true,see:true,svg:`<circle cx="84" cy="102" r="12" fill="none" ${OL}/><circle cx="116" cy="102" r="12" fill="none" ${OL}/><path d="M96,100 Q100,96 104,100 M72,100 L58,98 M128,100 L142,98" fill="none" ${OL}/><ellipse cx="100" cy="114" rx="9" ry="8" fill="#f5a3a3" ${OL}/><path d="M80,124 Q90,118 100,123 Q110,118 120,124 Q110,130 100,126 Q90,130 80,124 Z" fill="#2b1d16" ${OL}/>`},
+  joba_g:{svg:`<path d="M54,74 Q100,64 146,74" fill="none" stroke="#5b331d" stroke-width="5"/><rect x="70" y="60" width="26" height="16" rx="7" fill="#f5b041" ${OL}/><rect x="104" y="60" width="26" height="16" rx="7" fill="#f5b041" ${OL}/><path d="M96,68 h8" stroke="currentColor" stroke-width="3"/>`},
+  race_g:{svg:`<path d="M54,74 Q100,64 146,74" fill="none" stroke="#1d1d1d" stroke-width="5"/>${[0,1,2].map(i=>`<rect x="${66+i*2}" y="${52+i*6}" width="${68-i*4}" height="16" rx="7" fill="${['#cfe9ff','#a7d6ff','#7fc3ff'][i]}" fill-opacity=".9" ${OL}/>`).join('')}`},
+  anti_g:{svg:`<defs><linearGradient id="agL" x1="0" x2="1"><stop offset="0" stop-color="#5fd0ff"/><stop offset="1" stop-color="#b06bff"/></linearGradient></defs><path d="M54,74 Q100,64 146,74" fill="none" stroke="#2b2b33" stroke-width="5"/><path d="M68,58 Q100,52 132,58 L130,76 Q100,70 70,76 Z" fill="url(#agL)" ${OL}/><path d="M76,62 l10,-2" stroke="#fff" stroke-width="3" opacity=".8"/>`}
+};
+
+/* 服：体・袖・ズボンの色と、上に描く模様 */
+const SUIT_ART={
+  hagire:{body:'#d9c7a3',sleeve:'#d9c7a3',pants:'#b9a888',deco:`<rect x="78" y="156" width="14" height="12" fill="#e8443a" ${OL} transform="rotate(-8 85 162)"/><rect x="108" y="176" width="14" height="12" fill="#4b7be0" ${OL} transform="rotate(10 115 182)"/><path d="M68,200 l6,8 l6,-8 l6,8 l6,-8 l6,8 l6,-8 l6,8 l6,-8 l6,8 l6,-8 l6,8 l4,-6" fill="#d9c7a3" ${OL}/>`},
+  sagyo:{body:'#3d5a99',sleeve:'#3d5a99',pants:'#3d5a99',deco:`<path d="M100,146 V204" stroke="#c9d3e8" stroke-width="2.5"/><rect x="76" y="160" width="16" height="13" rx="2" fill="#2f4a85" ${OL}/><rect x="108" y="160" width="16" height="13" rx="2" fill="#2f4a85" ${OL}/>`},
+  jersey:{body:'#2f6fd6',sleeve:'#2f6fd6',pants:'#2f6fd6',stripe:'#fff',deco:`<path d="M100,146 V204" stroke="#fff" stroke-width="3"/><rect x="106" y="156" width="20" height="10" rx="2" fill="#fff" ${OL}/><path d="M109,161 h14" stroke="#2f6fd6" stroke-width="2"/>`},
+  kigurumi:{body:'#a0612f',sleeve:'#a0612f',pants:'#a0612f',hand:'#3f2617',deco:`<ellipse cx="100" cy="182" rx="20" ry="18" fill="#f3e2c7" ${OL}/><path d="M86,144 Q100,152 114,144 L110,156 Q100,160 90,156 Z" fill="#3f2617"/>`},
+  shobu:{body:'#e8443a',sleeve:'#ffd23f',pants:'#ffffff',deco:`<rect x="68" y="164" width="64" height="12" fill="#ffd23f"/><rect x="66" y="184" width="68" height="12" fill="#ffd23f"/><path d="M70,146 Q100,138 130,146 L134,204 Q100,210 66,204 Z" fill="none" ${OL}/>`},
+  aero:{body:'#f4f8ff',sleeve:'#2f6fd6',pants:'#ffffff',deco:`<path d="M72,148 L100,186 L128,148 L120,146 L100,172 L80,146 Z" fill="#2f6fd6"/><path d="M78,196 h18 M104,192 h22 M84,188 h10" stroke="#7fb3ff" stroke-width="3"/><path d="M70,146 Q100,138 130,146 L134,204 Q100,210 66,204 Z" fill="none" ${OL}/>`}
+};
+
+/* 靴：足 1 本分（cx は足の中心） */
+const footBare=(cx,skin,y=244)=>`<ellipse cx="${cx}" cy="${y}" rx="10" ry="7" fill="${skin}" ${OL}/>`;
+const tallBoot=(cx,col,band,top=212)=>`<path d="M${cx-10},${top} H${cx+10} V244 Q${cx+16},246 ${cx+15},254 H${cx-11} V${top} Z" fill="${col}" ${OL}/>${band?`<rect x="${cx-11}" y="${top}" width="22" height="7" rx="2" fill="${band}" ${OL}/>`:''}`;
+const SHOE_ART={
+  zori:(cx,skin)=>`<ellipse cx="${cx}" cy="${250}" rx="14" ry="5" fill="#d8b47a" ${OL}/>${footBare(cx,skin,244)}<path d="M${cx-8},${246} L${cx},${238} L${cx+8},${246}" fill="none" stroke="#e8443a" stroke-width="3"/>`,
+  nagagutsu:cx=>tallBoot(cx,'#3c7d3e','',206),
+  geta:(cx,skin)=>`${footBare(cx,skin,238)}<rect x="${cx-14}" y="243" width="28" height="7" rx="2" fill="#c8955a" ${OL}/><rect x="${cx-4}" y="250" width="8" height="12" fill="#a8743f" ${OL}/>`,
+  joba_b:cx=>tallBoot(cx,'#6b3a1f','#8d5a2b'),
+  spike:cx=>`<path d="M${cx-11},236 H${cx+9} Q${cx+16},244 ${cx+15},252 H${cx-11} Z" fill="#ff7a1a" ${OL}/><path d="M${cx-8},246 Q${cx},240 ${cx+10},244" fill="none" stroke="#fff" stroke-width="3"/><path d="M${cx-8},253 l2,5 l2,-5 M${cx},253 l2,5 l2,-5 M${cx+8},253 l2,5 l2,-5" fill="none" stroke="currentColor" stroke-width="2"/>`,
+  race_b:cx=>tallBoot(cx,'#1d1d1d','#d9a066'),
+  light_b:cx=>tallBoot(cx,'#ffffff','#f2b705')
+};
+
+/* 小物：場所ごとに描く（belly=お腹 / hand=右手に持つ / head=頭まわり / floor=足もと / mouth=口） */
+const ACC_ART={
+  kaeru:{floor:`<g transform="translate(166,238)"><ellipse cx="0" cy="8" rx="17" ry="12" fill="#5cbf4a" ${OL}/><circle cx="-8" cy="-4" r="6" fill="#5cbf4a" ${OL}/><circle cx="8" cy="-4" r="6" fill="#5cbf4a" ${OL}/><circle cx="-8" cy="-4" r="2.5" fill="currentColor"/><circle cx="8" cy="-4" r="2.5" fill="currentColor"/><path d="M-6,8 Q0,13 6,8" fill="none" stroke="currentColor" stroke-width="2"/></g>`},
+  socks:{hand:`<g transform="translate(152,204) rotate(-10)"><path d="M-7,-4 H7 V20 Q7,30 0,30 H-10 Q-18,30 -18,24 Q-18,18 -7,18 Z" fill="#ffd23f" ${OL}/><path d="M-7,4 H7 M-7,11 H7" stroke="#e8443a" stroke-width="3"/>${[-16,-12,-8,-4,0].map(x=>`<circle cx="${x}" cy="31" r="2.6" fill="#ffd23f" ${OL.replace('3','2')}/>`).join('')}</g>`},
+  haramaki:{belly:`<rect x="67" y="180" width="66" height="18" rx="4" fill="#e8443a" ${OL}/><path d="M75,181v16M83,181v16M91,181v16M99,181v16M107,181v16M115,181v16M123,181v16" stroke="#b92f27" stroke-width="2"/>`},
+  ireba:{mouth:`<path d="M84,118 Q100,112 116,118 Q118,130 100,132 Q82,130 84,118 Z" fill="#f59ab0" ${OL}/><path d="M88,120 h24 v6 h-24 Z" fill="#fff"/><path d="M92,120v6M96,120v6M100,120v6M104,120v6M108,120v6" stroke="#ccc" stroke-width="1.2"/>`},
+  omamori:{belly:`<path d="M122,198 Q126,190 130,198" fill="none" stroke="#f2b705" stroke-width="2.5"/><rect x="118" y="198" width="16" height="22" rx="3" fill="#e8443a" ${OL}/><path d="M121,206 h10 M121,211 h10" stroke="#f2b705" stroke-width="2"/>`},
+  radio:{hand:`<g transform="translate(156,190)"><path d="M10,-6 L22,-30" stroke="currentColor" stroke-width="2.5"/><rect x="-6" y="-8" width="30" height="22" rx="4" fill="#5b6270" ${OL}/><circle cx="4" cy="3" r="6" fill="#2b2f36"/><rect x="14" y="-3" width="7" height="3" fill="#ffd23f"/><text x="22" y="-18" font-size="16" fill="#e8443a" font-weight="700">♪</text></g>`},
+  ninjin:{hand:`<g transform="translate(154,196) rotate(25)"><path d="M-7,-6 L7,-6 L0,30 Z" fill="#ff8a1f" ${OL}/><path d="M-4,4 h5 M-2,13 h4" stroke="#c65f00" stroke-width="2"/><path d="M0,-6 L-7,-20 M0,-6 L0,-22 M0,-6 L7,-20" stroke="#4caf50" stroke-width="4" stroke-linecap="round"/></g>`},
+  belt:{belly:`<rect x="67" y="182" width="66" height="14" rx="3" fill="#2b2b33" ${OL}/><rect x="93" y="180" width="14" height="18" rx="2" fill="#c9ced6" ${OL}/><path d="M60,176 l6,6 l-4,2 l6,6 M140,176 l-6,6 l4,2 l-6,6" fill="none" stroke="#ffd23f" stroke-width="3"/>`},
+  tengu:{head:`<g transform="translate(142,58) rotate(20)"><ellipse cx="0" cy="0" rx="17" ry="20" fill="#e0332b" ${OL}/><path d="M-2,2 L26,-4 L-2,10 Z" fill="#e0332b" ${OL}/><path d="M-12,-8 l8,3 M12,-8 l-8,3" stroke="currentColor" stroke-width="3"/><path d="M-10,-14 Q0,-20 10,-14" fill="none" stroke="#fff" stroke-width="3"/></g>`},
+  sauna:{head:`<path d="M58,60 q-6,-8 0,-16 q6,-8 0,-16 M142,60 q6,-8 0,-16 q-6,-8 0,-16" fill="none" stroke="#9fb4d8" stroke-width="3"/><path d="M146,96 q4,8 0,12 q-4,-4 0,-12 Z M52,110 q4,8 0,12 q-4,-4 0,-12 Z" fill="#7fc3ff" ${OL.replace('3','2')}/>`,belly:`<path d="M70,146 Q100,138 130,146 L134,204 Q100,210 66,204 Z" fill="#c9ced6" fill-opacity=".7" ${OL}/><path d="M80,154 L90,196 M110,154 L118,196" stroke="#fff" stroke-width="3" opacity=".8"/>`},
+  teitetsu:{hand:`<g transform="translate(156,194)"><path d="M-12,8 Q-14,-14 0,-14 Q14,-14 12,8 L5,8 Q7,-6 0,-6 Q-7,-6 -5,8 Z" fill="#f2b705" ${OL}/><circle cx="-8" cy="-2" r="1.6" fill="#8a5a00"/><circle cx="8" cy="-2" r="1.6" fill="#8a5a00"/><path d="M16,-18 l2,-5 l2,5 l5,2 l-5,2 l-2,5 l-2,-5 l-5,-2 Z" fill="#fff6b0" ${OL.replace('3','2')}/></g>`}
+};
+
+function faceOf(sv){const f=Object.assign({},DEFAULT_FACE,sv&&sv.face||{});for(const k in FACE_OPTS)if(!(f[k]>=0&&f[k]<FACE_OPTS[k].v.length))f[k]=DEFAULT_FACE[k];return f;}
+function eyesSVG(t){
+  const one=(x,s)=>({
+    maru:`<ellipse cx="${x}" cy="103" rx="5" ry="6" fill="currentColor"/><circle cx="${x+1.5}" cy="101" r="1.6" fill="#fff"/>`,
+    kira:`<ellipse cx="${x}" cy="103" rx="7" ry="8.5" fill="currentColor"/><circle cx="${x+2}" cy="100" r="2.8" fill="#fff"/><circle cx="${x-2.5}" cy="107" r="1.4" fill="#fff"/>`,
+    niko:`<path d="M${x-7},105 Q${x},96 ${x+7},105" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>`,
+    tare:`<ellipse cx="${x}" cy="104" rx="4.5" ry="5.5" fill="currentColor"/><path d="M${x-7*s},98 L${x+8*s},101" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`,
+    jito:`<path d="M${x-7},101 H${x+7}" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M${x-5},102 A5,5 0 0 0 ${x+5},102 Z" fill="currentColor"/>`
+  })[t];
+  return one(84,1)+one(116,-1);
+}
+function browSVG(t){
+  const d={futsu:['M76,90 Q84,86 92,89','M108,89 Q116,86 124,90',3],futo:['M75,90 Q84,84 93,88','M107,88 Q116,84 125,90',6],
+    komari:['M76,88 Q84,90 92,85','M108,85 Q116,90 124,88',3.5],kiri:['M75,85 L93,91','M107,91 L125,85',4.5]}[t];
+  return `<path d="${d[0]}" fill="none" stroke="currentColor" stroke-width="${d[2]}" stroke-linecap="round"/><path d="${d[1]}" fill="none" stroke="currentColor" stroke-width="${d[2]}" stroke-linecap="round"/>`;
+}
+function mouthSVG(t){
+  return {
+    nico:`<path d="M90,119 Q100,129 110,119" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>`,
+    ooguchi:`<path d="M87,117 Q100,136 113,117 Z" fill="#b8323a" ${OL}/><path d="M93,126 Q100,122 107,126 Q100,132 93,126 Z" fill="#f59ab0"/>`,
+    mu:`<path d="M93,122 H107" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>`,
+    neko:`<path d="M89,119 Q94.5,126 100,119 Q105.5,126 111,119" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>`,
+    ha:`<path d="M87,118 H113 Q112,130 100,130 Q88,130 87,118 Z" fill="#fff" ${OL}/><path d="M87,122 H113 M95,118v6 M100,118v6 M105,118v6" stroke="#c9d3e8" stroke-width="1.4"/>`
+  }[t];
+}
+/* 髪：helmet=ヘルメットあり（はみ出すぶんだけ）、part='back'|'front' */
+function hairSVG(style,col,part,helmet,chon,skin){
+  if(style==='bouzu'){
+    if(part==='front'&&!helmet)return `<path d="M58,92 C52,46 148,46 142,92 C132,70 68,70 58,92 Z" fill="${col}" opacity=".35"/>`;
+    return '';
+  }
+  if(part==='back'){
+    if(style==='long')return `<path d="M58,84 Q48,140 62,168 L138,168 Q152,140 142,84 Z" fill="${col}" ${OL}/>`;
+    if(style==='bob')return `<path d="M56,86 Q50,124 66,128 L134,128 Q150,124 144,86 Z" fill="${col}" ${OL}/>`;
+    return '';
+  }
+  // front
+  if(helmet){
+    const side=style==='short'?`<path d="M56,82 Q54,96 60,102 L64,84 Z M144,82 Q146,96 140,102 L136,84 Z" fill="${col}" ${OL}/>`:'';
+    return side+`<path d="M60,86 L68,96 L76,88 L84,97 L92,88 L100,96 L108,88 L116,97 L124,88 L132,96 L140,86 Z" fill="${col}" ${OL}/>`;
+  }
+  let h=`<path d="M56,96 C46,40 154,40 144,96 L136,82 L126,92 L116,80 L104,90 L92,80 L80,92 L70,82 Z" fill="${col}" ${OL}/>`;
+  if(chon)h+=`<path d="M70,62 C78,48 122,48 130,62 Q100,70 70,62 Z" fill="${skin}" ${OL}/><path d="M92,52 Q100,30 108,52 Z" fill="${col}" ${OL}/><path d="M86,38 Q100,24 114,38" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round"/>`;
+  return h;
+}
+
+/* bare=true で装備を外した姿（顔づくりのプレビュー用） */
+function avatarSVG(sv,bare){
+  const f=faceOf(sv),eq=Object.assign({},DEFAULT_EQUIP,sv&&sv.equip||{});
+  const skin=FACE_OPTS.skin.v[f.skin],hcol=FACE_OPTS.hair.v[f.hair],hst=FACE_OPTS.hairStyle.v[f.hairStyle];
+  const suit=bare?{body:'#ffffff',sleeve:'#ffffff',pants:'#ffffff',deco:''}:(SUIT_ART[eq.suit]||SUIT_ART.hagire);
+  const acc=bare?{}:(ACC_ART[eq.acc]||{});
+  const gog=bare?null:GOGGLE_ART[eq.goggle];
+  const chon=!bare&&eq.helmet==='chonmage';
+  const helmet=!bare&&!chon?HELMET_ART[eq.helmet]:'';
+  const hand=suit.hand||skin;
+  let s='';
+  s+=hairSVG(hst,hcol,'back',!!helmet,chon);
+  // 鞭（左手に持つ）
+  if(!bare)s+=`<g transform="translate(48,200) rotate(-16)">${WHIP_ART[eq.whip]||WHIP_ART.negi}</g>`;
+  // 足と靴
+  s+=`<rect x="79" y="198" width="20" height="44" rx="8" fill="${suit.pants}" ${OL}/><rect x="101" y="198" width="20" height="44" rx="8" fill="${suit.pants}" ${OL}/>`;
+  const shoe=bare?(cx=>footBare(cx,skin)):(SHOE_ART[eq.shoes]||SHOE_ART.zori);
+  s+=shoe(89,skin)+shoe(111,skin);
+  // 首と体
+  s+=`<rect x="91" y="128" width="18" height="18" rx="4" fill="${skin}" ${OL}/>`;
+  s+=`<path d="M70,146 Q100,138 130,146 L134,204 Q100,210 66,204 Z" fill="${suit.body}" ${OL}/>`+suit.deco;
+  if(acc.belly)s+=acc.belly;
+  // 腕と手
+  s+=thick('M74,152 L50,196',suit.sleeve,14)+thick('M126,152 L152,196',suit.sleeve,14);
+  if(suit.stripe)s+=`<path d="M74,152 L50,196 M126,152 L152,196" stroke="${suit.stripe}" stroke-width="3" fill="none"/>`;
+  s+=`<circle cx="48" cy="200" r="9" fill="${hand}" ${OL}/><circle cx="154" cy="200" r="9" fill="${hand}" ${OL}/>`;
+  if(acc.hand)s+=acc.hand;
+  // 頭と顔
+  s+=`<ellipse cx="57" cy="104" rx="7" ry="9" fill="${skin}" ${OL}/><ellipse cx="143" cy="104" rx="7" ry="9" fill="${skin}" ${OL}/>`;
+  s+=`<ellipse cx="100" cy="98" rx="44" ry="41" fill="${skin}" ${OL}/>`;
+  if(f.cheek===0)s+=`<ellipse cx="74" cy="116" rx="7" ry="4.5" fill="#ff8a8a" opacity=".55"/><ellipse cx="126" cy="116" rx="7" ry="4.5" fill="#ff8a8a" opacity=".55"/>`;
+  const eyesHidden=gog&&gog.eyes&&!gog.see;
+  if(!eyesHidden)s+=eyesSVG(FACE_OPTS.eye.v[f.eye]);
+  s+=`<path d="M99,108 Q101,112 98,113" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".5"/>`;
+  s+=acc.mouth||mouthSVG(FACE_OPTS.mouth.v[f.mouth]);
+  s+=hairSVG(hst,hcol,'front',!!helmet,chon,skin);
+  s+=browSVG(FACE_OPTS.brow.v[f.brow]);
+  s+=helmet;
+  if(gog)s+=gog.svg;
+  if(acc.head)s+=acc.head;
+  if(acc.floor)s+=acc.floor;
+  return `<svg class="ava" viewBox="${bare?'28 22 144 150':'0 0 200 270'}" role="img" aria-label="${esc(sv&&sv.name||'騎手')}のアバター">${s}</svg>`;
+}
+
 /* ------------ save ------------ */
 const KEY='jockey-road-v1';
-function fresh(){return {v:1,name:'若手騎手',lv:1,exp:0,starts:0,wins:0,gradeWins:0,income:0,money:0,owned:Object.values(DEFAULT_EQUIP),equip:Object.assign({},DEFAULT_EQUIP),falls:0,medical:0,won:{},best:{},arc:false};}
+function fresh(){return {v:1,name:'若手騎手',lv:1,exp:0,starts:0,wins:0,gradeWins:0,income:0,money:0,owned:Object.values(DEFAULT_EQUIP),equip:Object.assign({},DEFAULT_EQUIP),falls:0,medical:0,won:{},best:{},arc:false,face:Object.assign({},DEFAULT_FACE)};}
 let S=fresh();
 const KEY2='jockey-road-v2';
 /* 騎手アカウント：この端末のブラウザに複数の騎手データを保存 */
@@ -966,6 +1203,7 @@ function norm(s){
   }
   o.equip=Object.assign({},DEFAULT_EQUIP,o.equip||{});
   for(const id of Object.values(DEFAULT_EQUIP))if(!o.owned.includes(id))o.owned.push(id);
+  o.face=faceOf(o);
   delete o.gear;return o;
 }
 function load(){
@@ -1140,7 +1378,7 @@ function renderHome(){
   $('stGrade').textContent=S.gradeWins;
   $('stIncome').textContent=money(S.income);
   $('stFalls').textContent=S.falls||0;$('stMedical').textContent=money(S.medical||0);
-  renderShop();renderAccounts();renderRanking();renderMenu();
+  renderShop();renderAccounts();renderRanking();renderMenu();renderAvatar();
   // stage progress
   let cur=0;
   for(let i=0;i<STAGES.length;i++){if(RACES.some(r=>r.stage===i&&!lockReason(r)))cur=i;}
@@ -1181,6 +1419,20 @@ function renderHome(){
   $('raceList').innerHTML=out;
 }
 
+function renderAvatar(){
+  $('avaBox').innerHTML=avatarSVG(S);
+  $('avaGear').innerHTML=SLOTS.map(sl=>{const it=itemById(S.equip[sl.k])||itemById(DEFAULT_EQUIP[sl.k]);
+    return `<li><span>${sl.n}</span><b>${esc(it.name)}</b>${it.weird?'<i class="weird">変</i>':''}</li>`;}).join('');
+  if(!$('faceEdit').hidden)renderFaceEdit();
+}
+function renderFaceEdit(){
+  const f=faceOf(S);
+  $('facePrev').innerHTML=avatarSVG(S,true);
+  $('faceRows').innerHTML=Object.entries(FACE_OPTS).map(([k,o])=>`<div class="fe-row"><span class="label">${o.n}</span><div class="fe-opts">${
+    o.v.map((v,i)=>o.l?`<button type="button" class="fe-opt" data-fk="${k}" data-fi="${i}" aria-pressed="${f[k]===i}">${o.l[i]}</button>`
+      :`<button type="button" class="fe-opt sw" data-fk="${k}" data-fi="${i}" aria-pressed="${f[k]===i}" aria-label="${o.n} ${i+1}" style="background:${v}"></button>`).join('')
+  }</div></div>`).join('');
+}
 let shopSlot='whip';
 function renderShop(){
   const w=$('wallet');w.textContent=S.money<0?`借金 ${money(-S.money)}`:money(S.money);w.style.color=S.money<0?'#d93a2f':'var(--gold)';
@@ -1533,10 +1785,11 @@ function updateHud(){
   $('hStam').style.width=pct+'%';
   $('hStam').style.background=pct>40?'var(--good)':pct>15?'var(--warn)':'var(--silk)';
   $('hStamTxt').textContent=Math.round(pct)+'%';
+  $('hTameRow').hidden=!(p.tame>0);$('hTame').style.width=(p.tame/TAME_MAX*100)+'%';
   const ch=[];
   if(p.react)ch.push(p.react.type==='good'?`<span class="chip mood-good">♪ ${p.react.label}</span>`:`<span class="chip mood-bad">〰 ${p.react.label}</span>`);
   if(p.kakari>0)ch.push('<span class="chip alert">掛かり</span>');
-  if(p.hold)ch.push('<span class="chip on">抑え中</span>');
+  if(p.hold)ch.push('<span class="chip on">抑え中・温存</span>');
   if(p.urgeT>0)ch.push('<span class="chip on">促し</span>');
   if(p.whipT>0)ch.push('<span class="chip on">鞭</span>');
   if(p.yore>0)ch.push('<span class="chip alert">ヨレ</span>');
@@ -1894,6 +2147,11 @@ $('btnSpeed').onclick=()=>{speedMul=speedMul===1?2:1;$('btnSpeed').textContent='
 $('btnAgain').onclick=()=>openCard(curRace.id);
 $('btnHome').onclick=()=>showPanel('menu');
 $('jockeyName').addEventListener('change',e=>{S.name=e.target.value.trim()||'若手騎手';save();renderHome();syncSave(S);});
+$('btnFace').onclick=()=>{const fe=$('faceEdit');fe.hidden=!fe.hidden;if(!fe.hidden){renderFaceEdit();fe.scrollIntoView({behavior:'smooth',block:'nearest'});}};
+$('btnFaceDone').onclick=()=>{$('faceEdit').hidden=true;$('avaBox').scrollIntoView({behavior:'smooth',block:'nearest'});};
+$('btnFaceRnd').onclick=()=>{const f={};for(const [k,o] of Object.entries(FACE_OPTS))f[k]=Math.floor(Math.random()*o.v.length);S.face=f;save();renderAvatar();};
+$('faceRows').addEventListener('click',e=>{const b=e.target.closest('[data-fk]');if(!b)return;
+  S.face=Object.assign(faceOf(S),{[b.dataset.fk]:+b.dataset.fi});save();renderAvatar();});
 $('btnReset').onclick=()=>{$('btnResetYes').hidden=false;$('resetNote').hidden=false;};
 $('btnResetYes').onclick=()=>{removeCurrent();$('btnResetYes').hidden=true;$('resetNote').hidden=true;};
 $('scopeTabs').addEventListener('click',e=>{const b=e.target.closest('[data-scope]');if(!b)return;rankScope=b.dataset.scope;renderRanking();if(rankScope==='online')fetchOnline();});

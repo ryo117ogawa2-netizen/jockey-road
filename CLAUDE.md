@@ -35,7 +35,8 @@
    掛け算: `whip` 鞭の伸び / `kakari` 掛かり率 / `going` 重馬場の影響 / `speed` 巡航速度 / `kick` 末脚 / `fall` 落馬リスク / `yore` ヨレやすさ / `cost` 治療費、
    足し算: `hand` 操縦性 / `stam` スタミナ% / `start` 好スタート判定の秒数。
    `gearFx()` が装備中アイテムを合算する。`weird:1` は「変」マーク付きの変なアイテム（靴下・入れ歯・筋肉増強ベルトなど）。
-4. `save` — localStorage（キー `jockey-road-v2`）に複数の騎手アカウントを保存。`STORE = {current, list:[{id, save}], music, group}`。`fresh()` が騎手 1 人分の初期データ、`norm()` が古いデータの移行（旧 `gear` 段階制 → `owned` / `equip`）。v1 キー `jockey-road-v1` からの移行もある。
+   - `avatar` — 騎手アバター（SVG）。`avatarSVG(save, bare)` が顔 `S.face`（`FACE_OPTS` の各パーツ番号：肌・髪色・髪型・まゆ・目・口・ほっぺ）と装備 `S.equip` から描く。アイテムの絵は `WHIP_ART` / `HELMET_ART` / `GOGGLE_ART` / `SUIT_ART` / `SHOE_ART` / `ACC_ART`（アイテムを追加したらここにも絵を足す）。`bare=true` は装備なしの顔アップ（顔づくり画面のプレビュー）。「自分の成績」に表示し、「顔をカスタム」で編集。
+4. `save` — localStorage（キー `jockey-road-v2`）に複数の騎手アカウントを保存。`STORE = {current, list:[{id, save}], music, group}`。`fresh()` が騎手 1 人分の初期データ（`face` を含む）、`norm()` が古いデータの移行（旧 `gear` 段階制 → `owned` / `equip`）。v1 キー `jockey-road-v1` からの移行もある。
 5. `オンライン` — `/api/config` を取れたときだけ「みんな」ランキングを有効化。各騎手は端末で作った `cloud.id`（UUID）と `cloud.secret` を持ち、RPC `submit_jockey` / `delete_jockey` で送る。`group_code` は常に `'all'`（合言葉なし・全員公開がオーナーの希望）。
 6. `screens` — ホームの各パネル描画（`renderHome` / `renderShop` / `renderRanking` / `renderMenu`）と出馬表（`openCard` / `genOffers`）。
 7. `race runtime` — ゲートのタイミング判定（`startTap`、反応時間メーター `renderGateMeter`）、実況（`LINES` / `ACT_LINES`、`pick` で同じセリフの連続を避ける）、♪ / モヤモヤの反応マーク（`react`）、落馬（`fallOff`）、記録（`logTick` → `st.log`）、Canvas 描画（`draw` / `drawHorse` / `drawMood`）。
@@ -74,5 +75,5 @@
 
 ## 気づいている課題
 
-- `tools/sim.mjs` で「前半抑え→直線で鞭」の勝率が「直線で鞭」より低く出る。抑える効果（速度 -1.8% / スタミナ消費 -30%）のバランスを見直す余地がある。
+- 「抑える」は速度 -1.8%・スタミナ消費 -50% で、抑えている時間（直線前、掛かっていないとき）だけ `tame`（溜め、最大 `TAME_MAX`=25 秒）がたまり、直線の伸びに `TAME_KICK` の割合で上乗せされる。レース画面に「溜め」ゲージあり。sim では「前半抑え→直線で鞭」が「直線で鞭」と同等〜やや上（ダービー 24% 対 21%、凱旋門賞 42% 対 30%）。短距離では差が小さい。
 - 共有している claude.ai のアーティファクト版はリポジトリ外にあり、`/api/config` に届かないためオンラインランキングは使えない。今後の正式版は Vercel 版（この `index.html`）。
