@@ -340,6 +340,20 @@ body.makai .bar{background:var(--panel-2)}
 .busted{border-color:#d93a2f!important;background:#fff0ee!important}
 .busted b{color:#d93a2f}
 
+/* records */
+.rs-clock{font-family:var(--mono);font-size:20px;color:var(--frame);background:#fff;border:3px solid var(--frame);border-radius:10px;padding:0 10px;font-variant-numeric:tabular-nums}
+body.makai .rs-clock{background:var(--panel);color:#ffd1dc}
+.res-time{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.res-clock{font-size:34px;color:var(--frame)}
+.res-rec{font-size:13px;color:var(--muted);min-width:0}
+.res-rec .pb{color:var(--good)}
+.res-rec .cr{color:var(--gold);font-size:16px}
+.rec-link{background:none;border:0;padding:0;font:inherit;color:var(--frame);font-weight:700;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.makai-stage .rec-link{color:#ffd1dc}
+.rec-tbl td{white-space:normal}
+.rec-tbl td.r1{color:var(--gold);font-weight:800}
+.rv-sub{font-size:11px;color:var(--muted)}
+
 /* accounts */
 .acct-box{display:flex;flex-direction:column;gap:8px}
 .accts{display:flex;gap:8px;flex-wrap:wrap}
@@ -811,6 +825,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
   <div class="track-wrap">
     <div class="rs-top">
       <h2 id="rsName"></h2>
+      <b class="num rs-clock" id="hClock" aria-label="タイム">0:00.0</b>
       <span class="num" id="rsMeta" style="color:var(--muted);font-size:13px"></span>
     </div>
     <div class="cv-box">
@@ -858,6 +873,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
         <h2 id="resName" style="font-size:24px"></h2>
       </div>
     </div>
+    <div class="card res-time" id="resTime"></div>
     <div class="card vs-res" id="vsRes" hidden><span id="vsResTxt"></span><button class="btn" type="button" id="vsResGo">ルームの順位を見る</button></div>
     <div class="rewards" id="rewards"></div>
     <div class="card ev" id="evalBox"></div>
@@ -881,6 +897,17 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
     <p>騎手収入が5億円を超えたおまえの噂は、魔界にまで届いている。<br>魔界のレースに招待しよう。勝てば <b>10億円</b>。負ければ <b>罰金10億円</b>。<br>乗りものは馬とは限らない。檻を開けるまで、何に乗るかはわからない……。</p>
     <p class="mi-sign">— 魔王より</p>
     <div class="rb-btns"><button class="btn" type="button" id="miGo">魔界へ行く</button><button class="btn ghost" type="button" id="miLater">あとで</button></div>
+  </div>
+</div>
+
+<div class="viewer" id="recView" hidden role="dialog" aria-modal="true" aria-labelledby="rvName">
+  <div class="viewer-card">
+    <div class="vw-head">
+      <div style="min-width:0"><span class="label">RACE RECORD</span><h2 id="rvName"></h2></div>
+      <button class="btn ghost" id="rvClose" type="button">とじる</button>
+    </div>
+    <span class="vw-meta" id="rvMeta"></span>
+    <div class="tbl"><table class="rec-tbl"><thead><tr><th>順位</th><th>騎手</th><th>タイム</th><th>馬・馬場</th></tr></thead><tbody id="rvBody"></tbody></table></div>
   </div>
 </div>
 
@@ -1838,7 +1865,7 @@ async function initOnline(){
     ONLINE.url=String(c.url).replace(/\/$/,'');ONLINE.key=c.anonKey;ONLINE.ok=true;
     $('scopeTabs').hidden=false;
     for(const p of STORE.list)syncSave(p.id===STORE.current?S:p.save);
-    rankScope='online';renderRanking();fetchOnline();vsCheckChallenges();renderVersus();
+    rankScope='online';renderRanking();fetchOnline();vsCheckChallenges();renderVersus();fetchRecords();
   }catch(e){}
 }
 async function syncSave(sv){
@@ -1916,6 +1943,33 @@ function renderAccounts(){
 }
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+/* ------ レースレコード：各騎手の自己ベストをサーバーに送り、レースごとの1位を表示 ------ */
+let RECORDS={};
+async function fetchRecords(){
+  if(!ONLINE.ok)return;
+  try{const rows=await sbGet('race_top?select=race_id,name,time,horse,going');RECORDS={};for(const r of rows)if(raceById(r.race_id)&&+r.time>0)RECORDS[r.race_id]=r;
+    if(!$('home').hidden&&homePanel==='races')renderHome();}catch(e){}
+}
+function recLine(r){
+  const rec=RECORDS[r.id],pb=S.bestTime&&S.bestTime[r.id];
+  let h='';
+  if(ONLINE.ok)h+=` ・ <button type="button" class="rec-link" data-rec="${r.id}">🏆 ${rec?`${fmtTime(+rec.time)} ${esc(rec.name)}`:'レコードなし'}</button>`;
+  if(pb)h+=` ・ 自己ベスト ${fmtTime(pb)}`;
+  return h;
+}
+async function openRecords(id){
+  const r=raceById(id);if(!r)return;
+  $('rvName').textContent=r.name;$('rvMeta').textContent=`${r.course} ${r.surf==='ダ'?'ダート':'芝'}${r.dist}m ・ 読み込み中…`;$('rvBody').innerHTML='';
+  $('recView').hidden=false;document.body.classList.add('noscroll');
+  try{
+    const rows=await sbGet(`race_records?select=jockey_id,name,time,horse,going,set_at&race_id=eq.${encodeURIComponent(id)}&order=time.asc,set_at.asc&limit=10`);
+    const me=S.cloud&&S.cloud.id,pb=S.bestTime&&S.bestTime[id];
+    $('rvMeta').textContent=`${r.course} ${r.surf==='ダ'?'ダート':'芝'}${r.dist}m ・ みんなのトップ10${pb?` ・ あなたの自己ベスト ${fmtTime(pb)}`:''}`;
+    $('rvBody').innerHTML=rows.length?rows.map((x,i)=>`<tr class="${x.jockey_id===me?'me':''}"><td class="${i===0?'r1':''}">${i+1}</td><td>${esc(x.name)}</td><td class="num">${fmtTime(+x.time)}</td><td class="rv-sub">${esc(x.horse||'')}${x.going?` ・ ${esc(x.going)}`:''}<br>${esc(new Date(x.set_at).toLocaleDateString('ja-JP'))}</td></tr>`).join('')
+      :'<tr><td colspan="4">まだだれも走っていません。最初のレコードをつくろう！</td></tr>';
+  }catch(e){$('rvMeta').textContent='レコードを読み込めませんでした';}
+}
+function closeRecords(){$('recView').hidden=true;document.body.classList.remove('noscroll');}
 function lockReason(r){
   if(r.makai&&!S.makaiInv)return '魔界からの招待が必要';
   if(S.lv<r.lv)return `騎手Lv.${r.lv}で騎乗依頼が来ます`;
@@ -2168,7 +2222,7 @@ function renderHome(){
       out+=`<div class="race"><span class="grade ${g}">${r.grade||'一般'}</span>
         <div class="race-info"><b>${r.name}</b>
         <div class="meta">${r.course} ${r.makai?'魔界の道':r.surf==='ダ'?'ダート':'芝'}${r.dist}m ・ ${r.field}頭 ・ 1着 ${money(r.purse)}${r.makai?' ・ 負けたら罰金10億':''} ・ 相手 ${rankOf(r.R)}
-        ${wins?` ・ <span class="won">${wins}勝</span>`:best?` ・ 最高${best}着`:''}</div></div>
+        ${wins?` ・ <span class="won">${wins}勝</span>`:best?` ・ 最高${best}着`:''}${recLine(r)}</div></div>
         ${lock?`<span class="lock">${lock}</span>`:`<button class="btn" data-race="${r.id}" type="button">出走</button>`}</div>`;
     }
     out+='</div></div>';
@@ -2280,6 +2334,8 @@ function openCard(id){
   $('rcName').textContent=r.name;
   const chips=[`${r.course}`,`${r.surf==='ダ'?'ダート':'芝'} ${r.dist}m`,`馬場：${curGoing}`,`直線 ${r.straight}m`,`${r.field}頭立て`,`1着 ${money(r.purse)}`,`相手関係 ${rankOf(r.R)}`];
   if(r.course==='パリロンシャン')chips.push('フォルスストレートあり');
+  const rec=RECORDS[r.id];if(rec)chips.push(`レコード ${fmtTime(+rec.time)}（${esc(rec.name)}）`);
+  if(S.bestTime&&S.bestTime[r.id])chips.push(`自己ベスト ${fmtTime(S.bestTime[r.id])}`);
   $('rcChips').innerHTML=chips.map((c,i)=>`<span class="chip ${i===2&&curGoing!=='良'?'on':''}">${c}</span>`).join('');
   $('rcNote').textContent=r.makai?'5つの檻のどれかを選んでください。中にいるのは馬か、犬か、牛か、ライオンか……。開けるのはゲートインのとき。':`いまの騎手Lv.${S.lv}では総合${capOf(S.lv)}までの馬に乗れます。装備：${SLOTS.map(sl=>itemById(S.equip[sl.k]).name).filter(n=>n!=='なし').join('・')}`;
   $('rcOfferH').textContent=r.makai?'魔界の檻':'騎乗依頼';
@@ -2608,6 +2664,7 @@ function loop(now){
 }
 function updateHud(){
   const order=standings(st),p=st.player;
+  $('hClock').textContent=fmtTime(p.fin?p.time:st.t);
   const rank=order.indexOf(p)+1;
   $('hRank').innerHTML=`${rank}<small>番手 / ${order.length}頭</small>`;
   $('hRemain').innerHTML=`${Math.max(0,Math.ceil(st.race.dist-p.d))}<small>m</small>`;
@@ -2966,6 +3023,11 @@ function finishRace(){
     if(!fell&&(!S.best[R.id]||place<S.best[R.id]))S.best[R.id]=place;
   }
   while(S.exp>=needExp(S.lv)){S.exp-=needExp(S.lv);S.lv++;}
+  // タイムとレコード
+  const myTime=!fell&&st.player.fin?st.player.time:null;
+  const recBefore=RECORDS[R.id],pbBefore=S.bestTime&&S.bestTime[R.id];
+  let newPB=false;
+  if(myTime&&!practice){S.bestTime=S.bestTime||{};if(!pbBefore||myTime<pbBefore){S.bestTime[R.id]=Math.round(myTime*100)/100;newPB=true;}}
   // 馬券の精算と、もうけすぎの没収
   let betCards='';
   if(st.bet){
@@ -3015,6 +3077,25 @@ function finishRace(){
   for(const a of ACHV)if(!achBefore.has(a.id)&&a.ok(S))rw+=`<div class="card stat achv-new"><b>★ ${esc(a.name)}</b><span>称号ゲット！（${esc(a.hint)}）</span></div>`;
   if(makai)rw=`<div class="card stat makai-pay ${makaiDelta>0?'win':'lose'}"><b>${makaiDelta>0?'+':'-'}${money(Math.abs(makaiDelta))}</b><span>${makaiDelta>0?'魔界の優勝賞金！':'魔界の罰金……'}（所持金 ${S.money<0?'借金 '+money(-S.money):money(S.money)}）</span></div>`+rw;
   $('rewards').innerHTML=rw;
+  {
+    let t=`<span class="label">TIME</span><b class="num res-clock">${myTime?fmtTime(myTime):'—'}</b>`;
+    const lines=[];
+    if(!myTime)lines.push('落馬のためタイムなし');
+    else if(practice)lines.push('練習あつかいなので記録には残りません');
+    else{
+      if(newPB)lines.push(pbBefore?`<b class="pb">自己ベスト更新！</b>（前は ${fmtTime(pbBefore)}）`:'<b class="pb">はじめてのタイム！</b>');
+      else if(pbBefore)lines.push(`自己ベスト ${fmtTime(pbBefore)}（あと ${(myTime-pbBefore).toFixed(1)}秒）`);
+      if(recBefore)lines.push(myTime<+recBefore.time?'':`コースレコード ${fmtTime(+recBefore.time)}（${esc(recBefore.name)}）まで あと ${(myTime-recBefore.time).toFixed(1)}秒`);
+    }
+    $('resTime').innerHTML=t+`<span class="res-rec" id="resRec">${lines.filter(Boolean).join('<br>')}</span>`;
+    if(myTime&&!practice&&ONLINE.ok){
+      const rid=R.id,tm=myTime,hn=String(st.player.name).slice(0,16),gn=st.going;
+      rpc('submit_record',{p_name:S.name.slice(0,12),p_race:rid,p_time:Math.round(tm*100)/100,p_horse:hn,p_going:gn}).then(()=>{
+        if(!recBefore||tm<+recBefore.time){const el=$('resRec');if(el)el.innerHTML=`<b class="cr">🏆 コースレコード更新！</b>${recBefore?`（前は ${fmtTime(+recBefore.time)} ${esc(recBefore.name)}）`:''}<br>`+el.innerHTML;}
+        fetchRecords();
+      },()=>{});
+    }
+  }
   const t0=order[0].time;
   $('resBody').innerHTML=order.map((r,i)=>`<tr class="${r.isPlayer?'me':''}"><td class="num">${r.isPlayer&&fell?'中止':i+1}</td>
     <td><span class="waku" style="background:${FRAME_COLORS[r.frame]};color:${FRAME_TEXT[r.frame]}">${r.frame+1}</span></td>
@@ -3059,7 +3140,10 @@ function roomClick(e){
 }
 $('furnList').addEventListener('click',roomClick);
 $('roomBar').addEventListener('click',roomClick);
-$('raceList').addEventListener('click',e=>{const b=e.target.closest('[data-race]');if(b)openCard(b.dataset.race);});
+$('raceList').addEventListener('click',e=>{const rc=e.target.closest('[data-rec]');if(rc){openRecords(rc.dataset.rec);return;}const b=e.target.closest('[data-race]');if(b)openCard(b.dataset.race);});
+$('rvClose').onclick=closeRecords;
+$('recView').addEventListener('click',e=>{if(e.target.id==='recView')closeRecords();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('recView').hidden)closeRecords();});
 $('offers').addEventListener('click',e=>{
   const b=e.target.closest('.horse');if(!b||b.classList.contains('locked'))return;
   if(picked!==+b.dataset.i)curBet=null;

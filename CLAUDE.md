@@ -21,6 +21,7 @@
 - `api/config.js` — Supabase 接続先を返す関数
 - `supabase/migrations/20261007000000_leaderboard.sql` — ランキング用テーブルと関数（本番に適用済み）
 - `supabase/migrations/20261009000000_versus_rooms.sql` — 対戦ルーム（`race_rooms` / `room_entries` / `challenges` と関数。本番に適用済み。MCP の apply_migration が大きいと時間切れになるので、本番へはテーブルごと・関数 2〜3 個ずつに分けて適用した）
+- `supabase/migrations/20261010000000_race_records.sql` — レースレコード（`race_records`、ビュー `race_top`、関数 `submit_record`。本番に適用済み。`delete_jockey` を書きかえてレコードも消す案は、MCP の確認待ちで止まるので見送り）
 - `supabase/migrations/20261008000000_leaderboard_look.sql` — `look`（アバターと部屋の見た目）列と 12 引数版 `submit_jockey`（本番に適用済み。古い 11 引数版も残してある）
 - `tools/sim.mjs` — レースバランスのシミュレーター（`node tools/sim.mjs derby 100`）
 - `package.json` — `"type": "module"` のみ。依存パッケージなし
@@ -44,6 +45,7 @@
 5. `オンライン` — `/api/config` を取れたときだけ「みんな」ランキングを有効化。各騎手は端末で作った `cloud.id`（UUID）と `cloud.secret` を持ち、RPC `submit_jockey` / `delete_jockey` で送る。見た目は `lookOf()` で送り、ランキングの行をタップすると `openViewer()` がその騎手の部屋とアバターを表示する。よその騎手の見た目は必ず `cleanLook()` で検査してから描く（知らない id・変な値は捨てる）。`group_code` は常に `'all'`（合言葉なし・全員公開がオーナーの希望）。
    - `対戦` — ルーム（全員が同じレース・馬場・相手・馬で 1 回だけ走り、タイムで順位）と対戦の申し込み。`vsLoad` / `renderVersus` / `renderRoomDetail` / `vsRun`（ゴーストを読み込んで出走）/ `vsSubmit`（タイムと位置の記録 `st.rec.s` を送る）。書き込みは RPC `create_room` / `join_room` / `submit_room_result` / `send_challenge` / `respond_challenge`（どれも合鍵を確認）。まだ解放していないレースのルームは「練習あつかい」（賞金なし・経験値 3 割・成績に数えない）。よその騎手の名前は必ず `esc()`、ゴーストの数値は `clamp` してから使う。
    - `馬券` — 出馬表で単勝を買える（通常レースのみ。魔界・対戦ルームは不可）。`openCard` で `cardSeed` を決め、`betField()` が同じ seed で `createRaceState` して出走馬とオッズ（総合力の softmax）を出す。本番も同じ seed なので、見せた相手のまま走る。買ったお金は出走時に引き、`finishRace` で精算。`S.betProfit`（馬券の通算もうけ）が `BET_LIMIT`＝1 億円を超えると競馬協会に見つかり、もうけを全額没収（`S.confiscated`）。
+   - `レースレコード` — レース中は上に経過タイム（`hClock`）、結果画面にタイムと自己ベスト・コースレコードとの差（`resTime`）。自己ベストは端末の `S.bestTime`、全員分はサーバーの `race_records`（騎手×レースで最速だけ残す）。`fetchRecords()` が `race_top` から各レースの 1 位を `RECORDS` に読み、レース一覧（🏆 ボタン → `openRecords()` でトップ 10）と出馬表のチップに出す。落馬・練習あつかいはタイムを残さない。
 6. `screens` — ホームの各パネル描画（`renderHome` / `renderShop`（上に試着欄 `renderTryOn`、`tryId`）/ `renderRoom` / `renderRanking` / `renderMenu`）と出馬表（`openCard` / `genOffers`）。
 7. `race runtime` — 魔界レースは `body.makai` / `html.makai` で色トークンを暗く入れかえ、Canvas は `drawHellSky`（赤い月・コウモリ・観客の悪魔）と暗いコース、乗りものは `drawBeast`（絵文字を左右反転して描く）。ゲートのタイミング判定（`startTap`、反応時間メーター `renderGateMeter`。判定幅は `gateZones()`：好 0.38 秒以内 / 五分 0.7 秒以内。開く 0.5〜1.1 秒前に「構えて…」を表示し、開く直前 `GATE_FLY`=0.2 秒以内の早押しは好スタート扱い）、実況（`LINES` / `ACT_LINES`、`pick` で同じセリフの連続を避ける）、♪ / モヤモヤの反応マーク（`react`）、落馬（`fallOff`）、記録（`logTick` → `st.log`）、Canvas 描画（`draw` / `drawHorse` / `drawMood`）。
 8. `result` — 着順・賞金（騎手の取り分 = 賞金の 5%）・経験値、騎乗評価表（`evaluateRide`：スタート / 位置取り / 折り合い / 仕掛け / スタミナ配分 / 鞭さばき を ◎○△× で採点、S〜D）、馬からのひとこと（`HORSE_SAYS` / `horseComment`、関西弁の荒ぶった口調）、落馬時の治療費。
@@ -61,6 +63,7 @@
 - `public.jockey_secrets` — 騎手ごとの合鍵のハッシュ（bcrypt）。外からは読めない。
 - `submit_jockey(...)` / `delete_jockey(...)` — `security definer`。合鍵が一致したときだけ書き換える。Supabase の診断で「anon が security definer 関数を実行できる」という警告が出るが、ログインなしで成績を送るための意図した設計。
 - `public.race_rooms`（参加コード・レース・seed・馬場）/ `public.room_entries`（メンバー・タイム・落馬・ゴースト）/ `public.challenges`（申し込み）— 誰でも読める。書き込みは関数だけ。`jockey_ok()` は合鍵確認用で外からは呼べない。
+- `public.race_records`（レース×騎手の自己ベスト：名前・タイム・馬・馬場）とビュー `race_top`（レースごとの 1 位、`security_invoker`）— 誰でも読める。書き込みは `submit_record`（合鍵確認、速いときだけ上書き）。
 - スキーマを変えるときは `supabase/migrations/` に新しいファイルを追加する（既存ファイルは書き換えない）。
 
 ## 作業の決まりごと
