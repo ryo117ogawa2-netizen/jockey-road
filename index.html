@@ -1997,7 +1997,7 @@ const Music={ctx:null,master:null,noise:null,on:true,unlocked:false,playing:fals
 };
 function renderMusicBtns(){for(const id of ['btnMusicT','btnMusicM']){const b=$(id);b.textContent=Music.on?'♪ 音楽 ON':'♪ 音楽 OFF';b.setAttribute('aria-pressed',Music.on?'true':'false');}}
 
-/* ------------ タイトル映像（ナイター競馬場を駆ける馬） ------------ */
+/* ------------ タイトル映像（昼の競馬場を駆ける馬） ------------ */
 const Title={raf:0,running:false,W:0,H:0,
   start(){if(this.running)return;this.running=true;this.resize();const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
     const tick=now=>{if(!this.running)return;drawTitle(now/1000);if(!reduce)this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);},
