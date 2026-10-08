@@ -1120,6 +1120,7 @@ const ITEMS=[
   {id:'koji',slot:'helmet',name:'工事用ヘルメット',price:3,lv:1,fx:{kakari:1},desc:'安全第一。'},
   {id:'joba_h',slot:'helmet',name:'乗馬用ヘルメット',price:40,lv:4,fx:{kakari:.88},desc:'乗馬クラブの払い下げ。'},
   {id:'chonmage',slot:'helmet',name:'ちょんまげカツラ',price:120,lv:6,fx:{kakari:.9,start:.03},desc:'気合いが入る。いざ出陣。',weird:1},
+  {id:'hachimaki',slot:'helmet',name:'必勝はちまき',price:8,lv:2,fx:{start:.03,whip:1.03,fall:1.2},desc:'気合いは満点、頭はノーガード。キュッと締めると反応が冴える。',weird:1},
   {id:'afro',slot:'helmet',name:'アフロのカツラ',price:30,lv:3,fx:{kakari:.95,going:.9},desc:'髪がクッション。雨もスポンジのように吸い取る。',weird:1},
   {id:'hangure',slot:'helmet',name:'半グレのヘルメット',price:80,lv:5,fx:{kakari:1.1,start:.05,fall:1.3},desc:'ステッカーだらけの半ヘル。気合いでゲートは速いが、頭はあまり守れない。',weird:1},
   {id:'kingyo',slot:'helmet',name:'金魚鉢',price:150,lv:6,fx:{going:.75,kakari:1.05},desc:'雨は一滴も入らない。中の金魚が気になって馬が少しそわそわ。',weird:1},
@@ -1152,6 +1153,7 @@ const ITEMS=[
   {id:'jersey',slot:'suit',name:'ジャージ',price:40,lv:4,fx:{speed:1.004},desc:'学校指定。'},
   {id:'biz',slot:'suit',name:'スーツ',price:120,lv:5,fx:{speed:1.002,cost:.7},desc:'社会人の身だしなみ。保険がしっかりしていて治療費が安い。',weird:1},
   {id:'idol',slot:'suit',name:'アイドル衣装',price:350,lv:7,fx:{speed:1.002,kakari:.88,whip:1.03},desc:'フリフリ。観客の声援で馬もノリノリ。',weird:1},
+  {id:'rollerstar',slot:'suit',name:'ローラーアイドル衣装',price:500,lv:7,fx:{speed:1.003,kakari:.9,whip:1.02},desc:'スパンコールがまぶしい80年代風ステージ衣装。ローラースケートと合わせると、華麗に滑って落馬しにくくなる（セット効果）。',weird:1},
   {id:'kigurumi',slot:'suit',name:'馬の着ぐるみ',price:300,lv:8,fx:{speed:.998,kakari:.85},desc:'馬が仲間だと思って安心する。',weird:1},
   {id:'shobu',slot:'suit',name:'勝負服',price:600,lv:10,fx:{speed:1.008},desc:'馬主の色をまとう。'},
   {id:'aero',slot:'suit',name:'空力勝負服',price:4000,lv:16,fx:{speed:1.012},desc:'風洞実験済み。'},
@@ -1181,6 +1183,7 @@ function gearFx(){
   const o={};MULT_KEYS.forEach(k=>o[k]=1);ADD_KEYS.forEach(k=>o[k]=0);
   for(const sl of SLOTS){const it=itemById(S.equip[sl.k])||itemById(DEFAULT_EQUIP[sl.k]);
     for(const [k,v] of Object.entries(it.fx)){if(MULT_KEYS.includes(k))o[k]*=v;else o[k]+=v;}}
+  if(S.equip.suit==='rollerstar'&&S.equip.shoes==='roller')o.fall/=1.5; // セット効果：ローラーで転ばない
   return o;
 }
 function fxChips(fx){
@@ -1237,7 +1240,7 @@ const WHIP_ART={
 };
 
 /* ヘルメット（頭の上にかぶせる） */
-const HAIR_SHOW=['kingyo','oukan','hangure'];
+const HAIR_SHOW=['kingyo','oukan','hangure','hachimaki'];
 const DOME='M54,84 C54,30 146,30 146,84 Z';
 const RIM='<rect x="50" y="78" width="100" height="10" rx="5"';
 const HELMET_ART={
@@ -1246,6 +1249,7 @@ const HELMET_ART={
   koji:`<path d="${DOME}" fill="#ffd23f" ${OL}/><path d="M100,36 v44" stroke="#e8b400" stroke-width="5"/><path d="M42,86 Q100,74 158,86 Q100,96 42,86 Z" fill="#ffd23f" ${OL}/><path d="M74,52 h12 v-6 h6 v6 h6 v6 h-6 v6 h-6 v-6 h-12 Z" fill="#2f8f45" transform="translate(16,4) scale(.75)"/>`,
   joba_h:`<path d="${DOME}" fill="#2f2f36" ${OL}/><circle cx="100" cy="33" r="5" fill="#2f2f36" ${OL}/><path d="M64,82 Q100,74 136,82 L134,90 Q100,84 66,90 Z" fill="#1a1a1f" ${OL}/><path d="M70,66 Q74,48 90,42" fill="none" stroke="#5a5a66" stroke-width="4"/>`,
   race_h:`<path d="${DOME}" fill="#e8443a" ${OL}/><path d="M90,34 L88,82 L112,82 L110,34 Z" fill="#fff"/><path d="${DOME}" fill="none" ${OL}/><circle cx="100" cy="30" r="8" fill="#ffd23f" ${OL}/><path d="M66,82 Q100,74 134,82 L132,89 Q100,84 68,89 Z" fill="#1d1d1d" ${OL}/>`,
+  hachimaki:`<path d="M140,74 Q156,66 166,58 L170,66 Q158,74 144,80 Z M142,78 Q154,86 160,98 L152,100 Q148,88 140,82 Z" fill="#fff" ${OL}/><path d="M57,72 Q100,60 143,72 L143,84 Q100,72 57,84 Z" fill="#fff" ${OL}/><circle cx="142" cy="78" r="5" fill="#fff" ${OL}/><text x="100" y="80" font-size="10" font-weight="900" text-anchor="middle" fill="#e0332b">必 勝</text>`,
   afro:c=>`<g fill="${c}" ${OL}>${[[60,70,20],[140,70,20],[72,46,22],[128,46,22],[100,34,26],[100,58,30],[56,92,14],[144,92,14]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g><g fill="${c}">${[[66,60,18],[134,60,18],[100,52,26],[86,40,18],[114,40,18]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g><path d="M78,40 q4,-4 8,0 M110,34 q4,-4 8,0 M124,58 q4,-4 8,0 M64,64 q4,-4 8,0" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>`,
   hangure:`<path d="M58,80 C58,38 142,38 142,80 Z" fill="#1d1d22" ${OL}/><path d="M60,80 L62,118 M140,80 L138,118" stroke="#1d1d22" stroke-width="3"/><rect x="72" y="56" width="16" height="10" rx="2" fill="#e8443a" transform="rotate(-12 80 61)"/><circle cx="114" cy="56" r="7" fill="#ffd23f"/><path d="M110,56 h8 M114,52 v8" stroke="#1d1d22" stroke-width="2"/><rect x="92" y="68" width="18" height="7" rx="1" fill="#fff" transform="rotate(6 100 72)"/><path d="M70,52 Q76,44 86,42" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><path d="M58,80 Q100,72 142,80" fill="none" ${OL}/>`,
   kingyo:`<circle cx="100" cy="94" r="58" fill="#bfe9ff" fill-opacity=".35" ${OL}/><path d="M48,74 Q100,64 152,74" fill="none" stroke="#5fc3ff" stroke-width="2.5"/><ellipse cx="100" cy="38" rx="30" ry="6" fill="#e6f7ff" ${OL}/><g transform="translate(128,62)"><ellipse cx="0" cy="0" rx="8" ry="5" fill="#ff7a1a" ${OL.replace('3','2')}/><path d="M7,0 L15,-6 L15,6 Z" fill="#ff7a1a" ${OL.replace('3','2')}/><circle cx="-4" cy="-1" r="1.3" fill="currentColor"/></g><circle cx="116" cy="50" r="2.5" fill="none" stroke="#5fc3ff" stroke-width="1.5"/><circle cx="112" cy="42" r="1.8" fill="none" stroke="#5fc3ff" stroke-width="1.5"/><path d="M62,104 Q60,80 74,62" fill="none" stroke="#fff" stroke-width="5" opacity=".7"/>`,
@@ -1272,6 +1276,7 @@ const SUIT_ART={
   jersey:{body:'#2f6fd6',sleeve:'#2f6fd6',pants:'#2f6fd6',stripe:'#fff',deco:`<path d="M100,146 V204" stroke="#fff" stroke-width="3"/><rect x="106" y="156" width="20" height="10" rx="2" fill="#fff" ${OL}/><path d="M109,161 h14" stroke="#2f6fd6" stroke-width="2"/>`},
   kigurumi:{body:'#a0612f',sleeve:'#a0612f',pants:'#a0612f',hand:'#3f2617',deco:`<ellipse cx="100" cy="182" rx="20" ry="18" fill="#f3e2c7" ${OL}/><path d="M86,144 Q100,152 114,144 L110,156 Q100,160 90,156 Z" fill="#3f2617"/>`},
   biz:{body:'#2b3245',sleeve:'#2b3245',pants:'#2b3245',deco:`<path d="M88,144 L100,170 L112,144 Z" fill="#fff" ${OL}/><path d="M97,150 L103,150 L105,176 L100,182 L95,176 Z" fill="#e8443a" ${OL.replace('3','2')}/><path d="M86,146 L98,178 M114,146 L102,178" stroke="#4a5470" stroke-width="3"/><rect x="112" y="162" width="12" height="4" fill="#fff"/>`},
+  rollerstar:{body:'#f4f6fa',sleeve:'#f4f6fa',pants:'#f4f6fa',deco:`<path d="M66,148 L74,140 L86,146 L80,158 Z M134,148 L126,140 L114,146 L120,158 Z" fill="#c9ced6" ${OL}/><path d="M88,144 L100,176 L112,144" fill="#2f6fd6" ${OL}/><path d="M88,144 L96,190 M112,144 L104,190" stroke="#f2b705" stroke-width="4"/>${[[76,170],[124,170],[80,188],[120,188],[72,182],[128,182],[84,160],[116,160]].map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${i%2?2.2:2.8}" fill="${i%3?'#f2b705':'#9fb4d8'}"/>`).join('')}<path d="M98,186 l2,-5 l2,5 l5,2 l-5,2 l-2,5 l-2,-5 l-5,-2 Z" fill="#ffe27a" ${OL.replace('3','1.5')}/><path d="M86,200 v38 M114,200 v38" stroke="#f2b705" stroke-width="3"/>`},
   idol:{body:'#ff8fc8',sleeve:'#ffc2e2',pants:'#ffc2e2',deco:`<path d="M66,196 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 q5,10 10,0 L134,204 Q100,214 66,204 Z" fill="#fff" ${OL}/><path d="M86,152 L100,158 L114,152 L114,166 L100,160 L86,166 Z" fill="#ffd23f" ${OL}/><circle cx="100" cy="159" r="4" fill="#e8443a" ${OL.replace('3','2')}/><path d="M84,182 l3,-3 a2.5,2.5 0 0 1 3,3 l-3,4 l-3,-4 a2.5,2.5 0 0 1 0,0 Z M112,178 l3,-3 a2.5,2.5 0 0 1 3,3 l-3,4 Z" fill="#fff"/><path d="M70,146 Q100,138 130,146" fill="none" stroke="#fff" stroke-width="5"/>`},
   uchu:{body:'#f4f6fa',sleeve:'#f4f6fa',pants:'#f4f6fa',deco:`<rect x="84" y="160" width="32" height="24" rx="4" fill="#c9ced6" ${OL}/><circle cx="92" cy="168" r="3" fill="#e8443a"/><circle cx="100" cy="168" r="3" fill="#ffd23f"/><circle cx="108" cy="168" r="3" fill="#2f8f45"/><rect x="89" y="175" width="22" height="4" rx="2" fill="#2f6fd6"/><path d="M68,192 H132" stroke="#c9d3e8" stroke-width="4"/><path d="M80,146 Q100,154 120,146" fill="none" stroke="#c9ced6" stroke-width="6"/>`},
   shobu:{body:'#e8443a',sleeve:'#ffd23f',pants:'#ffffff',deco:`<rect x="68" y="164" width="64" height="12" fill="#ffd23f"/><rect x="66" y="184" width="68" height="12" fill="#ffd23f"/><path d="M70,146 Q100,138 130,146 L134,204 Q100,210 66,204 Z" fill="none" ${OL}/>`},
