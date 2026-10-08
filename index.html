@@ -262,6 +262,37 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .vw-gear{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 body.noscroll{overflow:hidden}
 
+/* versus */
+.vs-body{display:flex;flex-direction:column;gap:14px}
+.vs-msg{background:var(--sun);border:3px solid var(--frame);border-radius:12px;padding:8px 12px;font-weight:700;color:var(--frame)}
+.vs-sub{font-size:12px;color:var(--muted);margin:0}
+.vs-form{display:flex;flex-direction:column;gap:6px}
+.vs-form h3{font-size:18px}
+.vs-form select,.vs-form input{font:inherit;font-weight:700;color:var(--ivory);background:var(--panel-2);border:2px solid var(--frame);border-radius:8px;padding:8px 10px;min-height:42px;width:100%;max-width:100%}
+.vs-join{display:flex;gap:8px}
+.vs-join input,.vs-join select{flex:1;min-width:0;text-transform:uppercase}
+.vs-invite{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--sun);border-radius:10px;padding:8px 10px;font-size:13px}
+.vs-invite .btn{padding:4px 10px;font-size:12px}
+.vs-ch{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.vs-rooms{display:flex;flex-direction:column;gap:8px}
+.vs-room{text-align:left;display:flex;flex-direction:column;gap:2px;width:100%;color:var(--ivory)}
+.vs-room b{font-size:16px;color:var(--frame)}
+.vs-state{font-size:12px;font-weight:700;color:var(--silk)}
+.vs-state.done{color:var(--good)}
+.vs-detail{display:flex;flex-direction:column;gap:8px}
+.vs-detail h2{font-size:22px;overflow-wrap:anywhere}
+.vs-code{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+.vs-code b{font-size:22px;letter-spacing:.12em;color:var(--frame)}
+.vs-code .btn{padding:4px 10px;font-size:12px}
+.vs-mems{display:flex;flex-direction:column;gap:6px}
+.vs-mem{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;border-bottom:1px dashed var(--line);padding-bottom:6px}
+.vs-mem.me .vs-mname{color:var(--silk)}
+.vs-mname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vs-ava{width:44px;background:var(--panel-2);border-radius:8px}
+.vs-badge{font-style:normal;font-family:var(--body);font-size:12px;background:var(--silk);color:#fff;border-radius:999px;padding:1px 8px;vertical-align:middle;margin-left:4px}
+.tile.go .vs-badge,.tile .vs-badge{border:2px solid #fff}
+.vs-res{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700}
+
 /* accounts */
 .acct-box{display:flex;flex-direction:column;gap:8px}
 .accts{display:flex;gap:8px;flex-wrap:wrap}
@@ -514,6 +545,10 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16l-1.5 12h-13zM9 8V6a3 3 0 0 1 6 0v2"/></svg>
           <b>アイテムを買う</b><span id="tileShop">装備を整える</span>
         </button>
+        <button type="button" class="tile" data-go="versus">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 14 10M10 4l10 10M4 4l4 4M16 16l4 4M14 20l6-6"/></svg>
+          <b>対戦 <i class="vs-badge" id="vsBadge" hidden>0</i></b><span id="tileVs">ルームを作って家族やみんなと勝負</span>
+        </button>
         <button type="button" class="tile" data-go="room">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-5h4v5"/></svg>
           <b>マイルーム</b><span id="tileRoom">家具を買って部屋をかざる</span>
@@ -653,6 +688,13 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       <div id="raceList" class="wrap" style="gap:24px"></div>
     </div>
 
+    <!-- 対戦 -->
+    <div class="panel" data-panel="versus" hidden>
+      <div><button class="btn ghost back" type="button" data-go="menu">← メニュー</button></div>
+      <div class="stage-h"><span class="label">VERSUS</span><h2>対戦</h2></div>
+      <div id="vsBody" class="vs-body"></div>
+    </div>
+
     <!-- マイルーム -->
     <div class="panel" data-panel="room" hidden>
       <div><button class="btn ghost back" type="button" data-go="menu">← メニュー</button></div>
@@ -768,6 +810,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
         <h2 id="resName" style="font-size:24px"></h2>
       </div>
     </div>
+    <div class="card vs-res" id="vsRes" hidden><span id="vsResTxt"></span><button class="btn" type="button" id="vsResGo">ルームの順位を見る</button></div>
     <div class="rewards" id="rewards"></div>
     <div class="card ev" id="evalBox"></div>
     <div class="tbl"><table>
@@ -793,6 +836,7 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
     <svg id="vwRoom" class="room-svg vw-room" viewBox="0 0 360 300" role="img" aria-label="騎手の部屋"></svg>
     <ul class="ava-gear vw-gear" id="vwGear"></ul>
     <span class="vw-meta" id="vwNote"></span>
+    <button class="btn" type="button" id="vwChallenge" hidden>この騎手に対戦を申し込む</button>
   </div>
 </div>
 
@@ -816,16 +860,32 @@ function makeRunner(h,num,n,isPlayer){
     noise:0,aiAgg:Math.random(),lane:0,laneT:0,whips:0,tired:false};
 }
 
-function createRaceState(race,playerHorse,lv,going,gear){
+/* 決まった種（seed）から同じ乱数列を作る：対戦ルームで全員が同じ相手・同じ馬で走るため */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+function withSeed(seed,fn){const orig=Math.random;Math.random=mulberry32(seed);try{return fn();}finally{Math.random=orig;}}
+/* opts.seed：出走馬と馬番を固定 / opts.ghosts：[{name,horse,s:位置の配列(0.5秒ごと),time,fell}] 先に走った人の走りを再生する */
+function createRaceState(race,playerHorse,lv,going,gear,opts){
   const n=race.field;
-  const pnum=1+Math.floor(Math.random()*n);
-  const runners=[];
-  for(let i=1;i<=n;i++){
-    const h=i===pnum?playerHorse:genHorse(race.R+rnd(-9,7),race.course==='パリロンシャン'?true:race.intl?'en':false);
-    const r=makeRunner(h,i,n,i===pnum);
-    r.frame=frameOf(i,n);
-    r.lane=clamp((i-1)/(n-1)*5,0,5);r.laneT=r.lane;
-    runners.push(r);
+  const build=()=>{
+    const pnum=1+Math.floor(Math.random()*n);
+    const runners=[];
+    for(let i=1;i<=n;i++){
+      const h=i===pnum?playerHorse:genHorse(race.R+rnd(-9,7),race.course==='パリロンシャン'?true:race.intl?'en':false);
+      const r=makeRunner(h,i,n,i===pnum);
+      r.frame=frameOf(i,n);
+      r.lane=clamp((i-1)/(n-1)*5,0,5);r.laneT=r.lane;
+      runners.push(r);
+    }
+    return {pnum,runners};
+  };
+  const {pnum,runners}=opts&&opts.seed?withSeed(opts.seed,build):build();
+  if(opts&&opts.ghosts){
+    let gi=0;
+    for(const r of runners){
+      if(r.isPlayer||gi>=opts.ghosts.length)continue;
+      const g=opts.ghosts[gi++];
+      Object.assign(r,makeRunner(Object.assign({},g.horse,{name:g.name}),r.num,n,false),{frame:r.frame,lane:r.lane,laneT:r.laneT,ghost:{s:g.s,dt:0.5,time:g.time,fell:g.fell},ghostOf:g.name});
+    }
   }
   const gm=GOING[going];
   if(gear){
@@ -847,6 +907,13 @@ function step(st,dt){
   const spurtAt=Math.max(300,R.straight+120);
   for(const r of st.runners){
     if(r.fin){r.d+=r.v*dt;r.v=Math.max(8,r.v-2.5*dt);continue;}
+    if(r.ghost){ // ゴースト：記録した位置をなぞるだけ
+      const g=r.ghost,len=g.s.length,f=st.t/g.dt,k=Math.floor(f);
+      if(!g.fell&&g.time>0&&st.t>=g.time){r.d=D;r.fin=true;r.time=g.time;st.order.push(r);continue;}
+      if(k>=len-1){r.d=len?g.s[len-1]:0;r.v=0;if(g.fell||!(g.time>0))r.gone=true;continue;}
+      r.v=(g.s[k+1]-g.s[k])/g.dt;r.d=g.s[k]+(g.s[k+1]-g.s[k])*(f-k);
+      continue;
+    }
     if(r.gateWait){continue;}
     if(r.startDelay>0){r.startDelay-=dt;continue;}
     const remain=D-r.d,phase=r.d/D;
@@ -1601,7 +1668,7 @@ function save(){
   const cur=STORE.list.find(p=>p.id===STORE.current);if(cur)cur.save=S;
   try{localStorage.setItem(KEY2,JSON.stringify(STORE));}catch(e){}
 }
-function switchTo(id){save();STORE.current=id;S=STORE.list.find(p=>p.id===id).save;save();renderHome();}
+function switchTo(id){save();STORE.current=id;S=STORE.list.find(p=>p.id===id).save;save();vsRoom=null;vsRooms=null;vsChallenges=[];vsInvite=null;vsMsg='';renderHome();vsCheckChallenges();}
 function addJockey(name){
   const id=newId(),sv=fresh();sv.name=name||`騎手${STORE.list.length+1}`;
   STORE.list.push({id,save:sv});switchTo(id);
@@ -1641,7 +1708,7 @@ async function initOnline(){
     ONLINE.url=String(c.url).replace(/\/$/,'');ONLINE.key=c.anonKey;ONLINE.ok=true;
     $('scopeTabs').hidden=false;
     for(const p of STORE.list)syncSave(p.id===STORE.current?S:p.save);
-    rankScope='online';renderRanking();fetchOnline();
+    rankScope='online';renderRanking();fetchOnline();vsCheckChallenges();renderVersus();
   }catch(e){}
 }
 async function syncSave(sv){
@@ -1702,6 +1769,8 @@ function openViewer(i){
     $('vwGear').innerHTML=SLOTS.map(sl=>{const it=itemById(o.equip[sl.k]);return `<li><span>${sl.n}</span><b>${esc(it.name)}</b>${it.weird?'<i class="weird">変</i>':''}</li>`;}).join('');
     $('vwNote').textContent='';
   }else{$('vwRoom').hidden=true;$('vwGear').innerHTML='';$('vwNote').textContent='この騎手はまだ見た目を送っていません（新しい版で遊ぶと表示されます）。';}
+  const canCh=ONLINE.ok&&rankScope==='online'&&!p.me&&!sv.room;
+  $('vwChallenge').hidden=!canCh;$('vwChallenge').dataset.to=canCh?p.id:'';$('vwChallenge').dataset.name=canCh?sv.name:'';
   $('viewer').hidden=false;document.body.classList.add('noscroll');
   setTimeout(()=>{try{$('vwClose').focus();}catch(e){}},30);
 }
@@ -1727,6 +1796,150 @@ function lockReason(r){
 }
 const money=x=>x>=10000?`${(x/10000).toFixed(x%10000?1:0)}億円`:x>=1?`${(Math.round(x*10)/10).toLocaleString()}万円`:x>0?`${Math.round(x*10000).toLocaleString()}円`:'0円';
 
+/* ------------ 対戦（ルーム・申し込み・ゴースト） ------------ */
+/* ルームの全員が同じレース・同じ馬場・同じ相手・同じ馬（seed で固定）で 1 回だけ走り、タイムで順位を決める。
+   先に走った人の走りは 0.5 秒ごとの位置（ghost）で保存され、あとから走る人のレースにゴーストとして出てくる。 */
+let vsLastRoom=null,vsRooms=null,vsChallenges=[],vsRoom=null,vsMsg='',vsInvite=null,vsTimer=0,curRoom=null;
+const VS_ERR={'room not found':'そのコードのルームはありません','room is full':'ルームが満員です（11人まで）','already finished':'このルームはもう走りました',
+  'too many rooms':'ルームを作りすぎです。明日また作れます','too many challenges':'申し込みが多すぎます。返事を待ってね','already in this room':'その騎手はもうルームにいます',
+  'challenge not found':'その申し込みはもう終わっています','unknown jockey':'その騎手が見つかりません','not in this room':'このルームのメンバーではありません'};
+function vsErrText(m){for(const [k,v] of Object.entries(VS_ERR))if(String(m).includes(k))return v;return 'うまく通信できませんでした。もう一度ためしてね';}
+async function rpc(name,body){
+  const c=cloudOf(S);
+  if(!S.cloudOk){await syncSave(S);S.cloudOk=true;save();} // 合鍵をサーバーに登録してから
+  const r=await fetch(`${ONLINE.url}/rest/v1/rpc/${name}`,{method:'POST',headers:sbHeaders(),body:JSON.stringify(Object.assign({p_id:c.id,p_secret:c.secret},body))});
+  const t=await r.text();let j=null;try{j=t?JSON.parse(t):null;}catch(e){}
+  if(!r.ok)throw new Error((j&&j.message)||t||r.status);
+  return j;
+}
+async function sbGet(q){const r=await fetch(`${ONLINE.url}/rest/v1/${q}`,{headers:sbHeaders()});if(!r.ok)throw new Error(r.status);return r.json();}
+const ROOM_SEL='id,code,title,race_id,seed,going,host_id,created_at,room_entries(jockey_id,name,look,time,fell,finished_at)';
+/* ルームの順位：走った人はタイム順、落馬は後ろ、まだの人は最後 */
+function roomOrder(room){
+  const es=(room.room_entries||[]).slice();
+  const key=e=>e.finished_at?(e.fell||!(+e.time>0)?1e6:+e.time):2e6;
+  return es.sort((a,b)=>key(a)-key(b));
+}
+async function vsLoad(){
+  if(!ONLINE.ok){vsRooms=[];renderVersus();return;}
+  const id=cloudOf(S).id;
+  try{
+    const mine=await sbGet(`room_entries?select=room_id&jockey_id=eq.${id}&order=joined_at.desc&limit=30`);
+    vsRooms=mine.length?await sbGet(`race_rooms?select=${ROOM_SEL}&id=in.(${mine.map(x=>x.room_id).join(',')})&order=created_at.desc`):[];
+    vsChallenges=await sbGet(`challenges?select=id,room_id,from_name,created_at,race_rooms(title,race_id)&to_id=eq.${id}&status=eq.pending&order=created_at.desc&limit=20`);
+    if(vsRoom){vsRoom=vsRooms.find(r=>r.id===vsRoom.id)||vsRoom;}
+    if(vsMsg==='対戦の情報を読み込めませんでした')vsMsg='';
+  }catch(e){vsMsg='対戦の情報を読み込めませんでした';}
+  renderVersus();renderMenu();
+}
+async function vsCheckChallenges(){
+  if(!ONLINE.ok||!S.cloud)return;
+  try{vsChallenges=await sbGet(`challenges?select=id,room_id,from_name,created_at,race_rooms(title,race_id)&to_id=eq.${S.cloud.id}&status=eq.pending&order=created_at.desc&limit=20`);renderMenu();}catch(e){}
+}
+function vsAvatar(e){return `<div class="vs-ava">${avatarSVG(cleanLook(e.look,e.name))}</div>`;}
+function renderVersus(){
+  if(!$('vsBody'))return;
+  if(!ONLINE.ok){$('vsBody').innerHTML=`<div class="card"><p style="margin:0">対戦はインターネットにつながっているときだけ遊べます（本番のページ https://jockey-road.vercel.app で開いてね）。</p></div>`;return;}
+  if(vsRoom){renderRoomDetail();return;}
+  const races=RACES.filter(r=>!lockReason(r));
+  let h='';
+  if(vsMsg)h+=`<div class="vs-msg">${esc(vsMsg)}</div>`;
+  if(vsChallenges.length)h+=`<div class="stage"><div class="stage-h"><span class="label">CHALLENGE</span><h2>届いた申し込み</h2></div>${vsChallenges.map(c=>{const r=c.race_rooms&&raceById(c.race_rooms.race_id);
+    return `<div class="card vs-ch"><div><b>${esc(c.from_name)}</b> から対戦の申し込み<br><span class="vs-sub">${esc(c.race_rooms?c.race_rooms.title:'')} ・ ${r?esc(r.name):'？'}</span></div><span class="rb-btns"><button class="btn" type="button" data-chyes="${c.id}">受ける</button><button class="btn ghost" type="button" data-chno="${c.id}">断る</button></span></div>`;}).join('')}</div>`;
+  h+=`<div class="card vs-form">
+    ${vsInvite?`<div class="vs-invite"><b>${esc(vsInvite.name)}</b> さんに対戦を申し込みます。レースを選んでルームを作ってね。<button class="btn ghost" type="button" id="vsInviteOff">やめる</button></div>`:''}
+    <h3>ルームを作る</h3>
+    <label class="label" for="vsRace">レース</label>
+    <select id="vsRace">${races.map(r=>`<option value="${r.id}">${esc(r.name)}（${r.course} ${r.surf==='ダ'?'ダ':'芝'}${r.dist}m）</option>`).join('')}</select>
+    <label class="label" for="vsTitle">ルーム名</label>
+    <input id="vsTitle" maxlength="24" value="${esc((vsInvite?`${S.name} vs ${vsInvite.name}`:`${S.name}の対戦ルーム`).slice(0,24))}">
+    <button class="btn" type="button" id="vsCreate">作る</button>
+    <p class="vs-sub">全員が同じ馬・同じ相手で走ります。作ったらコードを家族に教えよう。</p>
+  </div>
+  <div class="card vs-form">
+    <h3>コードで参加</h3>
+    <div class="vs-join"><input id="vsCode" maxlength="6" placeholder="例：A1B2C3" autocomplete="off" autocapitalize="characters"><button class="btn" type="button" id="vsJoin">参加</button></div>
+  </div>
+  <div class="stage"><div class="stage-h" style="justify-content:space-between"><div style="display:flex;gap:10px;align-items:baseline"><span class="label">ROOMS</span><h2>参加中のルーム</h2></div><button class="btn ghost" type="button" id="vsReload" style="padding:4px 12px;font-size:13px">更新</button></div>`;
+  if(vsRooms===null)h+=`<p class="vs-sub">読み込み中…</p>`;
+  else if(!vsRooms.length)h+=`<p class="vs-sub">まだありません。ルームを作るか、コードで参加しよう。</p>`;
+  else h+=`<div class="vs-rooms">${vsRooms.map(rm=>{const r=raceById(rm.race_id),es=rm.room_entries||[],me=es.find(e=>e.jockey_id===S.cloud.id),done=es.filter(e=>e.finished_at).length;
+    const top=roomOrder(rm)[0];
+    return `<button type="button" class="card vs-room" data-room="${rm.id}"><b>${esc(rm.title)}</b><span class="vs-sub">${r?esc(r.name):'？'} ・ ${es.length}人 ・ ${done}人が走った</span><span class="vs-state ${me&&me.finished_at?'done':''}">${me&&me.finished_at?(top&&top.finished_at&&top.jockey_id===S.cloud.id?'1位！':'走り終わった'):'まだ走っていない'}</span></button>`;}).join('')}</div>`;
+  h+='</div>';
+  $('vsBody').innerHTML=h;
+}
+function renderRoomDetail(){
+  const rm=vsRoom,r=raceById(rm.race_id),me=(rm.room_entries||[]).find(e=>e.jockey_id===S.cloud.id);
+  const order=roomOrder(rm);
+  let place=0;
+  const rows=order.map(e=>{
+    let st;if(!e.finished_at)st='<span class="vs-sub">まだ</span>';else if(e.fell||!(+e.time>0))st='<span style="color:#d93a2f">落馬</span>';else{place++;st=`<b class="num">${place}位</b> <span class="num vs-sub">${(+e.time).toFixed(1)}秒</span>`;}
+    return `<div class="vs-mem ${e.jockey_id===S.cloud.id?'me':''}">${vsAvatar(e)}<b class="vs-mname">${esc(e.name)}</b><span>${st}</span></div>`;}).join('');
+  const others=(onlineRows||[]).filter(x=>x.id!==S.cloud.id&&!(rm.room_entries||[]).some(e=>e.jockey_id===x.id)).slice(0,100);
+  $('vsBody').innerHTML=`<div><button class="btn ghost back" type="button" id="vsBack">← ルーム一覧</button></div>
+    ${vsMsg?`<div class="vs-msg">${esc(vsMsg)}</div>`:''}
+    <div class="card vs-detail">
+      <span class="label">ROOM</span><h2>${esc(rm.title)}</h2>
+      <div class="chips">${r?`<span class="chip on">${esc(r.name)}</span><span class="chip">${esc(r.course)} ${r.surf==='ダ'?'ダート':'芝'}${r.dist}m</span>`:'<span class="chip">不明なレース</span>'}<span class="chip">馬場：${esc(rm.going)}</span></div>
+      <div class="vs-code">参加コード <b class="num">${esc(rm.code)}</b> <button class="btn ghost" type="button" id="vsCopy">コピー</button></div>
+      <div class="vs-mems">${rows}</div>
+      <div class="rb-btns">${me&&!me.finished_at&&r?'<button class="btn" type="button" id="vsRun">このルームで出走</button>':me&&me.finished_at?'<span class="vs-sub">走り終わりました。みんなの結果を待とう。</span>':''}<button class="btn ghost" type="button" id="vsReload">更新</button></div>
+    </div>
+    <div class="card vs-form">
+      <h3>ランキングの騎手に申し込む</h3>
+      ${others.length?`<div class="vs-join"><select id="vsTo">${others.map(x=>`<option value="${x.id}">${esc(x.save.name)}（Lv.${x.save.lv}）</option>`).join('')}</select><button class="btn" type="button" id="vsSend">申し込む</button></div>`:'<p class="vs-sub">申し込める騎手がいません（ランキングの「みんな」を開くと読み込まれます）。</p>'}
+      <p class="vs-sub">相手のメニューに「対戦の申し込み」が届きます。コードを教えて参加してもらうこともできます。</p>
+    </div>`;
+}
+function vsSetMsg(m){vsMsg=m;renderVersus();}
+async function vsCreate(){
+  const race=$('vsRace').value,title=$('vsTitle').value.trim().slice(0,24)||`${S.name}の対戦ルーム`;
+  const r=raceById(race);if(!r)return;
+  $('vsCreate').disabled=true;
+  try{
+    const out=await rpc('create_room',{p_name:S.name.slice(0,12),p_look:lookOf(S),p_title:title,p_race:race,p_going:pickGoing(r)});
+    if(vsInvite){try{await rpc('send_challenge',{p_room:out.id,p_to:vsInvite.id});vsMsg=`${vsInvite.name}さんに申し込みました。参加コードは ${out.code} です`;}catch(e){vsMsg=vsErrText(e.message);}vsInvite=null;}
+    else vsMsg=`ルームができました。参加コードは ${out.code} です`;
+    await vsLoad();vsRoom=(vsRooms||[]).find(x=>x.id===out.id)||null;renderVersus();
+  }catch(e){vsSetMsg(vsErrText(e.message));}
+}
+async function vsJoin(){
+  const code=$('vsCode').value.trim().toUpperCase();
+  if(!/^[A-Z0-9]{6}$/.test(code)){vsSetMsg('コードは英数字6文字です');return;}
+  try{const rid=await rpc('join_room',{p_name:S.name.slice(0,12),p_look:lookOf(S),p_code:code});vsMsg='ルームに参加しました';await vsLoad();vsRoom=(vsRooms||[]).find(x=>x.id===rid)||null;renderVersus();}
+  catch(e){vsSetMsg(vsErrText(e.message));}
+}
+async function vsRespond(id,accept){
+  try{const rid=await rpc('respond_challenge',{p_name:S.name.slice(0,12),p_look:lookOf(S),p_challenge:id,p_accept:accept});
+    vsMsg=accept?'申し込みを受けました。出走しよう！':'申し込みを断りました';await vsLoad();if(accept){vsRoom=(vsRooms||[]).find(x=>x.id===rid)||null;renderVersus();}}
+  catch(e){vsSetMsg(vsErrText(e.message));}
+}
+/* ルームの馬と、先に走った人のゴーストを用意して出走 */
+async function vsRun(){
+  const rm=vsRoom,race=raceById(rm.race_id);if(!race)return;
+  $('vsRun').disabled=true;
+  let ghosts=[];
+  try{
+    const rows=await sbGet(`room_entries?select=jockey_id,name,time,fell,ghost&room_id=eq.${rm.id}&finished_at=not.is.null&limit=11`);
+    ghosts=rows.filter(g=>g.jockey_id!==S.cloud.id&&Array.isArray(g.ghost)).slice(0,race.field-1).map(g=>({
+      name:String(g.name).slice(0,12),fell:!!g.fell,time:+g.time>0&&+g.time<1000?+g.time:0,
+      s:g.ghost.slice(0,2400).map(v=>clamp(Number(v)||0,0,race.dist+60))}));
+  }catch(e){vsSetMsg('ゴーストを読み込めませんでした。もう一度ためしてね');return;}
+  usedNames.clear();
+  const horse=withSeed(rm.seed,()=>genHorse(race.R,false));
+  curRoom={id:rm.id,seed:rm.seed,ghosts:ghosts.map(g=>Object.assign(g,{horse}))};
+  curRace=race;curGoing=rm.going;offers=[horse];picked=0;
+  startRace();
+}
+async function vsSubmit(time,fell,ghost){
+  const id=curRoom.id;
+  try{await rpc('submit_room_result',{p_room:id,p_time:fell?null:Math.round(time*100)/100,p_fell:fell,p_ghost:ghost});return true;}
+  catch(e){vsMsg=vsErrText(e.message);return false;}
+}
+function vsOpenRoom(id){vsRoom=(vsRooms||[]).find(x=>x.id===id)||null;vsMsg='';renderVersus();window.scrollTo(0,0);}
+function vsStartPolling(){clearInterval(vsTimer);vsTimer=setInterval(()=>{const a=document.activeElement;if(homePanel==='versus'&&!$('home').hidden&&!(a&&$('vsBody').contains(a)&&/INPUT|SELECT/.test(a.tagName)))vsLoad();},20000);}
+
 /* ------------ screens ------------ */
 const $=id=>document.getElementById(id);
 let homePanel='menu';
@@ -1739,7 +1952,7 @@ function show(id){
 }
 function showPanel(name){
   if(homePanel!==name&&['room','shop','profile'].includes(homePanel))syncSave(S); // 見た目の変更をランキングにも反映
-  homePanel=name;
+  const prevPanel=homePanel;homePanel=name;
   if(name==='name'){
     const first=S.name==='若手騎手'&&S.starts===0;
     $('nameEyebrow').textContent=first?'はじめまして':'騎手名';
@@ -1750,6 +1963,8 @@ function showPanel(name){
   }
   if(name!=='shop')tryId=null;
   if(name!=='room'){roomTrial=null;roomDragTrial=null;roomSel=-1;}
+  if(name==='versus'){if(prevPanel!=='versus'){vsRoom=null;vsRooms=null;vsLoad();vsStartPolling();}}
+  else if(name==='menu')vsCheckChallenges();
   for(const el of document.querySelectorAll('#home .panel'))el.hidden=el.dataset.panel!==name;
   renderHome();show('home');
   if(name==='profile'&&rankScope==='online')fetchOnline();
@@ -1762,6 +1977,8 @@ function renderMenu(){
   $('tileRaces').textContent=`出走できるレース ${open} / ${RACES.length}`;
   const buyable=ITEMS.filter(it=>!S.owned.includes(it.id)&&S.lv>=it.lv&&S.money>=it.price).length;
   $('tileShop').textContent=buyable?`いま買えるアイテム ${buyable}個`:'装備を整える';
+  const nch=vsChallenges.length;$('vsBadge').hidden=!nch;$('vsBadge').textContent=nch;
+  $('tileVs').textContent=nch?`対戦の申し込みが${nch}件届いています`:'ルームを作って家族やみんなと勝負';
   $('tileRoom').textContent=`家具 ${S.furn.length-2} / ${FURN.length-2}個 ・ 部屋をかざる`;
   $('tileProfile').textContent=`${S.starts}戦${S.wins}勝 ・ ランキング・騎手の切り替え`;
 }
@@ -1886,6 +2103,7 @@ function genOffers(r){
   return list.sort((a,b)=>overallOf(a)-overallOf(b));
 }
 function openCard(id){
+  curRoom=null;
   curRace=raceById(id);curGoing=pickGoing(curRace);
   offers=genOffers(curRace);picked=-1;
   const r=curRace;
@@ -1947,13 +2165,14 @@ function say(t,pri=1){$('hCall').textContent='実況：'+t;lastSayReal=performan
 function startRace(){
   const h=offers[picked];
   usedNames.clear();usedNames.add(h.name);
-  st=createRaceState(curRace,h,S.lv,curGoing,gearFx());st.fx=gearFx();
+  st=createRaceState(curRace,h,S.lv,curGoing,gearFx(),curRoom?{seed:curRoom.seed,ghosts:curRoom.ghosts}:null);st.fx=gearFx();
+  if(curRoom){st.room=curRoom;st.rec={s:[],next:0};}
   const r=curRace;
   $('rsName').textContent=r.name;
   $('rsMeta').textContent=`${r.course} ${r.surf==='ダ'?'ダ':'芝'}${r.dist}m ${st.going}`;
   const field=standings(st).map(x=>x);
   const pop=[...st.runners].sort((a,b)=>overallOf(b)-overallOf(a)+ (Math.random()-0.5)*4).indexOf(st.player)+1;
-  $('hHorse').textContent=`${st.player.num}番 ${h.name}（${STYLE[h.style].label}・${pop}番人気）`;
+  $('hHorse').textContent=`${st.player.num}番 ${h.name}（${STYLE[h.style].label}・${pop}番人気）`+(curRoom?` ・ 対戦（ゴースト${curRoom.ghosts.length}人）`:'');
   $('btnHold').setAttribute('aria-pressed','false');
   speedMul=1;$('btnSpeed').textContent='早送り ×1';
   finishWait=0;running=false;
@@ -2190,6 +2409,7 @@ function loop(now){
   const simDt=real*4*speedMul;
   const sub=Math.ceil(simDt/(1/30));
   for(let i=0;i<sub;i++)step(st,simDt/sub);
+  if(st.rec&&!st.player.fin&&!st.player.fell){while(st.t>=st.rec.next&&st.rec.s.length<2400){st.rec.s.push(Math.round(st.player.d*10)/10);st.rec.next+=0.5;}}
   logTick(simDt);
   if(st.player.react){st.player.react.t-=real;if(st.player.react.t<=0)st.player.react=null;}
   // lanes
@@ -2197,10 +2417,10 @@ function loop(now){
   order.forEach((r,i)=>{if(r.d>150){r.laneT=Math.min(r.laneT,(i%6)*0.95);}r.lane+=(r.laneT-r.lane)*Math.min(1,real*1.2);});
   commentary();
   draw();updateHud();
-  if(st.player.fin||(st.player.fell&&st.runners.every(r=>r.fin||r.isPlayer))){
+  if(st.player.fin||(st.player.fell&&st.runners.every(r=>r.fin||r.gone||r.isPlayer))){
     finishWait+=real;
     if(finishWait>0.6)speedMul=Math.max(speedMul,3);
-    const all=st.runners.every(r=>r.fin);
+    const all=st.runners.every(r=>r.fin||r.gone);
     if((all&&finishWait>1.6)||finishWait>6){running=false;finishRace();return;}
   }
   raf=requestAnimationFrame(loop);
@@ -2288,6 +2508,7 @@ function draw(){
   const runners=[...st.runners].sort((a,b)=>a.lane-b.lane);
   const len=Math.max(18,2.4*ppm);
   for(const r of runners){
+    if(r.gone)continue;
     const x=px(r.d);if(x<-60||x>W+60)continue;
     const y=y0+14+laneH*(r.lane+0.5);
     const bob=Math.sin(st.t*9+r.num)*1.2*(r.v/16);
@@ -2326,6 +2547,7 @@ function drawMood(x,y,m){
 function drawHorse(x,y,len,r){
   const bx=x-len*0.55;
   ctx.save();
+  if(r.ghost)ctx.globalAlpha=0.6;
   if(r.isPlayer){ctx.strokeStyle='#dcad42';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(bx,y,len*0.75,len*0.36,0,0,7);ctx.stroke();}
   // tail
   ctx.strokeStyle='#1a120c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx-len*0.4,y);ctx.lineTo(bx-len*0.62,y+Math.sin(st.t*12+r.num)*3);ctx.stroke();
@@ -2342,6 +2564,7 @@ function drawHorse(x,y,len,r){
   ctx.fillText(r.num,bx+len*0.05,y+0.5);
   ctx.textBaseline='alphabetic';
   if(r.isPlayer){ctx.fillStyle='#dcad42';ctx.font='12px "Dela Gothic One",sans-serif';ctx.fillText(r.fell?'カラ馬':'あなた',bx,y-len*0.42);}
+  if(r.ghostOf){ctx.globalAlpha=0.95;ctx.font='11px "Dela Gothic One",sans-serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(29,59,139,.8)';ctx.strokeText(r.ghostOf,bx,y-len*0.42);ctx.fillStyle='#fff';ctx.fillText(r.ghostOf,bx,y-len*0.42);}
   if(r.isPlayer&&r.react)drawMood(bx+len*0.55,y-len*0.5,r.react);
   if(r.whipT>0&&r.isPlayer){const ng=S.equip.whip==='negi';ctx.strokeStyle=ng?'#7cc35a':'#efe8d2';ctx.lineWidth=ng?3:1.5;ctx.beginPath();ctx.moveTo(bx-len*0.1,y-len*0.1);ctx.lineTo(bx-len*0.45,y-len*0.3);ctx.stroke();}
   ctx.restore();
@@ -2503,7 +2726,8 @@ function finishRace(){
   const mult=[1,.6,.45,.32,.25][place-1]??.12;
   const ev=evaluateRide(order);
   const expBase=fell?3:Math.round(R.R*mult*4),exp=fell?3:Math.round(expBase*(1+ev.bonus));
-  const prize=!fell&&place<=5?R.purse*[1,.4,.25,.15,.1][place-1]:0;
+  const room=st.room,practice=!!(room&&lockReason(R)); // まだ出られないレースのルームは練習あつかい（賞金なし・経験値少し）
+  const prize=!practice&&!fell&&place<=5?R.purse*[1,.4,.25,.15,.1][place-1]:0;
   const jk=prize*0.05;
   let injury=null;
   if(fell){
@@ -2515,12 +2739,25 @@ function finishRace(){
   }
   const lvBefore=S.lv,achBefore=new Set(ACHV.filter(a=>a.ok(S)).map(a=>a.id));
   if(ev.grade==='S')S.sCount=(S.sCount||0)+1;
-  S.starts++;S.exp+=exp;S.income+=jk;S.money+=jk;
-  if(place===1){S.wins++;S.won[R.id]=(S.won[R.id]||0)+1;if(R.grade)S.gradeWins++;}
-  if(!fell&&(!S.best[R.id]||place<S.best[R.id]))S.best[R.id]=place;
+  if(practice){S.exp+=Math.round(exp*0.3);}
+  else{
+    S.starts++;S.exp+=exp;S.income+=jk;S.money+=jk;
+    if(place===1){S.wins++;S.won[R.id]=(S.won[R.id]||0)+1;if(R.grade)S.gradeWins++;}
+    if(!fell&&(!S.best[R.id]||place<S.best[R.id]))S.best[R.id]=place;
+  }
   while(S.exp>=needExp(S.lv)){S.exp-=needExp(S.lv);S.lv++;}
-  const firstArc=R.id==='arc'&&place===1&&!S.arc;
-  if(R.id==='arc'&&place===1)S.arc=true;
+  const firstArc=!practice&&R.id==='arc'&&place===1&&!S.arc;
+  if(!practice&&R.id==='arc'&&place===1)S.arc=true;
+  // 対戦ルーム：タイムとゴーストを送る
+  $('vsRes').hidden=!room;$('btnAgain').hidden=!!room;
+  if(room){
+    vsLastRoom=room.id;
+    if(!fell)st.rec.s.push(R.dist);
+    const myTime=fell?0:st.player.time;
+    $('vsResTxt').textContent=`対戦ルームに結果を送っています…（${fell?'落馬':myTime.toFixed(1)+'秒'}${practice?'・まだ出られないレースなので練習あつかい':''}）`;
+    vsSubmit(myTime,fell,st.rec.s).then(ok=>{$('vsResTxt').textContent=ok?`対戦ルームに結果を送りました（${fell?'落馬':myTime.toFixed(1)+'秒'}）。みんなの順位を見よう！`:vsMsg;});
+    curRoom=null;
+  }
   save();
   syncSave(S).then(()=>{if(rankScope==='online')fetchOnline();});
   // render
@@ -2543,7 +2780,7 @@ function finishRace(){
   const t0=order[0].time;
   $('resBody').innerHTML=order.map((r,i)=>`<tr class="${r.isPlayer?'me':''}"><td class="num">${r.isPlayer&&fell?'中止':i+1}</td>
     <td><span class="waku" style="background:${FRAME_COLORS[r.frame]};color:${FRAME_TEXT[r.frame]}">${r.frame+1}</span></td>
-    <td class="num">${r.num}</td><td>${r.name}${r.isPlayer?'（あなた）':''}</td><td>${STYLE[r.style].label}</td>
+    <td class="num">${r.num}</td><td>${esc(r.name)}${r.isPlayer?'（あなた）':r.ghostOf?'（ゴースト）':''}</td><td>${STYLE[r.style].label}</td>
     <td class="num">${r.isPlayer&&fell?'—':fmtTime(r.time)}</td><td>${r.isPlayer&&fell?'落馬・競走中止':i?marginTxt(r.time-order[i-1].time):''}</td></tr>`).join('');
   $('arcBanner').hidden=!(R.id==='arc'&&place===1);
   if(R.id==='arc'&&place===1)$('arcText').textContent=`地方競馬からデビューした${S.name}が、${st.player.name}とともにパリロンシャンの頂点に立ちました。通算${S.starts}戦${S.wins}勝。`;
@@ -2620,6 +2857,22 @@ $('groupForm').addEventListener('submit',async e=>{
 $('rankBody').addEventListener('click',e=>{const r=e.target.closest('[data-view]');if(r)openViewer(+r.dataset.view);});
 $('rankBody').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const r=e.target.closest('[data-view]');if(r){e.preventDefault();openViewer(+r.dataset.view);}});
 $('vwClose').onclick=closeViewer;
+$('vwChallenge').onclick=()=>{const b=$('vwChallenge');vsInvite={id:b.dataset.to,name:b.dataset.name};vsRoom=null;vsMsg='';closeViewer();showPanel('versus');};
+$('vsResGo').onclick=()=>{const id=vsLastRoom;showPanel('versus');vsLoad().then(()=>{if(id)vsOpenRoom(id);});};
+$('vsBody').addEventListener('click',e=>{
+  const t=e.target,g=k=>{const b=t.closest(`[data-${k}]`);return b&&b.dataset[k];};let id;
+  if(t.closest('#vsCreate'))vsCreate();
+  else if(t.closest('#vsJoin'))vsJoin();
+  else if(t.closest('#vsReload'))vsLoad();
+  else if(t.closest('#vsBack')){vsRoom=null;vsMsg='';renderVersus();}
+  else if(t.closest('#vsRun'))vsRun();
+  else if(t.closest('#vsInviteOff')){vsInvite=null;renderVersus();}
+  else if(t.closest('#vsCopy')){try{navigator.clipboard.writeText(vsRoom.code).then(()=>{t.textContent='コピーしました';});}catch(err){}}
+  else if(t.closest('#vsSend')){const to=$('vsTo').value;rpc('send_challenge',{p_room:vsRoom.id,p_to:to}).then(()=>vsSetMsg('申し込みを送りました。相手が受けるとルームに入ります'),err=>vsSetMsg(vsErrText(err.message)));}
+  else if((id=g('chyes')))vsRespond(id,true);
+  else if((id=g('chno')))vsRespond(id,false);
+  else if((id=g('room')))vsOpenRoom(id);
+});
 $('viewer').addEventListener('click',e=>{if(e.target.id==='viewer')closeViewer();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('viewer').hidden)closeViewer();});
 $('rankTabs').addEventListener('click',e=>{const b=e.target.closest('[data-rk]');if(b){rankKey=b.dataset.rk;renderRanking();}});
