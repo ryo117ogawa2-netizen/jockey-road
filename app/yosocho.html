@@ -40,6 +40,12 @@ section[role="tabpanel"]{display:grid;gap:16px}
 .race-h h2{font-family:var(--f-disp);font-size:1.3rem;margin:0;line-height:1.3}
 .status{justify-self:start;font-size:.72rem;font-weight:700;padding:1px 8px;border-radius:3px;background:var(--turf-soft);color:var(--turf)}
 .status.res{background:var(--ink);color:var(--card)}
+.race.shobu{border:2.5px solid var(--red)}
+.shobu-tag{justify-self:start;font-family:var(--f-disp);font-size:.85rem;letter-spacing:.12em;color:var(--card);background:var(--red);padding:2px 10px;border-radius:3px}
+.shobu-banner{display:grid;gap:2px;background:var(--card);border:2.5px solid var(--red);border-radius:6px;padding:10px 14px;text-decoration:none;color:var(--ink)}
+.shobu-banner .k{font-family:var(--f-disp);color:var(--red);letter-spacing:.12em;font-size:.85rem}
+.shobu-banner b{font-size:1.05rem}
+.shobu-banner span{font-size:.82rem;color:var(--mute)}
 .net{padding:8px 14px;font-size:.85rem;color:var(--mute);border-bottom:1px dashed var(--line)}
 .marks{list-style:none;margin:0;padding:4px 0}
 .marks li{display:grid;grid-template-columns:2.2rem 2rem minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 14px}
@@ -151,11 +157,15 @@ function renderRaces(){
   const d=DAYS.find(x=>x.id===curDay); const box=$('#races');
   if(!d){box.innerHTML='<div class="empty">予想はまだありません。毎週土・日の朝9時ごろに、その日の重賞の予想がここに届きます。</div>';return}
   const v=d.data;
-  let h=(v.races||[]).map(r=>{
+  const sb=(v.races||[]).findIndex(r=>r.shobu);
+  let h='';
+  if(sb>=0){const r=v.races[sb],m=(r.marks||[])[0]||{};
+    h+=`<a class="shobu-banner" href="#race-${sb}"><span class="k">今日の勝負レース</span><b>${esc(r.course.split(' ')[0])} ${esc(r.name)}　◎${esc(m.uma||'')} ${esc(m.name||'')}</b><span>${esc(r.shobuWhy||'')}</span></a>`}
+  h+=(v.races||[]).map((r,i)=>{
     const res=r.result;
     const marks=(r.marks||[]).map(m=>`<li><span class="mk ${m.mark==='紐'?'himo':''}">${esc(m.mark)}</span>${ban(m)}<span class="who"><b>${esc(m.name)}</b><span class="j">${esc(m.jockey)}</span>${fin(m)}${m.why?`<span class="why">${esc(m.why)}</span>`:''}</span><span class="pct">${m.pct!=null?esc(m.pct)+'%':''}</span></li>`).join('');
-    return `<article class="race">
-      <div class="race-h"><span class="meta">${esc(r.course)}</span><h2>${esc(r.name)}</h2><span class="status ${res?'res':''}">${res?'結果確定':(r.status||'予想')}</span></div>
+    return `<article class="race ${r.shobu?'shobu':''}" id="race-${i}">
+      <div class="race-h">${r.shobu?'<span class="shobu-tag">勝負レース</span>':''}<span class="meta">${esc(r.course)}</span><h2>${esc(r.name)}</h2><span class="status ${res?'res':''}">${res?'結果確定':(r.status||'予想')}</span></div>
       ${r.net?`<div class="net">ネットの評価：${esc(r.net)}</div>`:''}
       <ul class="marks">${marks}</ul>
       ${r.partner?`<div class="partner"><h3>相棒の本命</h3><p>${esc(r.partner)}</p></div>`:''}
