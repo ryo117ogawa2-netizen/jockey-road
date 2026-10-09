@@ -16,3 +16,6 @@
 - 外国血統・オルフェーヴル産駒のダート替わり初戦
 - 前走の出遅れ・不利で人気を落とした馬
 - 人気の軸＋条件に合う人気薄を紐に
+
+## 予想帖アプリ
+https://claude.ai/artifact/EquzBDvbdhSHPGUsi2ba42 （ページは app/yosocho.html。中身は artifact の db：days/日付・watch/馬・meta/summary）

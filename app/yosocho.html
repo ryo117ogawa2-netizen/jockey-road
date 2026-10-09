@@ -1,0 +1,223 @@
+<title>相棒の予想帖</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* 競馬新聞の紙面：芝の緑を差し色に、印（◎○▲）と枠色の馬番で読ませる。スマホ1列、タブで切替 */
+:root{
+  --paper:#f6f5ef; --card:#ffffff; --ink:#1d2420; --mute:#68716b; --line:#dcdcd2;
+  --turf:#1f6b45; --turf-soft:#e3efe7; --red:#b8322a; --gold:#a8790f;
+  --good:#1f6b45; --bad:#b8322a;
+  --f-disp:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+  /* 枠色（JRA） */
+  --w1:#ffffff; --w1t:#1d2420; --w2:#222222; --w2t:#fff; --w3:#d7322a; --w3t:#fff; --w4:#2a62c9; --w4t:#fff;
+  --w5:#f2cf1d; --w5t:#1d2420; --w6:#2f9a4c; --w6t:#fff; --w7:#ef8a1f; --w7t:#fff; --w8:#ef8fb0; --w8t:#1d2420;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#141815; --card:#1c211e; --ink:#e9ece6; --mute:#9aa49d; --line:#2e3631;
+  --turf:#5cbf8a; --turf-soft:#1f2f26; --red:#ec6b60; --gold:#e0b24a; --good:#5cbf8a; --bad:#ec6b60; --w2:#000; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#141815; --card:#1c211e; --ink:#e9ece6; --mute:#9aa49d; --line:#2e3631;
+  --turf:#5cbf8a; --turf-soft:#1f2f26; --red:#ec6b60; --gold:#e0b24a; --good:#5cbf8a; --bad:#ec6b60; --w2:#000; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;padding-inline:16px;padding-block:0 40px}
+.wrap{max-width:720px;margin:0 auto}
+header{padding-block:20px 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-disp);font-size:1.75rem;margin:0;letter-spacing:.04em;text-wrap:balance}
+.sub{color:var(--mute);font-size:.82rem}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;gap:4px;border-bottom:2px solid var(--ink);margin-bottom:16px;overflow-x:auto}
+nav button{font:inherit;font-weight:700;background:none;border:0;color:var(--mute);padding:10px 12px;cursor:pointer;white-space:nowrap;border-bottom:4px solid transparent;margin-bottom:-2px}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--turf)}
+nav button:focus-visible,.chip:focus-visible{outline:2px solid var(--turf);outline-offset:2px}
+section[role="tabpanel"]{display:grid;gap:16px}
+.daybar{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:inherit;font-size:.85rem;font-weight:700;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--turf);border-color:var(--turf);color:var(--card)}
+.race{background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.race-h{padding:12px 14px 10px;border-bottom:1px solid var(--line);display:grid;gap:2px}
+.race-h .meta{font-size:.78rem;color:var(--mute);letter-spacing:.05em}
+.race-h h2{font-family:var(--f-disp);font-size:1.3rem;margin:0;line-height:1.3}
+.status{justify-self:start;font-size:.72rem;font-weight:700;padding:1px 8px;border-radius:3px;background:var(--turf-soft);color:var(--turf)}
+.status.res{background:var(--ink);color:var(--card)}
+.net{padding:8px 14px;font-size:.85rem;color:var(--mute);border-bottom:1px dashed var(--line)}
+.marks{list-style:none;margin:0;padding:4px 0}
+.marks li{display:grid;grid-template-columns:2.2rem 2rem minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 14px}
+.marks li+li{border-top:1px solid var(--line)}
+.mk{font-family:var(--f-disp);font-size:1.45rem;line-height:1;text-align:center;color:var(--red)}
+.mk.himo{font-size:.78rem;font-family:var(--f-body);font-weight:700;color:var(--mute)}
+.ban{width:2rem;height:2rem;display:grid;place-items:center;font-weight:700;border:1.5px solid var(--ink);border-radius:3px;font-variant-numeric:tabular-nums;font-size:.95rem}
+.who{min-width:0}
+.who b{font-size:1rem}
+.who .j{color:var(--mute);font-size:.8rem;margin-left:6px}
+.who .why{display:block;font-size:.8rem;color:var(--mute);line-height:1.45}
+.pct{font-variant-numeric:tabular-nums;font-size:.8rem;font-weight:700;color:var(--turf);text-align:right}
+.fin{font-size:.72rem;font-weight:700;padding:1px 6px;border-radius:3px;margin-left:6px}
+.fin.ok{background:var(--good);color:var(--card)} .fin.ng{background:var(--line);color:var(--mute)}
+.partner{margin:0 14px 12px;padding:10px 12px;background:var(--turf-soft);border-radius:4px;font-size:.88rem}
+.partner h3{margin:0 0 4px;font-size:.78rem;letter-spacing:.08em;color:var(--turf)}
+.partner p{margin:0}
+.result{margin:0 14px 12px;padding:10px 12px;border:1.5px solid var(--ink);border-radius:4px;font-size:.88rem;display:grid;gap:4px}
+.result h3{margin:0;font-size:.78rem;letter-spacing:.08em}
+.weight{padding:0 14px 12px;font-size:.82rem;color:var(--mute)}
+.review{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--turf);border-radius:4px;padding:12px 14px;font-size:.9rem;white-space:pre-wrap}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:6px;padding:24px 16px;text-align:center;color:var(--mute)}
+.watch{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:4px}
+.watch .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.watch b{font-family:var(--f-disp);font-size:1.15rem}
+.tag{font-size:.72rem;font-weight:700;padding:1px 8px;border-radius:3px;background:var(--turf-soft);color:var(--turf)}
+.tag.run{background:var(--gold);color:var(--card)}
+.watch .from{font-size:.8rem;color:var(--mute)}
+.watch .pt{font-size:.85rem}
+h2.sec{font-family:var(--f-disp);font-size:1.15rem;margin:8px 0 0}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+.tile .k{font-size:.75rem;color:var(--mute)}
+.tile .v{font-family:var(--f-disp);font-size:1.6rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.tile .v small{font-size:.8rem;color:var(--mute);font-family:var(--f-body)}
+.tbl{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:.84rem}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+th{font-size:.74rem;color:var(--mute);font-weight:700}
+.bar{display:inline-block;height:7px;border-radius:2px;background:var(--turf);vertical-align:middle;margin-right:6px}
+.bar.lo{background:var(--bad)}
+.v-ok{color:var(--good);font-weight:700}.v-ng{color:var(--bad);font-weight:700}.v-mid{color:var(--mute);font-weight:700}
+.note{font-size:.8rem;color:var(--mute)}
+footer{margin-top:24px;font-size:.75rem;color:var(--mute)}
+@media (prefers-reduced-motion:no-preference){.race,.watch{animation:in .25s ease-out}@keyframes in{from{transform:translateY(4px)}to{transform:none}}}
+</style>
+
+<div class="wrap">
+<header><h1>相棒の予想帖</h1><span class="sub" id="upd">データを読み込み中…</span></header>
+<nav role="tablist">
+  <button role="tab" id="t-yoso" aria-selected="true" aria-controls="p-yoso">今週の予想</button>
+  <button role="tab" id="t-watch" aria-selected="false" aria-controls="p-watch">注目馬</button>
+  <button role="tab" id="t-seiseki" aria-selected="false" aria-controls="p-seiseki">成績</button>
+  <button role="tab" id="t-bunseki" aria-selected="false" aria-controls="p-bunseki">1年分析</button>
+</nav>
+
+<section role="tabpanel" id="p-yoso" aria-labelledby="t-yoso">
+  <div class="daybar" id="days"></div>
+  <div id="races"><div class="empty">予想はまだありません。毎週土・日の朝9時ごろに、その日の重賞の予想がここに届きます。</div></div>
+</section>
+<section role="tabpanel" id="p-watch" aria-labelledby="t-watch" hidden>
+  <p class="note">人気薄で激走した馬、出遅れや不利から上位に来た馬を、次に出てくるまで見張っています。出走するときは朝の予想でもお知らせします。</p>
+  <div id="watchlist"><div class="empty">注目馬はまだいません。レースの振り返りで見つけたら追加されます。</div></div>
+</section>
+<section role="tabpanel" id="p-seiseki" aria-labelledby="t-seiseki" hidden>
+  <div id="tally"><div class="empty">振り返りがたまると、好みの印と相棒の本命の成績がここに並びます。</div></div>
+</section>
+<section role="tabpanel" id="p-bunseki" aria-labelledby="t-bunseki" hidden>
+  <div id="analysis"><div class="empty">過去1年の分析を読み込み中です。</div></div>
+</section>
+<footer>印と確率は予想の目安です。馬券は余裕のある範囲で楽しんでください。</footer>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let DAYS=[],WATCH=[],SUMMARY=null,curDay=null;
+try{curDay=localStorage.getItem('yoso-day')}catch(e){}
+
+// タブ
+document.querySelectorAll('[role=tab]').forEach(b=>b.addEventListener('click',()=>selectTab(b.id)));
+function selectTab(id){
+  document.querySelectorAll('[role=tab]').forEach(b=>{const on=b.id===id;b.setAttribute('aria-selected',on);document.getElementById(b.getAttribute('aria-controls')).hidden=!on});
+  try{localStorage.setItem('yoso-tab',id)}catch(e){}
+}
+try{const t=localStorage.getItem('yoso-tab');if(t&&document.getElementById(t))selectTab(t)}catch(e){}
+
+const WD=['日','月','火','水','木','金','土'];
+function dayLabel(d){const x=new Date(d+'T00:00:00');return `${x.getMonth()+1}/${x.getDate()}（${WD[x.getDay()]}）`}
+function ban(m){
+  if(!m.uma) return '<span class="ban" title="枠未定">－</span>';
+  const w=m.waku||0; const st=w?`background:var(--w${w});color:var(--w${w}t)`:'';
+  return `<span class="ban" style="${st}" title="${w?w+'枠':''}">${esc(m.uma)}</span>`;
+}
+function fin(m){if(m.finish==null)return '';const ok=m.finish<=3;return `<span class="fin ${ok?'ok':'ng'}">${esc(m.finish)}着</span>`}
+
+function renderDays(){
+  const bar=$('#days');
+  if(!DAYS.length){bar.innerHTML='';return}
+  if(!curDay||!DAYS.find(d=>d.id===curDay)){
+    const today=new Date().toISOString().slice(0,10);
+    curDay=(DAYS.find(d=>d.id>=today)||DAYS[DAYS.length-1]).id;
+  }
+  bar.innerHTML=DAYS.map(d=>`<button class="chip" aria-pressed="${d.id===curDay}" data-d="${esc(d.id)}">${dayLabel(d.id)}${d.data.reviewed?' ✓':''}</button>`).join('');
+  bar.querySelectorAll('button').forEach(b=>b.onclick=()=>{curDay=b.dataset.d;try{localStorage.setItem('yoso-day',curDay)}catch(e){};renderDays();renderRaces()});
+}
+function renderRaces(){
+  const d=DAYS.find(x=>x.id===curDay); const box=$('#races');
+  if(!d){box.innerHTML='<div class="empty">予想はまだありません。毎週土・日の朝9時ごろに、その日の重賞の予想がここに届きます。</div>';return}
+  const v=d.data;
+  let h=(v.races||[]).map(r=>{
+    const res=r.result;
+    const marks=(r.marks||[]).map(m=>`<li><span class="mk ${m.mark==='紐'?'himo':''}">${esc(m.mark)}</span>${ban(m)}<span class="who"><b>${esc(m.name)}</b><span class="j">${esc(m.jockey)}</span>${fin(m)}${m.why?`<span class="why">${esc(m.why)}</span>`:''}</span><span class="pct">${m.pct!=null?esc(m.pct)+'%':''}</span></li>`).join('');
+    return `<article class="race">
+      <div class="race-h"><span class="meta">${esc(r.course)}</span><h2>${esc(r.name)}</h2><span class="status ${res?'res':''}">${res?'結果確定':(r.status||'予想')}</span></div>
+      ${r.net?`<div class="net">ネットの評価：${esc(r.net)}</div>`:''}
+      <ul class="marks">${marks}</ul>
+      ${r.partner?`<div class="partner"><h3>相棒の本命</h3><p>${esc(r.partner)}</p></div>`:''}
+      ${res?`<div class="result"><h3>結果</h3><div>${esc(res.top3)}</div>${res.hit?`<div><b>${esc(res.hit)}</b></div>`:''}${res.note?`<div class="note">${esc(res.note)}</div>`:''}</div>`:''}
+      ${r.weight?`<div class="weight">馬体重チェック：${esc(r.weight)}</div>`:''}
+    </article>`}).join('');
+  if(v.review) h+=`<div class="review"><b>振り返り</b>\n${esc(v.review)}</div>`;
+  box.innerHTML=h||'<div class="empty">この日の予想はまだ入っていません。</div>';
+}
+function renderWatch(){
+  const box=$('#watchlist');
+  if(!WATCH.length){box.innerHTML='<div class="empty">注目馬はまだいません。レースの振り返りで見つけたら追加されます。</div>';return}
+  const order={'出走予定':0,'待ち':1,'結果あり':2};
+  box.innerHTML=WATCH.slice().sort((a,b)=>(order[a.data.status]??1)-(order[b.data.status]??1)).map(w=>{const v=w.data;return `<div class="watch">
+    <div class="top"><b>${esc(v.name)}</b><span class="tag ${v.status==='出走予定'?'run':''}">${esc(v.status||'待ち')}</span></div>
+    <span class="from">${esc(v.from)}（${esc(v.added)}に登録）</span>
+    <span>${esc(v.why)}</span>
+    <span class="pt">次走で見るところ：${esc(v.point)}</span>
+    ${v.next?`<span class="pt"><b>次走：</b>${esc(v.next)}</span>`:''}
+  </div>`}).join('');
+}
+function pctBar(p,base){const w=Math.max(4,Math.min(100,p*1.6));return `<span class="bar ${p<base?'lo':''}" style="width:${w}px"></span>${p.toFixed(1)}%`}
+function verdict(s){const c=s.startsWith('◎')||s.startsWith('○')?'v-ok':s.startsWith('×')?'v-ng':'v-mid';return `<span class="${c}">${esc(s)}</span>`}
+function renderSummary(){
+  if(!SUMMARY) return;
+  const S=SUMMARY, base=S.base||20.9;
+  // 成績タブ
+  const t=S.tally||[];
+  $('#tally').innerHTML=`
+    <div class="tiles">
+      <div class="tile"><div class="k">好みの◎ 3着内</div><div class="v">${esc(S.likeHit||'－')}</div></div>
+      <div class="tile"><div class="k">相棒の◎ 3着内</div><div class="v">${esc(S.mineHit||'－')}</div></div>
+    </div>
+    <div class="tbl"><table><thead><tr><th>日付</th><th>好みの◎</th><th>相棒の◎</th><th>メモ</th></tr></thead><tbody>
+    ${t.map(x=>`<tr><td>${esc(x.date)}</td><td class="n">${esc(x.like)}</td><td class="n">${esc(x.mine)}</td><td>${esc(x.memo)}</td></tr>`).join('')||'<tr><td colspan="4">まだありません</td></tr>'}
+    </tbody></table></div>
+    ${(S.lessons||[]).length?`<h2 class="sec">いまの予想ルール</h2><div class="review">${S.lessons.map((l,i)=>`${i+1}. ${esc(l)}`).join('\n')}</div>`:''}`;
+  // 1年分析タブ
+  const A=S.analysis||{};
+  $('#analysis').innerHTML=`
+    <p class="note">${esc(A.scope||'')}</p>
+    <div class="tiles">
+      ${(A.methods||[]).map(m=>`<div class="tile"><div class="k">${esc(m.name)}の◎ 3着内</div><div class="v">${esc(m.top3)}<small>%</small></div><div class="k">◎-○ワイド的中 ${esc(m.wide)}%</div></div>`).join('')}
+    </div>
+    <h2 class="sec">好みの条件、当たっていたか</h2>
+    <p class="note">棒は3着内率。全体平均は${base}%（赤は平均より下）。</p>
+    <div class="tbl"><table><thead><tr><th>条件</th><th>頭数</th><th>3着内</th><th>単回</th><th>判定</th></tr></thead><tbody>
+    ${(A.factors||[]).map(f=>`<tr><td>${esc(f.k)}</td><td class="n">${esc(f.n)}</td><td>${pctBar(f.t3,base)}</td><td class="n">${esc(f.tan)}%</td><td>${verdict(f.v)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <h2 class="sec">騎手</h2>
+    <div class="tbl"><table><thead><tr><th>騎手</th><th>騎乗</th><th>3着内</th><th>単回</th><th>複回</th></tr></thead><tbody>
+    ${(A.jockeys||[]).map(f=>`<tr><td>${esc(f.k)}</td><td class="n">${esc(f.n)}</td><td>${pctBar(f.t3,base)}</td><td class="n">${esc(f.tan)}%</td><td class="n">${esc(f.fuku)}%</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="note">${esc(A.caveat||'')}</p>`;
+  const tc=$('#upd'); if(S.updated) tc.textContent=`${S.updated} 更新`;
+}
+
+(async()=>{
+  const db=await window.claude?.use?.('db');
+  if(!db){$('#upd').textContent='データを読み込めませんでした。claude.ai にサインインして開いてください。';return}
+  db.collection('days').onSnapshot(s=>{DAYS=s.docs.map(d=>({id:d.id,data:d.data()})).sort((a,b)=>a.id<b.id?-1:1);renderDays();renderRaces()},()=>{});
+  db.collection('watch').onSnapshot(s=>{WATCH=s.docs.map(d=>({id:d.id,data:d.data()}));renderWatch()},()=>{});
+  db.doc('meta/summary').onSnapshot(s=>{SUMMARY=s.exists?s.data():null;renderSummary()},()=>{});
+})();
+</script>
