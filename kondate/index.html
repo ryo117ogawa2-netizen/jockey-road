@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#7cc8ff">
+<title>献ダテマン</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* 献ダテマン：空を飛んで料理をよける横スクロール。明るい空色、紺のふち取りの白パネル、黄と赤の差し色 */
+:root{
+  --ground:#bfe6ff;
+  --panel:#ffffff;
+  --panel-2:#eaf3ff;
+  --line:#c9d8f0;
+  --frame:#1d3b8b;
+  --ink:#1b2a4a;
+  --muted:#56688c;
+  --silk:#e23a2e;
+  --gold:#e39400;
+  --sun:#ffd23f;
+  --good:#22a04b;
+  --cape:#c8102e;
+  --display:"Dela Gothic One","Hiragino Sans","Noto Sans JP",sans-serif;
+  --body:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ground);color:var(--ink)}
+body{background:linear-gradient(180deg,#7cc8ff 0,#bfe6ff 320px,#e6f6ff 900px) var(--ground);font-family:var(--body);font-weight:500;font-size:15px;line-height:1.6;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 32px);-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+[hidden]{display:none!important}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;letter-spacing:.02em}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.wrap{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.panel{background:var(--panel);border:3px solid var(--frame);border-radius:16px;padding:16px;box-shadow:0 4px 0 var(--frame)}
+.panel h2{font-size:20px;margin-bottom:10px}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:10px 16px;border:3px solid var(--frame);border-radius:14px;background:var(--panel);font-weight:800;font-size:16px;box-shadow:0 4px 0 var(--frame);transition:transform .06s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--frame)}
+.btn.main{background:var(--sun)}
+.btn.red{background:var(--silk);color:#fff}
+.btn.ghost{background:var(--panel-2)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.sm{min-height:40px;font-size:14px;padding:6px 12px}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.top{display:flex;align-items:center;gap:10px}
+.top h2{flex:1;font-size:20px}
+.back{min-height:40px;padding:4px 12px;border:3px solid var(--frame);border-radius:12px;background:var(--panel);font-weight:800;box-shadow:0 3px 0 var(--frame)}
+
+/* タイトル */
+.logo{text-align:center;padding-top:4px}
+.logo h1{font-size:clamp(40px,12vw,58px);line-height:1;color:var(--cape);-webkit-text-stroke:2px var(--frame);text-shadow:0 4px 0 var(--frame)}
+.logo p{margin:6px 0 0;font-weight:800;color:var(--frame)}
+#heroCv{display:block;margin:0 auto;width:220px;height:200px}
+
+/* 登録 */
+label.f{display:block;font-weight:800;margin:10px 0 4px}
+input.t{width:100%;font:inherit;font-size:17px;font-weight:700;padding:10px 12px;border:3px solid var(--frame);border-radius:12px;background:var(--panel-2);color:var(--ink)}
+.emogrid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.emogrid button{aspect-ratio:1;font-size:24px;border:2px solid var(--line);border-radius:10px;background:var(--panel);padding:0}
+.emogrid button.on{border:3px solid var(--silk);background:#fff3c4}
+.err{color:var(--silk);font-weight:800;min-height:1.6em;margin:6px 0 0}
+
+/* ユーザー */
+.user{display:flex;align-items:center;gap:10px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--panel);width:100%;text-align:left}
+.user.cur{border:3px solid var(--silk);background:#fff8dc}
+.user .e{font-size:30px;line-height:1}
+.user b{display:block}
+.ulist{display:flex;flex-direction:column;gap:8px}
+
+/* メニュー */
+.me{display:flex;align-items:center;gap:12px}
+.me .e{font-size:38px;width:56px;height:56px;border-radius:50%;background:#fff3c4;border:3px solid var(--frame);display:grid;place-items:center}
+.me b{font-size:18px;display:block;line-height:1.3}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:12px;font-weight:800;padding:2px 10px;border-radius:99px;background:var(--panel-2);border:2px solid var(--line)}
+.chip.on{background:#fff3c4;border-color:var(--gold)}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.menu .wide{grid-column:1/-1}
+
+/* レベル選択 */
+.lvgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.lv{aspect-ratio:1;border:2px solid var(--frame);border-radius:12px;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;line-height:1.1;font-weight:800}
+.lv .n{font-family:var(--mono);font-size:17px}
+.lv .s{font-size:9px;color:var(--muted);font-family:var(--mono)}
+.lv.done{background:#dff6e6;border-color:var(--good)}
+.lv.next{background:var(--sun);box-shadow:0 3px 0 var(--frame)}
+.lv.boss{border-width:3px;border-color:var(--cape)}
+.lv.boss .n{font-size:13px}
+.lv .b{font-size:18px}
+.lv.lock{background:#e8edf5;color:#9aa8c2;border-color:#b9c6dc}
+.world{font-family:var(--display);font-size:14px;margin:12px 0 6px;color:var(--frame)}
+.world:first-child{margin-top:0}
+
+/* ゲーム */
+#game{position:fixed;inset:0;background:#0f2050;display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none;z-index:5}
+#cv{display:block;touch-action:none;background:#7cc8ff}
+.gbtns{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);right:10px;display:flex;gap:6px;z-index:6}
+.gbtns button{width:44px;height:44px;border-radius:12px;border:3px solid var(--frame);background:var(--panel);font-size:18px;font-weight:800;box-shadow:0 3px 0 var(--frame);padding:0}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(15,32,80,.55);z-index:7}
+.overlay .panel{width:100%;max-width:360px;text-align:center}
+.overlay .panel h2{font-size:24px}
+.overlay .btns{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+
+/* 結果 */
+.res-h{text-align:center}
+.res-h h2{font-size:30px;margin:0}
+.res-h.win h2{color:var(--cape)}
+.big{font-family:var(--mono);font-size:40px;font-weight:600;text-align:center;line-height:1.1}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl td{padding:5px 2px;border-bottom:1px dashed var(--line)}
+.tbl td:last-child{text-align:right;font-family:var(--mono);font-weight:600}
+.recbox{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.recbox>div{border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--panel-2)}
+.recbox .k{font-size:11px;font-weight:800;color:var(--muted)}
+.recbox .v{font-family:var(--mono);font-size:18px;font-weight:600}
+.recbox .w{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.newrec{display:inline-block;background:var(--silk);color:#fff;font-weight:800;font-size:12px;padding:1px 8px;border-radius:99px;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.5}}
+
+/* スキル */
+.skill{display:flex;gap:10px;align-items:center;padding:8px 10px;border:2px solid var(--line);border-radius:12px;margin-bottom:6px}
+.skill .i{font-size:28px;width:40px;text-align:center}
+.skill b{display:block}
+.skill.lock{opacity:.5;filter:grayscale(1)}
+.skill.got{border-color:var(--gold);background:#fff8dc}
+.skillpop .i{font-size:64px;line-height:1.2}
+
+/* レコード */
+.rec{display:grid;grid-template-columns:48px 1fr 1fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.rec .l{font-family:var(--mono);font-weight:600;text-align:center}
+.rec .l small{display:block;font-size:14px}
+.rec .c{min-width:0}
+.rec .c .v{font-family:var(--mono);font-weight:600}
+.rec .c .w{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec .c .m{font-size:11px;color:var(--good);font-weight:800}
+.rechead{display:grid;grid-template-columns:48px 1fr 1fr;gap:6px;font-size:12px;font-weight:800;color:var(--muted)}
+.stat{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}
+.stat>div{background:var(--panel-2);border-radius:12px;padding:8px 4px;border:2px solid var(--line)}
+.stat b{display:block;font-family:var(--mono);font-size:20px}
+.stat span{font-size:11px;color:var(--muted);font-weight:800}
+</style>
+</head>
+<body>
+
+<!-- タイトル -->
+<section id="title" class="wrap">
+  <div class="logo">
+    <h1>献ダテマン</h1>
+    <p>そらとぶ！こんだてヒーロー</p>
+  </div>
+  <canvas id="heroCv" width="440" height="400" aria-label="献ダテマン"></canvas>
+  <div class="panel">
+    <p style="margin:0">ジャンクな料理をよけて空を飛べ！<br>健康食材をとると<b>元気ダッシュ</b>。10 レベルごとにボスが待っている。全 100 レベルをクリアして伝説の献ダテマンになろう！</p>
+  </div>
+  <button class="btn main" id="tStart" style="min-height:64px;font-size:20px">はじめる</button>
+</section>
+
+<!-- ユーザー登録 -->
+<section id="reg" class="wrap" hidden>
+  <div class="top"><button class="back" id="regBack" hidden>← もどる</button><h2>ユーザー登録</h2></div>
+  <div class="panel">
+    <label class="f" for="rName">ユーザー名（12 文字まで）</label>
+    <input class="t" id="rName" maxlength="12" autocomplete="off" placeholder="例：こんだてたろう">
+    <label class="f" for="rFood">好きな料理（16 文字まで）</label>
+    <input class="t" id="rFood" maxlength="16" autocomplete="off" placeholder="例：カレーライス">
+    <label class="f">料理のアイコンを選ぶ</label>
+    <div class="emogrid" id="rEmo"></div>
+    <p class="small muted" style="margin:8px 0 0">好きな料理はゲームの中でときどき光って出てくるよ。とるとライフが 1 回復！</p>
+    <p class="err" id="rErr"></p>
+    <button class="btn main" id="rOk" style="width:100%">登録してスタート</button>
+  </div>
+</section>
+
+<!-- ユーザー切りかえ -->
+<section id="users" class="wrap" hidden>
+  <div class="top"><button class="back" data-go="menu">← もどる</button><h2>ユーザー切りかえ</h2></div>
+  <div class="panel">
+    <div class="ulist" id="uList"></div>
+    <button class="btn main" id="uAdd" style="width:100%;margin-top:12px">＋ 新しいユーザーを登録</button>
+  </div>
+</section>
+
+<!-- メニュー -->
+<section id="menu" class="wrap" hidden>
+  <div class="panel">
+    <div class="me"><div class="e" id="mEmo"></div><div style="flex:1;min-width:0"><b id="mName"></b><span class="small muted" id="mFood"></span></div></div>
+    <div class="chips" id="mChips"></div>
+  </div>
+  <button class="btn main" id="mPlay" style="min-height:68px;font-size:20px"></button>
+  <div class="menu">
+    <button class="btn" data-go="levels">🗺️ レベル選択</button>
+    <button class="btn" data-go="records">🏆 レコード</button>
+    <button class="btn" data-go="profile">🎓 スキル・成績</button>
+    <button class="btn" data-go="users">👥 ユーザー</button>
+    <button class="btn ghost wide sm" id="mMute"></button>
+  </div>
+  <div class="panel small">
+    <b>あそびかた</b><br>
+    画面を<b>押している間は上へ</b>、はなすと下へ。<br>
+    🍔🍩🍜 などの料理にぶつかるとライフが減る。<br>
+    🥦🥕🐟 などの健康食材をとると<b>元気ダッシュ</b>（速くなって無敵）。<br>
+    ボスステージではスプーンを自動で投げてボスを倒そう。<br>
+    パソコンはスペースキー / ↑ キーでも飛べる。
+  </div>
+</section>
+
+<!-- レベル選択 -->
+<section id="levels" class="wrap" hidden>
+  <div class="top"><button class="back" data-go="menu">← もどる</button><h2>レベル選択</h2></div>
+  <div class="panel" id="lvWrap"></div>
+</section>
+
+<!-- レコード -->
+<section id="records" class="wrap" hidden>
+  <div class="top"><button class="back" data-go="menu">← もどる</button><h2>レースレコード</h2></div>
+  <div class="panel">
+    <p class="small muted" style="margin:0 0 8px">この端末で遊んだ全員の中のベスト。緑の字は自分の記録。</p>
+    <div class="rechead"><span style="text-align:center">Lv</span><span>🏆 ハイスコア</span><span>⏱ 最速タイム</span></div>
+    <div id="recList"></div>
+  </div>
+</section>
+
+<!-- スキル・成績 -->
+<section id="profile" class="wrap" hidden>
+  <div class="top"><button class="back" data-go="menu">← もどる</button><h2>スキル・成績</h2></div>
+  <div class="panel">
+    <div class="me"><div class="e" id="pEmo"></div><div style="flex:1;min-width:0"><b id="pName"></b><span class="small muted" id="pFood"></span></div></div>
+    <div class="stat" style="margin-top:12px" id="pStat"></div>
+  </div>
+  <div class="panel">
+    <h2>スキル</h2>
+    <p class="small muted" style="margin:-4px 0 10px">ボスを倒すと資格・スキルが手に入る。持っているスキルは自動で効く。</p>
+    <div id="pSkills"></div>
+  </div>
+  <div class="panel">
+    <h2>倒したボス</h2>
+    <div id="pBoss"></div>
+  </div>
+</section>
+
+<!-- 結果 -->
+<section id="result" class="wrap" hidden>
+  <div class="panel">
+    <div class="res-h" id="resHead"></div>
+    <div class="big" id="resScore"></div>
+    <p class="small muted" style="text-align:center;margin:0">スコア</p>
+    <table class="tbl" id="resTbl" style="margin-top:8px"></table>
+    <div class="recbox" id="resRec"></div>
+  </div>
+  <div class="ulist" style="gap:10px">
+    <button class="btn main" id="resNext"></button>
+    <div class="row"><button class="btn" id="resRetry">もう一度</button><button class="btn ghost" id="resMenu">メニュー</button></div>
+  </div>
+</section>
+
+<!-- ゲーム画面 -->
+<div id="game" hidden>
+  <canvas id="cv"></canvas>
+  <div class="gbtns"><button id="gPause" aria-label="一時停止">Ⅱ</button></div>
+  <div class="overlay" id="gOver" hidden><div class="panel" id="gOverBox"></div></div>
+</div>
+
+<!-- スキル獲得 -->
+<div class="overlay" id="pop" hidden style="position:fixed;z-index:20"><div class="panel skillpop" id="popBox"></div></div>
+
+<script>
+'use strict';
+/* ------------ 共通 ------------ */
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pickA=a=>a[Math.floor(Math.random()*a.length)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtT=t=>t==null?'—':t.toFixed(2)+'秒';
+const fmtS=s=>s==null?'—':Math.round(s).toLocaleString();
+
+/* ------------ data ------------ */
+const W=420,H=640,MAXLV=100;
+const FOOD_EMO=['🍛','🍜','🍣','🍙','🍔','🍕','🍝','🍤','🍗','🥩','🍳','🥗','🍲','🍱','🥟','🍰','🍩','🍦','🍓','🍎','🍌','🍇','🍠','🥞'];
+// ぶつかると痛い料理
+const JUNK=['🍔','🍕','🍟','🌭','🍩','🍰','🍫','🍦','🍜','🍛','🍙','🍤','🍗','🧁','🍭','🥤','🍝','🥓'];
+// とると元気になる健康食材
+const HEALTHY=['🥦','🥕','🍅','🍎','🐟','🥚','🥛','🥬'];
+const BOSSES={
+  10:{name:'糖分過多野郎',emo:'🍰',col:'#ff8fc8',shots:['🍬','🍭','🍩','🧁'],say:'甘いものは別腹だァ〜！',lose:'あ、甘かった…'},
+  20:{name:'炭水化物魔人',emo:'🍚',col:'#f2e3b3',shots:['🍙','🍞','🍝','🍜'],say:'ごはんおかわり無限じゃあ！',lose:'ラーメンライスは…重すぎた…'},
+  30:{name:'脂質ギトギト男爵',emo:'🥓',col:'#f6c453',shots:['🍟','🍗','🥓','🧈'],say:'背脂マシマシでいかがかね？',lose:'胃もたれ…したのは私の方か…'},
+  40:{name:'塩分マシマシ大王',emo:'🧂',col:'#dfe7ef',shots:['🧂','🍜','🥨','🍘'],say:'スープは最後の一滴まで飲め！',lose:'の、のどがカラカラだ…'},
+  50:{name:'揚げ物将軍',emo:'🍤',col:'#f0a64a',shots:['🍤','🍗','🍟','🧆'],say:'衣は厚いほどよい！かかれ〜！',lose:'カラッと…散る…'},
+  60:{name:'夜食の悪魔',emo:'🌙',col:'#8a7bd8',shots:['🍜','🍕','🌭','🍙'],say:'深夜 2 時のカップ麺は最高だぞ…',lose:'朝ごはん…食べられない…'},
+  70:{name:'清涼飲料ドクロ',emo:'🥤',col:'#7fd6e8',shots:['🥤','🧃','🍹','🧋'],say:'水分補給はジュースで十分！',lose:'結局…水がいちばん…'},
+  80:{name:'ジャンクフード帝王',emo:'🍔',col:'#e8443a',shots:['🍔','🍟','🌭','🍕'],say:'セットでポテト L にしてやる！',lose:'サラダも…頼むべきだった…'},
+  90:{name:'早食い暴食ドラゴン',emo:'🐉',col:'#5cc27a',shots:['🍖','🍗','🍔','🍜','🍰'],say:'よく噛まずに飲みこんでやる！',lose:'ひと口 30 回…噛むべきだった…'},
+  100:{name:'偏食大魔王',emo:'👹',col:'#6b2fa0',shots:['🍰','🍚','🥓','🧂','🍤','🥤','🍔'],say:'好きなものだけ食べて何が悪い！',lose:'バランスよく…食べる…のだ…'}
+};
+const SKILLS=[
+  {lv:10,id:'calc',icon:'🧮',name:'栄養計算',desc:'健康食材を吸い寄せる（マグネット）'},
+  {lv:20,id:'cook',icon:'🔪',name:'調理師免許',desc:'スプーンを 2 本同時に投げる'},
+  {lv:30,id:'diet',icon:'📗',name:'栄養士資格',desc:'ライフの最大値 +1'},
+  {lv:40,id:'coord',icon:'🎨',name:'フードコーディネーター',desc:'当たり判定が小さくなる'},
+  {lv:50,id:'kanri',icon:'📕',name:'管理栄養士資格',desc:'1 ステージに 1 回、ダメージを防ぐバリア'},
+  {lv:60,id:'sport',icon:'🏃',name:'スポーツ栄養士',desc:'元気ダッシュの時間 1.6 倍'},
+  {lv:70,id:'shoku',icon:'🏫',name:'食育インストラクター',desc:'健康食材がよく出る'},
+  {lv:80,id:'kyu',icon:'🍱',name:'給食マスター',desc:'健康食材の点数 2 倍'},
+  {lv:90,id:'meister',icon:'👑',name:'献ダテマンマイスター',desc:'ライフ +1・スコア 1.5 倍・料理が少しゆっくり'}
+];
+const WORLDS=[
+  {name:'朝の住宅街',sky:['#8fd3ff','#e0f4ff'],hill:'#8ed46b'},
+  {name:'商店街',sky:['#7cc8ff','#d5efff'],hill:'#77c25a'},
+  {name:'給食センター上空',sky:['#6fc0ff','#c7ecff'],hill:'#5fb35a'},
+  {name:'夕焼けの港',sky:['#ff9e6b','#ffe0a8'],hill:'#c77b52'},
+  {name:'屋台通り',sky:['#ffb36b','#fff0c4'],hill:'#d4925a'},
+  {name:'夜の繁華街',sky:['#25336e','#6b5aa8'],hill:'#3b3f78'},
+  {name:'雲の上',sky:['#b9e4ff','#ffffff'],hill:'#e6f4ff'},
+  {name:'ファストフード銀河',sky:['#1b1f4a','#4b2f7a'],hill:'#2c2560'},
+  {name:'竜の山',sky:['#5a8f6b','#c9e6b5'],hill:'#3f6e4c'},
+  {name:'大魔王の城',sky:['#2a0f3d','#7a2a5a'],hill:'#3a1240'}
+];
+const isBoss=L=>L%10===0;
+const worldOf=L=>WORLDS[Math.min(9,Math.floor((L-1)/10))];
+function lvParam(L){
+  const t=(L-1)/(MAXLV-1);
+  const speed=210+190*t;
+  return {
+    speed,
+    dist:(20+28*t)*speed,             // ふつうに飛ぶとだいたい 20〜48 秒
+    spawn:1.2-0.52*t,                   // 料理が出る間隔（秒）
+    per:1+Math.floor(t*2.2+((L%3===0)?.3:0)), // 1 回に出る数
+    bob:L>=8?Math.min(.75,.15+(L-8)/90):0,   // 上下にゆれる料理の割合
+    fast:L>=30?Math.min(.28,.06+(L-30)/150):0, // 速い料理の割合
+    chase:L>=60?Math.min(.18,(L-60)/160+.04):0 // 追いかけてくる料理の割合
+  };
+}
+
+/* ------------ save ------------ */
+const KEY='kondateman-v1';
+let STORE=load();
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.users))return Object.assign({cur:null,users:[],rec:{},mute:false},s)}catch(e){}
+  return {cur:null,users:[],rec:{},mute:false};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(STORE))}catch(e){}}
+const me=()=>STORE.users.find(u=>u.id===STORE.cur)||null;
+const hasSkill=(u,id)=>{const s=SKILLS.find(k=>k.id===id);return !!(u&&s&&u.cleared>=s.lv)};
+function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+
+/* ------------ 絵：献ダテマン ------------ */
+// 原点は胸のあたり。1 単位 ≒ s/100 ピクセル
+function drawHero(c,x,y,s,tilt,t,blink){
+  c.save();c.translate(x,y);c.rotate(tilt||0);c.scale(s/100,s/100);
+  if(blink){c.globalAlpha=.4}
+  const f=Math.sin(t*14)*3;
+  // マント
+  c.fillStyle='#c8102e';
+  c.beginPath();c.moveTo(-14,-4);c.lineTo(-52,6+f);c.lineTo(-34,12-f*.5);c.lineTo(-18,16);c.closePath();c.fill();
+  c.fillStyle='#9e0b22';
+  c.beginPath();c.moveTo(14,-4);c.lineTo(50,0-f);c.lineTo(32,10+f*.5);c.lineTo(18,16);c.closePath();c.fill();
+  c.fillStyle='#d61a35';
+  c.beginPath();c.moveTo(-16,-6);c.lineTo(16,-6);c.lineTo(22,14);c.lineTo(-22,14);c.closePath();c.fill();
+  // 足
+  c.fillStyle='#0d47a1';ell(c,-8,31,6,4.5);c.fillStyle='#0b2a6b';ell(c,9,31,6,4.5);
+  // 胴体
+  c.fillStyle='#bfe3f7';c.beginPath();c.moveTo(-15,12);c.lineTo(1,12);c.lineTo(1,28);c.lineTo(-13,28);c.closePath();c.fill();
+  c.fillStyle='#22b0ee';c.beginPath();c.moveTo(1,12);c.lineTo(17,12);c.lineTo(15,28);c.lineTo(1,28);c.closePath();c.fill();
+  // 右腕（こぶし）
+  c.strokeStyle='#22b0ee';c.lineWidth=7;c.lineCap='round';c.beginPath();c.moveTo(14,16);c.lineTo(24,12);c.stroke();
+  c.fillStyle='#f9d4bf';circ(c,25,7,6.5);
+  // 左腕（スプーン）
+  c.strokeStyle='#bfe3f7';c.lineWidth=8;c.beginPath();c.moveTo(-13,16);c.lineTo(-27,-6);c.stroke();
+  c.strokeStyle='#ffe100';c.lineWidth=3.2;c.beginPath();c.moveTo(-44,6);c.lineTo(-14,-30);c.stroke();
+  c.save();c.translate(-10,-37);c.rotate(-.75);c.fillStyle='#ffe100';ell(c,0,0,7,10);c.fillStyle='#ffc400';ell(c,2.5,0,4,8);c.restore();
+  c.fillStyle='#fde8c4';circ(c,-27,-10,10);
+  // 頭
+  c.fillStyle='#fde8c4';c.fillRect(-17,-18,17,31);
+  c.fillStyle='#f9d4bf';c.fillRect(0,-18,17,31);
+  c.fillStyle='#fde8c4';circ(c,-17.5,1,3);c.fillStyle='#f9d4bf';circ(c,17.5,1,3);
+  c.fillStyle='#1f2a8a';c.fillRect(-17,-19,34,7.5);
+  c.beginPath();c.moveTo(-17,-18);c.lineTo(-16,-27);c.lineTo(-13,-21);c.lineTo(-11,-26);c.lineTo(-9,-19);c.closePath();c.fill();
+  // 顔
+  c.fillStyle='#1f2a8a';circ(c,-7,-4,1.8);circ(c,6,-4,1.8);
+  c.fillStyle='#fff';circ(c,-6.4,-4.6,.6);circ(c,6.6,-4.6,.6);
+  c.strokeStyle='#1f2a8a';c.lineWidth=1;c.lineCap='round';
+  c.beginPath();c.moveTo(10,-10);c.lineTo(-3,3);c.lineTo(4,2.6);c.stroke();
+  c.beginPath();c.moveTo(-8,6);c.quadraticCurveTo(0,9.5,8,6.5);c.stroke();
+  // 蝶ネクタイ
+  c.fillStyle='#f15a0a';c.beginPath();c.moveTo(0,14);c.lineTo(-8,10);c.lineTo(-8,18);c.closePath();c.fill();
+  c.beginPath();c.moveTo(0,14);c.lineTo(8,10);c.lineTo(8,18);c.closePath();c.fill();
+  // ベルトのマーク
+  c.fillStyle='#ffe100';ell(c,0,23,10,4);c.strokeStyle='#1b2a4a';c.lineWidth=.6;c.beginPath();c.ellipse(0,23,10,4,0,0,7);c.stroke();
+  c.fillStyle='#1b2a4a';c.font='800 5px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('献ダ',0,23.3);
+  c.restore();
+}
+function circ(c,x,y,r){c.beginPath();c.arc(x,y,r,0,7);c.fill()}
+function ell(c,x,y,rx,ry){c.beginPath();c.ellipse(x,y,rx,ry,0,0,7);c.fill()}
+
+// 絵文字は一度だけ描いてとっておく
+const EMO_CACHE={};
+function emoImg(e,size){
+  const k=e+size;if(EMO_CACHE[k])return EMO_CACHE[k];
+  const cv=document.createElement('canvas');const p=Math.ceil(size*1.3);cv.width=cv.height=p;
+  const c=cv.getContext('2d');c.font=size+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  c.textAlign='center';c.textBaseline='middle';c.fillText(e,p/2,p/2+size*.06);
+  return EMO_CACHE[k]=cv;
+}
+function drawEmo(c,e,x,y,size,rot){
+  const im=emoImg(e,size);
+  if(rot){c.save();c.translate(x,y);c.rotate(rot);c.drawImage(im,-im.width/2,-im.height/2);c.restore()}
+  else c.drawImage(im,x-im.width/2,y-im.height/2);
+}
+
+/* ------------ 音 ------------ */
+let AC=null;
+function audio(){if(STORE.mute)return null;try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){return null}return AC}
+function beep(f,d,type,vol,slide){
+  const a=audio();if(!a)return;
+  const o=a.createOscillator(),g=a.createGain(),t=a.currentTime;
+  o.type=type||'square';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);
+  g.gain.setValueAtTime(vol||.08,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.02);
+}
+const SND={
+  hit(){beep(180,.25,'sawtooth',.12,60)},
+  get(){beep(660,.08,'square',.07);setTimeout(()=>beep(990,.1,'square',.07),70)},
+  fav(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.12,'triangle',.1),i*80))},
+  shot(){beep(900,.04,'triangle',.03,700)},
+  bhit(){beep(300,.05,'square',.04,200)},
+  clear(){[523,659,784,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.16,'triangle',.11),i*110))},
+  over(){[392,330,262,196].forEach((f,i)=>setTimeout(()=>beep(f,.22,'triangle',.1),i*160))},
+  boss(){[220,208,196,185].forEach((f,i)=>setTimeout(()=>beep(f,.2,'sawtooth',.08),i*180))},
+  shield(){beep(1200,.15,'sine',.1,400)}
+};
+
+/* ------------ 画面遷移 ------------ */
+const SCREENS=['title','reg','users','menu','levels','records','profile','result'];
+function show(id){
+  SCREENS.forEach(s=>$('#'+s).hidden=s!==id);
+  $('#game').hidden=id!=='game';
+  if(id!=='game')window.scrollTo(0,0);
+  if(id==='menu')renderMenu();
+  if(id==='levels')renderLevels();
+  if(id==='records')renderRecords();
+  if(id==='profile')renderProfile();
+  if(id==='users')renderUsers();
+  if(id==='title')titleAnim();
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)show(b.dataset.go)});
+
+/* ------------ タイトル ------------ */
+let titleRaf=0;
+function titleAnim(){
+  cancelAnimationFrame(titleRaf);
+  const cv=$('#heroCv'),c=cv.getContext('2d');
+  const loop=ts=>{
+    if($('#title').hidden)return;
+    const t=ts/1000;
+    c.clearRect(0,0,440,400);
+    c.fillStyle='rgba(255,255,255,.8)';
+    for(let i=0;i<4;i++){const x=((i*140-t*60)%560+560)%560-60;cloud(c,x,60+i*85%260,1+i%2*.4)}
+    drawHero(c,220,215+Math.sin(t*2.4)*10,330,Math.sin(t*1.7)*.06,t);
+    titleRaf=requestAnimationFrame(loop);
+  };
+  titleRaf=requestAnimationFrame(loop);
+}
+function cloud(c,x,y,s){c.beginPath();c.arc(x,y,18*s,0,7);c.arc(x+20*s,y-8*s,22*s,0,7);c.arc(x+44*s,y,17*s,0,7);c.fill()}
+$('#tStart').onclick=()=>{audio();show(me()?'menu':'reg');if(!me())openReg(false)};
+
+/* ------------ 登録 ------------ */
+let regEmo=FOOD_EMO[0];
+function openReg(canBack){
+  $('#regBack').hidden=!canBack;
+  $('#rName').value='';$('#rFood').value='';$('#rErr').textContent='';regEmo=FOOD_EMO[0];
+  $('#rEmo').innerHTML=FOOD_EMO.map(e=>`<button type="button" data-e="${e}" aria-label="${e}">${e}</button>`).join('');
+  markEmo();show('reg');
+}
+function markEmo(){document.querySelectorAll('#rEmo button').forEach(b=>b.classList.toggle('on',b.dataset.e===regEmo))}
+$('#rEmo').onclick=e=>{const b=e.target.closest('button');if(!b)return;regEmo=b.dataset.e;markEmo()};
+$('#regBack').onclick=()=>show('users');
+$('#rOk').onclick=()=>{
+  const name=$('#rName').value.trim(),food=$('#rFood').value.trim();
+  if(!name){$('#rErr').textContent='ユーザー名を入れてね';return}
+  if(!food){$('#rErr').textContent='好きな料理を入れてね';return}
+  if(STORE.users.some(u=>u.name===name)){$('#rErr').textContent='その名前はこの端末ですでに使われているよ';return}
+  const u={id:newId(),name,food,emo:regEmo,cleared:0,best:{},plays:0,created:Date.now()};
+  STORE.users.push(u);STORE.cur=u.id;save();show('menu');
+};
+
+/* ------------ ユーザー ------------ */
+function renderUsers(){
+  $('#uList').innerHTML=STORE.users.map(u=>`
+    <div style="display:flex;gap:6px">
+      <button class="user ${u.id===STORE.cur?'cur':''}" data-u="${u.id}"><span class="e">${esc(u.emo)}</span><span style="flex:1;min-width:0"><b>${esc(u.name)}</b><span class="small muted">好きな料理：${esc(u.food)}・Lv${u.cleared} クリア</span></span></button>
+      <button class="back" data-del="${u.id}" aria-label="削除" style="padding:0 10px">🗑</button>
+    </div>`).join('')||'<p class="muted">まだだれもいません</p>';
+}
+$('#uList').onclick=e=>{
+  const d=e.target.closest('[data-del]');
+  if(d){const u=STORE.users.find(x=>x.id===d.dataset.del);
+    if(u&&confirm(`「${u.name}」のデータを消しますか？（もとに戻せません。レコードは残ります）`)){
+      STORE.users=STORE.users.filter(x=>x!==u);if(STORE.cur===u.id)STORE.cur=STORE.users[0]?.id||null;save();
+      if(!STORE.cur){openReg(false);return}renderUsers();}
+    return}
+  const b=e.target.closest('[data-u]');if(b){STORE.cur=b.dataset.u;save();show('menu')}
+};
+$('#uAdd').onclick=()=>openReg(true);
+
+/* ------------ メニュー ------------ */
+function nextLv(u){return Math.min(MAXLV,u.cleared+1)}
+function renderMenu(){
+  const u=me();if(!u){openReg(false);return}
+  $('#mEmo').textContent=u.emo;$('#mName').textContent=u.name;
+  $('#mFood').textContent='好きな料理：'+u.food;
+  const got=SKILLS.filter(s=>u.cleared>=s.lv);
+  $('#mChips').innerHTML=`<span class="chip">Lv${u.cleared} クリア</span>`+(u.cleared>=MAXLV?'<span class="chip on">🌟 伝説の献ダテマン</span>':'')+
+    (got.length?got.map(s=>`<span class="chip on">${s.icon} ${s.name}</span>`).join(''):'<span class="chip">スキルなし（Lv10 のボスを倒すと手に入る）</span>');
+  const L=nextLv(u);
+  $('#mPlay').innerHTML=(isBoss(L)?'👊 ボス戦 ':'▶ ')+`Lv${L} に挑戦`;
+  $('#mMute').textContent=STORE.mute?'🔇 音：オフ':'🔊 音：オン';
+}
+$('#mPlay').onclick=()=>{const u=me();startLevel(nextLv(u))};
+$('#mMute').onclick=()=>{STORE.mute=!STORE.mute;save();renderMenu()};
+
+/* ------------ レベル選択 ------------ */
+function renderLevels(){
+  const u=me();let h='';
+  for(let w=0;w<10;w++){
+    h+=`<div class="world">ワールド${w+1}：${WORLDS[w].name}</div><div class="lvgrid">`;
+    for(let L=w*10+1;L<=w*10+10;L++){
+      const open=L<=u.cleared+1,b=u.best[L],boss=isBoss(L);
+      const cls=['lv',boss?'boss':'',!open?'lock':L<=u.cleared?'done':'next'].join(' ');
+      h+=`<button class="${cls}" ${open?`data-lv="${L}"`:'disabled'} aria-label="レベル${L}">`+
+        (boss?`<span class="b">${open?BOSSES[L].emo:'🔒'}</span><span class="n">${L}</span>`:`<span class="n">${open?L:'🔒'}</span>`)+
+        `<span class="s">${b?fmtS(b.score):boss&&open?'BOSS':''}</span></button>`;
+    }
+    h+='</div>';
+  }
+  $('#lvWrap').innerHTML=h;
+}
+$('#lvWrap').onclick=e=>{const b=e.target.closest('[data-lv]');if(b)startLevel(+b.dataset.lv)};
+
+/* ------------ レコード ------------ */
+function renderRecords(){
+  const u=me();let h='';
+  for(let L=1;L<=MAXLV;L++){
+    const r=STORE.rec[L]||{},b=u.best[L];
+    const cell=(rec,mine,f)=>rec?`<div class="v">${f(rec.v)}</div><div class="w">${esc(rec.emo||'')} ${esc(rec.name)}</div>`+(mine!=null?`<div class="m">自分 ${f(mine)}</div>`:''):'<div class="w">—</div>';
+    h+=`<div class="rec"><div class="l">${L}${isBoss(L)?`<small>${BOSSES[L].emo}</small>`:''}</div>
+      <div class="c">${cell(r.score,b&&b.score,fmtS)}</div><div class="c">${cell(r.time,b&&b.time,fmtT)}</div></div>`;
+  }
+  $('#recList').innerHTML=h;
+}
+
+/* ------------ スキル・成績 ------------ */
+function renderProfile(){
+  const u=me();
+  $('#pEmo').textContent=u.emo;$('#pName').textContent=u.name;$('#pFood').textContent='好きな料理：'+u.food;
+  const tot=Object.values(u.best).reduce((a,b)=>a+(b.score||0),0);
+  let recs=0;for(const L in STORE.rec){const r=STORE.rec[L];if(r.score&&r.score.uid===u.id)recs++;if(r.time&&r.time.uid===u.id)recs++}
+  $('#pStat').innerHTML=`<div><b>${u.cleared}</b><span>クリア Lv</span></div><div><b>${tot.toLocaleString()}</b><span>合計ベスト</span></div><div><b>${recs}</b><span>レコード保持</span></div>`;
+  $('#pSkills').innerHTML=SKILLS.map(s=>{const g=u.cleared>=s.lv;return `<div class="skill ${g?'got':'lock'}"><span class="i">${s.icon}</span><span><b>${s.name}</b><span class="small">${g?s.desc:`Lv${s.lv} の ${BOSSES[s.lv].name} を倒すと手に入る`}</span></span></div>`}).join('')+
+    `<div class="skill ${u.cleared>=100?'got':'lock'}"><span class="i">🌟</span><span><b>伝説の献ダテマン</b><span class="small">${u.cleared>=100?'全 100 レベル制覇！':'Lv100 の偏食大魔王を倒すと手に入る称号'}</span></span></div>`;
+  $('#pBoss').innerHTML=Object.keys(BOSSES).map(L=>{const b=BOSSES[L],g=u.cleared>=L;return `<div class="skill ${g?'got':'lock'}"><span class="i">${g?b.emo:'❓'}</span><span><b>Lv${L} ${g?b.name:'？？？'}</b>${g&&u.best[L]?`<span class="small num">ベスト ${fmtS(u.best[L].score)} / ${fmtT(u.best[L].time)}</span>`:''}</span></div>`}).join('');
+}
+
+/* ------------ ゲーム本体 ------------ */
+const cv=$('#cv'),ctx=cv.getContext('2d');
+let G=null,raf=0,last=0,hold=false,scale=1;
+function fit(){
+  const vw=window.innerWidth,vh=window.innerHeight;
+  scale=Math.min(vw/W,vh/H);
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.style.width=Math.floor(W*scale)+'px';cv.style.height=Math.floor(H*scale)+'px';
+  cv.width=Math.floor(W*scale*dpr);cv.height=Math.floor(H*scale*dpr);
+  ctx.setTransform(scale*dpr,0,0,scale*dpr,0,0);
+}
+window.addEventListener('resize',()=>{if(G)fit()});
+
+function startLevel(L){
+  const u=me();if(!u||L>u.cleared+1)return;
+  audio();
+  const sk=id=>hasSkill(u,id);
+  const maxLives=3+(sk('diet')?1:0)+(sk('meister')?1:0);
+  const bdef=BOSSES[L];
+  G={
+    L,P:lvParam(L),u,sk:{calc:sk('calc'),cook:sk('cook'),coord:sk('coord'),sport:sk('sport'),shoku:sk('shoku'),kyu:sk('kyu'),meister:sk('meister')},
+    world:worldOf(L),
+    px:110,py:H/2,vy:0,lives:maxLives,maxLives,barrier:sk('kanri')?1:0,inv:0,dash:0,
+    obs:[],items:[],shots:[],eshots:[],parts:[],pops:[],
+    dist:0,time:0,score:0,passed:0,healthy:0,favs:0,hits:0,
+    spawnT:.8,itemT:2.5,favT:rnd(8,18),shootT:0,
+    state:'ready',stT:0,shake:0,t:0,clouds:[],
+    boss:bdef?{...bdef,hp:0,max:0,x:W+140,y:H/2,t:0,fireT:2.5,hitT:0,dead:false}:null
+  };
+  if(G.boss){G.boss.max=G.boss.hp=Math.round(24+L*1.05)}
+  for(let i=0;i<6;i++)G.clouds.push({x:rnd(0,W),y:rnd(60,H-160),s:rnd(.6,1.4),v:rnd(.2,.5)});
+  hold=false;show('game');fit();
+  overlay(G.boss?
+    `<h2 style="color:var(--cape)">BOSS あらわる！</h2><div style="font-size:64px;line-height:1.2">${G.boss.emo}</div><b style="font-size:20px">${G.boss.name}</b><p style="margin:6px 0 0">「${G.boss.say}」</p><p class="small muted">スプーンは自動で飛ぶ。よけながら当てよう！</p><div class="btns"><button class="btn main" data-g="go">タップで戦う！</button></div>`:
+    `<h2>Lv${L}</h2><p style="margin:0" class="muted">${G.world.name}</p><p style="margin:8px 0 0">押している間は上へ、はなすと下へ。<br>ゴール 🏁 まで料理をよけて飛ぼう！</p><div class="btns"><button class="btn main" data-g="go">タップでスタート</button></div>`);
+  if(G.boss)SND.boss();
+  cancelAnimationFrame(raf);last=performance.now();raf=requestAnimationFrame(loop);
+}
+function overlay(html){$('#gOverBox').innerHTML=html;$('#gOver').hidden=!html}
+$('#gOver').addEventListener('click',e=>{
+  const b=e.target.closest('[data-g]');if(!b||!G)return;const a=b.dataset.g;
+  if(a==='go'){overlay('');G.state='play';hold=false}
+  else if(a==='resume'){overlay('');G.state='play';hold=false;last=performance.now()}
+  else if(a==='retry'){startLevel(G.L)}
+  else if(a==='quit'){stopGame();show('menu')}
+});
+$('#gPause').onclick=e=>{e.stopPropagation();pause()};
+function pause(){
+  if(!G||G.state!=='play')return;G.state='pause';hold=false;
+  overlay(`<h2>一時停止</h2><div class="btns"><button class="btn main" data-g="resume">つづける</button><button class="btn" data-g="retry">さいしょから</button><button class="btn ghost" data-g="quit">やめる</button></div>`);
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
+function stopGame(){cancelAnimationFrame(raf);G=null;hold=false}
+
+// 入力
+cv.addEventListener('pointerdown',e=>{e.preventDefault();hold=true;audio()});
+window.addEventListener('pointerup',()=>hold=false);
+window.addEventListener('pointercancel',()=>hold=false);
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('keydown',e=>{
+  if(!G)return;
+  if(e.code==='Space'||e.code==='ArrowUp'){e.preventDefault();if(G.state==='ready'){overlay('');G.state='play'}hold=true}
+  if(e.code==='Escape'||e.code==='KeyP')pause();
+});
+window.addEventListener('keyup',e=>{if(e.code==='Space'||e.code==='ArrowUp')hold=false});
+
+function loop(ts){
+  if(!G)return;
+  const dt=Math.min(.033,(ts-last)/1000);last=ts;
+  if(G.state==='play'||G.state==='clear'||G.state==='dead')update(dt);
+  if(!G)return;
+  draw();
+  raf=requestAnimationFrame(loop);
+}
+
+function heroR(){return 15*(G.sk.coord?.78:1)}
+function scrollSpeed(){return G.P.speed*(G.dash>0?1.6:1)}
+
+function update(dt){
+  G.t+=dt;
+  const sp=scrollSpeed(),slow=G.sk.meister?.92:1;
+  // 背景
+  for(const c of G.clouds){c.x-=sp*c.v*dt;if(c.x<-120){c.x=W+rnd(20,120);c.y=rnd(60,H-160)}}
+  updParts(dt);
+  if(G.state==='clear'){G.stT+=dt;G.px+=320*dt;G.py+=(H/2-G.py)*dt*2;if(G.stT>1.4)finish(true);return}
+  if(G.state==='dead'){G.stT+=dt;G.vy+=900*dt;G.py+=G.vy*dt;if(G.stT>1.3)finish(false);return}
+  G.time+=dt;
+  if(G.inv>0)G.inv-=dt;
+  if(G.dash>0)G.dash-=dt;
+  if(G.shake>0)G.shake-=dt;
+  // プレイヤー
+  G.vy+=(hold?-1750:1150)*dt;G.vy=clamp(G.vy,-430,480);G.py+=G.vy*dt;
+  if(G.py<82){G.py=82;G.vy=Math.max(0,G.vy)}
+  if(G.py>H-36){G.py=H-36;G.vy=Math.min(0,G.vy)}
+  const pr=heroR(),invul=G.inv>0||G.dash>0;
+
+  if(!G.boss){
+    G.dist+=sp*dt;
+    if(G.dist>=G.P.dist){G.state='clear';G.stT=0;SND.clear();return}
+    // 料理を出す（ゴール直前は出さない）
+    G.spawnT-=dt;
+    if(G.spawnT<=0&&G.dist<G.P.dist-W*.6){
+      G.spawnT=G.P.spawn*rnd(.75,1.25);
+      const n=G.P.per,ys=[];
+      for(let i=0;i<n;i++){
+        let y,tries=0;
+        do{y=rnd(100,H-50);tries++}while(tries<20&&ys.some(v=>Math.abs(v-y)<110));
+        ys.push(y);
+        const r=Math.random();
+        const kind=r<G.P.chase?'chase':r<G.P.chase+G.P.fast?'fast':Math.random()<G.P.bob?'bob':'plain';
+        G.obs.push({x:W+40+i*rnd(0,60),y,y0:y,r:21,emo:pickA(JUNK),kind,ph:rnd(0,6.3),amp:rnd(30,70),rot:0,vr:rnd(-2,2)});
+      }
+    }
+  }else updBoss(dt,pr,invul);
+
+  // 料理
+  for(const o of G.obs){
+    const k=o.kind==='fast'?1.4:o.kind==='chase'?1.1:1;
+    o.x-=sp*k*slow*dt;o.rot+=o.vr*dt;
+    if(o.kind==='bob')o.y=o.y0+Math.sin(G.t*2.2+o.ph)*o.amp;
+    if(o.kind==='chase'&&o.x>G.px+40)o.y+=clamp(G.py-o.y,-1,1)*70*dt;
+    if(!o.passed&&o.x<G.px-30){o.passed=true;G.passed++;addScore(10)}
+    if(!o.gone&&Math.hypot(o.x-G.px,o.y-G.py)<o.r*.82+pr){
+      if(G.dash>0){o.gone=true;burst(o.x,o.y,'#ffd23f',10);addScore(20,o.x,o.y)}
+      else if(!invul){o.gone=true;burst(o.x,o.y,'#e23a2e',12);damage()}
+    }
+  }
+  G.obs=G.obs.filter(o=>!o.gone&&o.x>-60);
+
+  // 健康食材・好物
+  G.itemT-=dt;
+  if(G.itemT<=0&&(G.boss||G.dist<G.P.dist-W)){
+    G.itemT=rnd(3,5.5)*(G.sk.shoku?.6:1)*(G.boss?1.3:1);
+    G.items.push({x:W+30,y:rnd(110,H-60),emo:pickA(HEALTHY),fav:false,ph:rnd(0,6)});
+  }
+  G.favT-=dt;
+  if(G.favT<=0){G.favT=rnd(16,26);if(G.lives<G.maxLives||Math.random()<.4)G.items.push({x:W+30,y:rnd(120,H-80),emo:G.u.emo,fav:true,ph:0})}
+  for(const it of G.items){
+    it.x-=sp*.85*dt;it.y+=Math.sin(G.t*3+it.ph)*20*dt;
+    if(G.sk.calc){const dx=G.px-it.x,dy=G.py-it.y,d=Math.hypot(dx,dy);if(d<150&&d>1){it.x+=dx/d*260*dt;it.y+=dy/d*260*dt}}
+    if(Math.hypot(it.x-G.px,it.y-G.py)<22+pr){
+      it.got=true;
+      if(it.fav){G.favs++;G.lives=Math.min(G.maxLives,G.lives+1);addScore(300,it.x,it.y);popText(`好物の${G.u.food}！ライフ回復`,it.x,it.y-20);SND.fav();burst(it.x,it.y,'#ff8fc8',18)}
+      else{G.healthy++;G.dash=1.5*(G.sk.sport?1.6:1);addScore(50*(G.sk.kyu?2:1),it.x,it.y);SND.get();burst(it.x,it.y,'#22a04b',10);popText('元気ダッシュ！',G.px,G.py-34)}
+    }
+  }
+  G.items=G.items.filter(i=>!i.got&&i.x>-40);
+}
+
+function updBoss(dt,pr,invul){
+  const b=G.boss,L=G.L,bi=L/10;
+  b.t+=dt;if(b.hitT>0)b.hitT-=dt;
+  const tx=W-82;
+  if(b.x>tx)b.x=Math.max(tx,b.x-150*dt);
+  const angry=b.hp<b.max/2;
+  b.y=H/2+30+Math.sin(b.t*(.8+bi*.04))*(H*.3)+(bi>=7?Math.sin(b.t*2.3)*30:0);
+  if(b.dead){b.y+=b.t*0;return}
+  // スプーン
+  if(b.x<=tx+5){
+    G.shootT-=dt;
+    if(G.shootT<=0){
+      G.shootT=G.dash>0?.15:.28;
+      const ys=G.sk.cook?[-10,10]:[0];
+      ys.forEach(o=>G.shots.push({x:G.px+18,y:G.py+o,vy:o*1.5}));
+      SND.shot();
+    }
+    // ボスの攻撃
+    b.fireT-=dt;
+    if(b.fireT<=0){
+      b.fireT=Math.max(.62,1.6-.008*L)*(angry?.72:1)*rnd(.85,1.15);
+      bossFire(b,bi,angry);
+    }
+  }
+  for(const s of G.shots){s.x+=560*dt;s.y+=s.vy*dt;
+    if(!b.dead&&Math.abs(s.x-b.x)<50&&Math.abs(s.y-b.y)<56){s.hit=true;b.hp-=1;b.hitT=.08;addScore(5);SND.bhit();burst(s.x,s.y,'#ffe100',4);
+      if(b.hp<=0){b.dead=true;b.hp=0;G.eshots=[];bossDie()}}}
+  G.shots=G.shots.filter(s=>!s.hit&&s.x<W+30);
+  for(const e of G.eshots){e.x+=e.vx*dt;e.y+=e.vy*dt;e.rot+=dt*4;if(e.wave)e.y+=Math.cos(G.t*5+e.ph)*120*dt;
+    if(!invul&&Math.hypot(e.x-G.px,e.y-G.py)<13+pr){e.gone=true;burst(e.x,e.y,'#e23a2e',10);damage()}}
+  G.eshots=G.eshots.filter(e=>!e.gone&&e.x>-40&&e.x<W+60&&e.y>-40&&e.y<H+40);
+  // 体当たり
+  if(!b.dead&&!invul&&Math.abs(b.x-G.px)<56+pr&&Math.abs(b.y-G.py)<56+pr)damage();
+}
+function bossFire(b,bi,angry){
+  const v=(150+1.2*G.L)*(G.sk.meister?.92:1);
+  const shot=(ang,extra)=>G.eshots.push(Object.assign({x:b.x-40,y:b.y,vx:Math.cos(ang)*v,vy:Math.sin(ang)*v,emo:pickA(b.shots),rot:0,ph:rnd(0,6)},extra||{}));
+  const aim=Math.atan2(G.py-b.y,G.px-(b.x-40));
+  const pats=['aim'];if(bi>=2)pats.push('fan3');if(bi>=4)pats.push('fan5');if(bi>=5)pats.push('wave');if(bi>=7)pats.push('ring');if(bi>=9)pats.push('rain');
+  const p=pickA(pats);
+  if(p==='aim'){shot(aim);if(angry)setTimeout(()=>G&&G.boss&&!G.boss.dead&&shot(Math.atan2(G.py-b.y,G.px-(b.x-40))),220)}
+  else if(p==='fan3')[-.25,0,.25].forEach(a=>shot(aim+a));
+  else if(p==='fan5')[-.4,-.2,0,.2,.4].forEach(a=>shot(aim+a));
+  else if(p==='wave')[0,1,2].forEach(i=>setTimeout(()=>G&&G.boss&&!G.boss.dead&&shot(Math.PI,{wave:true,ph:i}),i*180));
+  else if(p==='ring'){const n=angry?10:8;for(let i=0;i<n;i++){const a=Math.PI/2+Math.PI*(i+.5)/n;shot(a)}}
+  else if(p==='rain'){const gap=rnd(150,H-120);for(let y=90;y<H-20;y+=58)if(Math.abs(y-gap)>70)G.eshots.push({x:W+20,y,vx:-v*.9,vy:0,emo:pickA(b.shots),rot:0,ph:0})}
+}
+function bossDie(){
+  const b=G.boss;SND.clear();
+  for(let i=0;i<5;i++)setTimeout(()=>G&&burst(b.x+rnd(-40,40),b.y+rnd(-40,40),pickA(['#ffd23f','#e23a2e','#fff']),20),i*160);
+  popText(`「${b.lose}」`,W/2,b.y-80,2.2);
+  G.state='clear';G.stT=-.6;G.obs=[];
+}
+function damage(){
+  if(G.barrier>0){G.barrier--;G.inv=1;SND.shield();popText('バリア！',G.px,G.py-34);return}
+  G.lives--;G.hits++;G.inv=1.4;G.shake=.3;SND.hit();
+  if(navigator.vibrate)try{navigator.vibrate(60)}catch(e){}
+  if(G.lives<=0){G.state='dead';G.stT=0;G.vy=-300;SND.over()}
+}
+function addScore(n,x,y){const m=G.sk.meister?1.5:1;G.score+=n*m;if(x!=null&&n>=20)popText('+'+Math.round(n*m),x,y)}
+function burst(x,y,col,n){for(let i=0;i<n;i++){const a=rnd(0,6.3),s=rnd(60,240);G.parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rnd(.3,.7),col,r:rnd(2,5)})}}
+function popText(t,x,y,life){G.pops.push({t,x:clamp(x,90,W-90),y,life:life||1,max:life||1})}
+function updParts(dt){
+  for(const p of G.parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=300*dt;p.life-=dt}
+  G.parts=G.parts.filter(p=>p.life>0);
+  for(const p of G.pops){p.y-=30*dt;p.life-=dt}
+  G.pops=G.pops.filter(p=>p.life>0);
+}
+
+/* ------------ 描画 ------------ */
+function draw(){
+  const c=ctx;c.save();
+  if(G.shake>0)c.translate(rnd(-5,5),rnd(-5,5));
+  // 空
+  const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,G.world.sky[0]);g.addColorStop(1,G.world.sky[1]);
+  c.fillStyle=g;c.fillRect(-10,-10,W+20,H+20);
+  const night=['夜の繁華街','ファストフード銀河','大魔王の城'].includes(G.world.name);
+  if(night){c.fillStyle='rgba(255,255,255,.7)';for(let i=0;i<30;i++){const x=(i*97+G.t*-8)%W;c.fillRect((x+W)%W,(i*53)%(H*.6),2,2)}}
+  // 遠くの丘
+  const off=(G.dist||G.t*G.P.speed)*.15;
+  c.fillStyle=G.world.hill;c.beginPath();c.moveTo(0,H);
+  for(let x=0;x<=W+20;x+=20)c.lineTo(x,H-60-Math.sin((x+off)/70)*18-Math.sin((x+off)/31)*8);
+  c.lineTo(W,H);c.fill();
+  // 雲
+  c.fillStyle=night?'rgba(255,255,255,.18)':'rgba(255,255,255,.85)';
+  for(const cl of G.clouds)cloud(c,cl.x,cl.y,cl.s);
+  // ゴール
+  if(!G.boss){
+    const gx=G.px+(G.P.dist-G.dist);
+    if(gx<W+60){c.fillStyle='#fff';for(let y=60;y<H;y+=24){c.fillStyle=((y/24)|0)%2?'#1b2a4a':'#fff';c.fillRect(gx,y,14,24)}drawEmo(c,'🏁',gx+7,50,36)}
+  }
+  // 健康食材
+  for(const it of G.items){
+    if(it.fav){c.fillStyle='rgba(255,210,63,.55)';circ(c,it.x,it.y,28+Math.sin(G.t*8)*4)}
+    else{c.fillStyle='rgba(255,255,255,.6)';circ(c,it.x,it.y,22)}
+    drawEmo(c,it.emo,it.x,it.y,it.fav?38:32);
+  }
+  // 料理
+  for(const o of G.obs){
+    if(o.kind==='fast'){c.strokeStyle='rgba(255,255,255,.7)';c.lineWidth=3;c.beginPath();c.moveTo(o.x+26,o.y-8);c.lineTo(o.x+50,o.y-8);c.moveTo(o.x+26,o.y+8);c.lineTo(o.x+44,o.y+8);c.stroke()}
+    if(o.kind==='chase'){c.strokeStyle='rgba(226,58,46,.8)';c.lineWidth=3;c.beginPath();c.arc(o.x,o.y,26,0,7);c.stroke()}
+    drawEmo(c,o.emo,o.x,o.y,42,o.rot*.3);
+  }
+  // ボス
+  if(G.boss)drawBoss(c,G.boss);
+  for(const s of G.shots){c.save();c.translate(s.x,s.y);c.rotate(G.t*20);c.fillStyle='#ffe100';c.fillRect(-9,-1.5,12,3);ell(c,6,0,5,4);c.restore()}
+  for(const e of G.eshots)drawEmo(c,e.emo,e.x,e.y,28,e.rot*.4);
+  // 主人公
+  if(G.dash>0){c.fillStyle='rgba(255,210,63,.45)';for(let i=1;i<5;i++){c.globalAlpha=.5-i*.1;drawHero(c,G.px-i*16,G.py,70,.25,G.t)}c.globalAlpha=1}
+  const tilt=G.state==='dead'?G.stT*6:clamp(G.vy/900,-.35,.35)+.15;
+  const blink=G.inv>0&&Math.floor(G.t*14)%2===0;
+  drawHero(c,G.px,G.py,70,tilt,G.t,blink);
+  if(G.barrier>0){c.strokeStyle='rgba(120,200,255,.9)';c.lineWidth=3;c.beginPath();c.arc(G.px,G.py,34,0,7);c.stroke()}
+  if(G.dash>0){c.strokeStyle='rgba(255,210,63,.95)';c.lineWidth=4;c.beginPath();c.arc(G.px,G.py,36,0,7);c.stroke()}
+  // パーティクル
+  for(const p of G.parts){c.globalAlpha=clamp(p.life*2,0,1);c.fillStyle=p.col;circ(c,p.x,p.y,p.r)}
+  c.globalAlpha=1;
+  c.font='800 18px "M PLUS Rounded 1c",sans-serif';c.textAlign='center';c.textBaseline='middle';
+  for(const p of G.pops){c.globalAlpha=clamp(p.life/p.max*2,0,1);c.lineWidth=4;c.strokeStyle='#1d3b8b';c.strokeText(p.t,p.x,p.y);c.fillStyle='#fff';c.fillText(p.t,p.x,p.y)}
+  c.globalAlpha=1;
+  c.restore();
+  drawHUD(c);
+}
+function drawBoss(c,b){
+  const shake=b.hitT>0?rnd(-3,3):0,x=b.x+shake,y=b.y;
+  c.save();
+  if(b.dead){c.globalAlpha=clamp(1-G.stT,0,1)}
+  c.fillStyle=b.col;c.strokeStyle='#1d3b8b';c.lineWidth=4;
+  c.beginPath();c.ellipse(x,y+8,50,48,0,0,7);c.fill();c.stroke();
+  // 角
+  c.fillStyle='#1d3b8b';c.beginPath();c.moveTo(x-32,y-26);c.lineTo(x-42,y-58);c.lineTo(x-16,y-36);c.fill();
+  c.beginPath();c.moveTo(x+32,y-26);c.lineTo(x+42,y-58);c.lineTo(x+16,y-36);c.fill();
+  drawEmo(c,b.emo,x,y-40,44);
+  // 怒り顔
+  c.fillStyle='#fff';ell(c,x-17,y+2,10,9);ell(c,x+11,y+2,10,9);
+  c.fillStyle='#1b2a4a';circ(c,x-20,y+4,4.5);circ(c,x+8,y+4,4.5);
+  c.strokeStyle='#1b2a4a';c.lineWidth=4;c.lineCap='round';
+  c.beginPath();c.moveTo(x-30,y-12);c.lineTo(x-8,y-5);c.moveTo(x+24,y-12);c.lineTo(x+2,y-5);c.stroke();
+  c.fillStyle='#7a1020';c.beginPath();c.ellipse(x-4,y+28,16,b.hitT>0?11:7,0,0,7);c.fill();
+  c.fillStyle='#fff';c.fillRect(x-12,y+22,6,5);c.fillRect(x+2,y+22,6,5);
+  c.restore();
+}
+function drawHUD(c){
+  // 上の帯
+  c.fillStyle='rgba(29,59,139,.88)';c.fillRect(0,0,W,58);
+  c.textBaseline='middle';
+  // ライフ
+  for(let i=0;i<G.maxLives;i++){c.globalAlpha=i<G.lives?1:.25;drawEmo(c,'❤️',18+i*24,18,20)}
+  c.globalAlpha=1;
+  if(G.barrier>0)drawEmo(c,'🛡️',18+G.maxLives*24,18,20);
+  c.fillStyle='#fff';c.font='600 15px "IBM Plex Mono",monospace';c.textAlign='left';
+  c.fillText('Lv'+G.L,8,44);
+  c.textAlign='center';c.fillText(G.time.toFixed(2)+'s',W/2-30,18);
+  c.font='600 20px "IBM Plex Mono",monospace';c.fillStyle='#ffd23f';c.fillText(Math.round(G.score).toLocaleString(),W/2-30,42);
+  // 進み具合 or ボスの体力
+  const bx=W-170,bw=104;
+  if(G.boss){
+    c.fillStyle='#fff';c.font='800 11px "M PLUS Rounded 1c",sans-serif';c.textAlign='left';c.fillText(G.boss.name,bx,16);
+    c.fillStyle='rgba(255,255,255,.25)';c.fillRect(bx,28,bw,14);
+    c.fillStyle='#e23a2e';c.fillRect(bx,28,bw*G.boss.hp/G.boss.max,14);
+    c.strokeStyle='#fff';c.lineWidth=2;c.strokeRect(bx,28,bw,14);
+  }else{
+    const p=clamp(G.dist/G.P.dist,0,1);
+    c.fillStyle='rgba(255,255,255,.25)';c.fillRect(bx,24,bw,8);
+    c.fillStyle='#ffd23f';c.fillRect(bx,24,bw*p,8);
+    drawEmo(c,'🏁',bx+bw+6,28,16);
+    drawHero(c,bx+bw*p,30,26,0,G.t);
+  }
+}
+
+/* ------------ 結果 ------------ */
+let LAST=null;
+function finish(win){
+  cancelAnimationFrame(raf);
+  const g=G,u=me(),L=g.L;G=null;hold=false;
+  u.plays=(u.plays||0)+1;
+  const rows=[];const m=g.sk.meister?1.5:1;
+  rows.push([g.boss?'ボスに当てた・よけた':'よけた料理',Math.round(g.score)]);
+  let total=g.score;
+  let newSkill=null,newScore=false,newTime=false,newBestS=false,newBestT=false;
+  if(win){
+    const time=+g.time.toFixed(2);
+    const clearB=(g.boss?2000+L*30:1000+L*20)*m;
+    const par=g.boss?40+L*.2:g.P.dist/g.P.speed;
+    const timeB=Math.max(0,Math.round((par-time)*(g.boss?40:60)*m));
+    const lifeB=g.lives*300*m;
+    const perfect=g.hits===0?1000*m:0;
+    rows.push(['クリアボーナス',clearB],['タイムボーナス',timeB],['のこりライフ ×'+g.lives,lifeB]);
+    if(perfect)rows.push(['ノーダメージ！',perfect]);
+    total+=clearB+timeB+lifeB+perfect;total=Math.round(total);
+    // 自己ベスト
+    const b=u.best[L]||{};
+    if(b.score==null||total>b.score){b.score=total;newBestS=true}
+    if(b.time==null||time<b.time){b.time=time;newBestT=true}
+    u.best[L]=b;
+    // レコード（この端末の全員）
+    const r=STORE.rec[L]||(STORE.rec[L]={});
+    if(!r.score||total>r.score.v){r.score={v:total,name:u.name,emo:u.emo,uid:u.id};newScore=true}
+    if(!r.time||time<r.time.v){r.time={v:time,name:u.name,emo:u.emo,uid:u.id};newTime=true}
+    if(L>u.cleared){u.cleared=L;newSkill=SKILLS.find(s=>s.lv===L)||(L===MAXLV?{icon:'🌟',name:'伝説の献ダテマン',desc:'全 100 レベル制覇！おめでとう！'}:null)}
+    LAST={L,win,total,time};
+  }else{total=Math.round(total);LAST={L,win,total}}
+  save();
+  // 表示
+  const head=$('#resHead');head.className='res-h'+(win?' win':'');
+  head.innerHTML=win?`<h2>${g.boss?g.boss.name+' 撃破！':'Lv'+L+' クリア！'}</h2><p class="muted" style="margin:0">${g.boss?'「'+esc(g.boss.lose)+'」':g.world.name}</p>`:
+    `<h2>ざんねん…</h2><p class="muted" style="margin:0">Lv${L} ${g.boss?esc(g.boss.name)+'に負けた':'料理にぶつかりすぎた'}<br>${win?'':'健康食材でダッシュすると無敵になれるよ'}</p>`;
+  $('#resScore').textContent=total.toLocaleString();
+  const extra=[];
+  if(g.healthy)extra.push(['とった健康食材',g.healthy+'個']);
+  if(g.favs)extra.push([`好物の${g.u.food}`,g.favs+'個']);
+  if(win)extra.push(['タイム',fmtT(+g.time.toFixed(2))]);
+  if(m>1)rows.push(['（マイスター 1.5 倍こみ）','']);
+  $('#resTbl').innerHTML=rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v===''?'':'+'+Math.round(v).toLocaleString()}</td></tr>`).join('')+
+    extra.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
+  const b=u.best[L]||{},r=STORE.rec[L]||{};
+  $('#resRec').innerHTML=win?`
+    <div><div class="k">自己ベスト スコア ${newBestS?'<span class="newrec">更新</span>':''}</div><div class="v">${fmtS(b.score)}</div></div>
+    <div><div class="k">自己ベスト タイム ${newBestT?'<span class="newrec">更新</span>':''}</div><div class="v">${fmtT(b.time)}</div></div>
+    <div><div class="k">🏆 レコード ${newScore?'<span class="newrec">新記録</span>':''}</div><div class="v">${fmtS(r.score&&r.score.v)}</div><div class="w">${r.score?esc(r.score.emo+' '+r.score.name):''}</div></div>
+    <div><div class="k">⏱ レコード ${newTime?'<span class="newrec">新記録</span>':''}</div><div class="v">${fmtT(r.time&&r.time.v)}</div><div class="w">${r.time?esc(r.time.emo+' '+r.time.name):''}</div></div>`:
+    `<div><div class="k">自己ベスト スコア</div><div class="v">${fmtS(b.score)}</div></div><div><div class="k">🏆 レコード</div><div class="v">${fmtS(r.score&&r.score.v)}</div><div class="w">${r.score?esc(r.score.emo+' '+r.score.name):''}</div></div>`;
+  const nb=$('#resNext');
+  if(win&&L<MAXLV){nb.hidden=false;nb.textContent=(isBoss(L+1)?'👊 次はボス戦！ ':'▶ 次へ ')+`Lv${L+1}`}
+  else if(!win){nb.hidden=false;nb.textContent='もう一度挑戦'}
+  else nb.hidden=true;
+  $("#resRetry").hidden=!win;
+  show('result');
+  if(newSkill){
+    $('#popBox').innerHTML=`<h2 style="color:var(--cape)">${newSkill.lv?'スキル獲得！':'称号獲得！'}</h2><div class="i">${newSkill.icon}</div><b style="font-size:22px">${newSkill.name}</b><p style="margin:6px 0 0">${newSkill.desc}</p><div class="btns" style="margin-top:14px"><button class="btn main" id="popOk" style="width:100%">やったー！</button></div>`;
+    $('#pop').hidden=false;$('#popOk').onclick=()=>$('#pop').hidden=true;
+  }
+}
+$('#resNext').onclick=()=>{if(!LAST)return;startLevel(LAST.win?LAST.L+1:LAST.L)};
+$('#resRetry').onclick=()=>LAST&&startLevel(LAST.L);
+$('#resMenu').onclick=()=>show('menu');
+
+/* ------------ boot ------------ */
+show('title');
+</script>
+</body>
+</html>
