@@ -29,7 +29,7 @@ for rid in rids:
         f=feat.features(h,ri,H)
         v=np.array([1.0]+[float(f[k]) for k in FK]+[min(f['_best_diff'],2),f['jockey_score']])
         p=float(1/(1+np.exp(-v@w)))
-        name=h['info'].split()[1] if len(h['info'].split())>1 else '?'
+        name=h.get('name') or (h['info'].split()[1] if len(h['info'].split())>1 else '?')
         why=[SHORT[k] for k in SHORT if f.get(k)]
         if f['_best_diff']<9: why.insert(0,f"近3走の最小着差{f['_best_diff']:+.1f}秒" if f['_best_diff']!=0 else '近走で勝ち負け')
         rows.append(dict(p=p,uma=h['uma'],waku=int(h['waku'] or 0),name=name,jockey=f['_jockey'],why='・'.join(why[:4]),f=f,newbie=not h['past']))

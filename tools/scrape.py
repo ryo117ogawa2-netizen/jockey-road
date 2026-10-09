@@ -38,7 +38,8 @@ def pre(rid):
             tds.setdefault(c.split()[0],[]).append(v)
         hid=re.search(r'db.netkeiba.com/horse/(\w+)',tr)
         info=tds.get('Horse_Info',[''])[0]
-        h=dict(hid=hid.group(1) if hid else '',waku=T(next((v[0] for k,v in tds.items() if k.startswith('Waku') and k!='Waku'),'')),
+        nm=re.search(r'class="Horse02">\s*<a[^>]*>(?:<span[^>]*></span>)?([^<]+)',tr) or re.search(r'class="HorseName">\s*<a[^>]*>([^<]+)',tr)
+        h=dict(name=nm.group(1).strip() if nm else '',hid=hid.group(1) if hid else '',waku=T(next((v[0] for k,v in tds.items() if k.startswith('Waku') and k!='Waku'),'')),
                uma=T(tds.get('Waku',[''])[0]),
                info=T(info),jockey=T(tds.get('Jockey',[''])[0]),rest=T(tds.get('Rest',[''])[0]),
                past=[T(p) for k in tds if k.startswith('Past') for p in tds[k]][:5])
