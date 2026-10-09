@@ -17,7 +17,7 @@ SHORT={'前走人気で大敗（不利・出遅れ候補）':'前走人気で大
 PREF=['前走人気で大敗（不利・出遅れ候補）','3歳（秋・古馬混合）','ダート外枠','短距離内枠逃げ先行','j_丹内菊沢ローカル']
 H={}; races=[]
 for rid in rids:
-    pre=scrape.pre(rid); ri=feat.race_info(pre,date)
+    pre=scrape.pre(rid); ri=feat.race_info(pre,date); OI=scrape.oikiri(rid)
     if ri['surf'] not in('芝','ダ'): continue
     rows=[]
     for h in pre['horses']:
@@ -27,10 +27,12 @@ for rid in rids:
             m=re.search(r'生産者</th>\s*<td[^>]*>(.*?)</td>',t,re.S); b=scrape.T(m.group(1)) if m else ''
             H[h['hid']]=dict(breeder=b,gai=bool(re.search('[A-Za-z]',b)))
         f=feat.features(h,ri,H)
-        v=np.array([1.0]+[float(f[k]) for k in FK]+[min(f['_best_diff'],2),f['jockey_score']])
+        g=OI.get(h['uma'],{}); gr=g.get('grade')
+        v=np.array([1.0]+[float(f[k]) for k in FK]+[min(f['_best_diff'],2),f['jockey_score'],gr=='A',gr=='C',gr=='D'],float)
         p=float(1/(1+np.exp(-v@w)))
         name=h.get('name') or (h['info'].split()[1] if len(h['info'].split())>1 else '?')
         why=[SHORT[k] for k in SHORT if f.get(k)]
+        if gr: why.insert(0,f"調教{gr}「{g.get('tanpyo','')}」")
         if f['_best_diff']<9: why.insert(0,f"近3走の最小着差{f['_best_diff']:+.1f}秒" if f['_best_diff']!=0 else '近走で勝ち負け')
         rows.append(dict(p=p,uma=h['uma'],waku=int(h['waku'] or 0),name=name,jockey=f['_jockey'],why='・'.join(why[:4]),f=f,newbie=not h['past']))
     if not rows: continue

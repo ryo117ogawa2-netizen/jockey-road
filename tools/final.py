@@ -16,7 +16,7 @@ now=datetime.datetime.utcnow()+datetime.timedelta(hours=9)
 H={}; res=[]
 for rid in rids:
     if rid in state: continue
-    pre=scrape.pre(rid); ri=feat.race_info(pre,date)
+    pre=scrape.pre(rid); ri=feat.race_info(pre,date); OI=scrape.oikiri(rid)
     if ri['surf'] not in('芝','ダ'): continue
     tm=re.search(r'(\d{1,2}):(\d\d)発走',pre['d1'])
     post=datetime.datetime.combine(ri['date'],datetime.time(int(tm[1]),int(tm[2]))) if tm else None
@@ -30,7 +30,8 @@ for rid in rids:
             m=re.search(r'生産者</th>\s*<td[^>]*>(.*?)</td>',t,re.S); b=scrape.T(m.group(1)) if m else ''
             H[h['hid']]=dict(breeder=b,gai=bool(re.search('[A-Za-z]',b)))
         f=feat.features(h,ri,H)
-        v=np.array([1.0]+[float(f[k]) for k in FK]+[min(f['_best_diff'],2),f['jockey_score']])
+        g=OI.get(h['uma'],{}); gr=g.get('grade')
+        v=np.array([1.0]+[float(f[k]) for k in FK]+[min(f['_best_diff'],2),f['jockey_score'],gr=='A',gr=='C',gr=='D'],float)
         p=float(1/(1+np.exp(-v@w)))
         wm=re.search(r'(\d{3})kg \(([+\-]?\d+)\)',h['info']); kg=int(wm[1]); wd=int(wm[2])
         ps=[x for x in (feat.parse_past(q) for q in h['past']) if x]
@@ -54,7 +55,7 @@ for rid in rids:
             elif wd<=-4: note.append(f'叩き2戦目で{wd}kg絞れた（3着内19.3%、平均並み）')
             else: k*=0.7; note.append(f'⚠叩き2戦目でさらに+{wd}kg（3着内13.8%）')
         if good and abs(kg-good[0])<=2 and not note: k*=1.08; note.append(f'好走したときと同じ体重（{kg}kg）')
-        rows.append(dict(p=min(0.95,p*k),p0=p,uma=h['uma'],waku=int(h['waku'] or 0),name=h.get('name') or h['info'].split()[1],jockey=f['_jockey'],kg=kg,wd=wd,note=' / '.join(note)))
+        rows.append(dict(p=min(0.95,p*k),p0=p,uma=h['uma'],waku=int(h['waku'] or 0),name=h.get('name') or h['info'].split()[1],jockey=f['_jockey'],kg=kg,wd=wd,note=' / '.join(([f"調教{gr}「{g.get('tanpyo','')}」"] if gr in('A','C','D') else [])+note)))
     rows.sort(key=lambda r:-r['p'])
     marks=[dict(mark=mk,uma=r['uma'],waku=r['waku'],name=r['name'],jockey=r['jockey'],pct=round(r['p']*100),why=f"{r['kg']}kg({r['wd']:+d}) "+r['note']) for mk,r in zip('◎○▲',rows)]
     marks+=[dict(mark='紐',uma=r['uma'],waku=r['waku'],name=r['name'],jockey=r['jockey'],pct=round(r['p']*100),why=f"{r['kg']}kg({r['wd']:+d}) "+r['note']) for r in rows[3:5]]

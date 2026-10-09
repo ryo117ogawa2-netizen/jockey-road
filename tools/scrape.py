@@ -88,3 +88,16 @@ if __name__=='__main__':
             if i%500==0: print('h',i,flush=True)
     json.dump(hinfo,open(D+'/horses.json','w'),ensure_ascii=False)
     print('done',flush=True)
+
+def oikiri(rid,fresh=True):
+    """調教の短評と評価（A〜D、デイリースポーツ提供の無料部分）。{馬番: {tanpyo, grade}}"""
+    p=f'{C}/oi{rid}'
+    if fresh and os.path.exists(p): os.remove(p)
+    s=get(f'https://race.netkeiba.com/race/oikiri.html?race_id={rid}',f'oi{rid}')
+    out={}
+    for tr in re.findall(r'<tr[^>]*>.*?</tr>',s,re.S):
+        if 'umaban' not in tr.lower(): continue
+        t=' '.join(html.unescape(re.sub(r'<[^>]+>',' ',tr)).split())
+        m=re.search(r'^(\d+) (\d+) .*?消 (\S+) (?:前走 )?(\S+) ([A-D])\b',t)
+        if m: out[m[2]]=dict(tanpyo=m[4],grade=m[5])
+    return out
