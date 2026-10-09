@@ -134,6 +134,44 @@ input.t{width:100%;font:inherit;font-size:17px;font-weight:700;padding:10px 12px
 .skill.got{border-color:var(--gold);background:#fff8dc}
 .skillpop .i{font-size:64px;line-height:1.2}
 
+/* タブ・ランキング */
+.tabs{display:flex;gap:6px}
+.tabs button{flex:1;min-height:42px;border:3px solid var(--frame);border-radius:12px;background:var(--panel);font-weight:800;font-size:14px;padding:0 4px}
+.tabs button.on{background:var(--sun);box-shadow:0 3px 0 var(--frame)}
+.rk{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:8px 6px;border:0;border-bottom:1px dashed var(--line);background:none}
+.rk.mine{background:#fff8dc;border-radius:10px}
+.rk .no{width:30px;text-align:center;font-family:var(--mono);font-weight:600;font-size:16px}
+.rk .no.g1{font-size:22px}
+.rk .e{font-size:28px;width:36px;text-align:center}
+.rk .nm{flex:1;min-width:0}
+.rk .nm b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk .nm span{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk .v{font-family:var(--mono);font-weight:600;text-align:right;white-space:nowrap}
+.rk .v small{display:block;font-size:10px;color:var(--muted);font-family:var(--body);font-weight:800}
+.who{background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit;text-decoration:underline dotted;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.pfood{margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff3c4;border:2px solid var(--gold);display:flex;align-items:center;gap:10px}
+.pfood .e{font-size:34px}
+.pfood b{font-size:18px}
+.lvbest{display:grid;grid-template-columns:52px 1fr 1fr;gap:4px;font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.lvbest span:not(:first-child){font-family:var(--mono);text-align:right}
+
+/* 試験 */
+.qhead{display:flex;justify-content:space-between;font-weight:800;font-size:13px;color:var(--muted)}
+.qbar{height:8px;border-radius:4px;background:var(--panel-2);overflow:hidden;margin:6px 0 12px}
+.qbar i{display:block;height:100%;background:var(--good);transition:width .2s linear}
+.qq{font-size:17px;font-weight:800;line-height:1.5;margin:0 0 12px}
+.qopts{display:flex;flex-direction:column;gap:8px}
+.qopts button{text-align:left;min-height:52px;padding:8px 12px;border:3px solid var(--frame);border-radius:12px;background:var(--panel);font-weight:700;font-size:15px;display:flex;gap:10px;align-items:center}
+.qopts button .k{font-family:var(--mono);font-weight:600;width:22px;height:22px;border-radius:50%;background:var(--panel-2);display:grid;place-items:center;flex:none;font-size:13px}
+.qopts button.ok{background:#dff6e6;border-color:var(--good)}
+.qopts button.ng{background:#ffe1de;border-color:var(--silk)}
+.qexp{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--panel-2);font-size:14px}
+.qexp b.ok{color:var(--good)}.qexp b.ng{color:var(--silk)}
+.qres{text-align:center}
+.qres .big{font-size:56px}
+.stamp{display:inline-block;font-family:var(--display);font-size:28px;color:var(--silk);border:4px solid var(--silk);border-radius:12px;padding:2px 14px;transform:rotate(-8deg);margin:8px 0}
+.stamp.ng{color:var(--muted);border-color:var(--muted)}
+
 /* レコード */
 .rec{display:grid;grid-template-columns:48px 1fr 1fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
 .rec .l{font-family:var(--mono);font-weight:600;text-align:center}
@@ -198,6 +236,8 @@ input.t{width:100%;font:inherit;font-size:17px;font-weight:700;padding:10px 12px
   <button class="btn main" id="mPlay" style="min-height:68px;font-size:20px"></button>
   <div class="menu">
     <button class="btn" data-go="levels">🗺️ レベル選択</button>
+    <button class="btn" data-go="rank">👑 ランキング</button>
+    <button class="btn wide" data-go="quiz" style="background:#dff6e6">📝 ミニゲーム：管理栄養士試験</button>
     <button class="btn" data-go="records">🏆 レコード</button>
     <button class="btn" data-go="profile">🎓 スキル・成績</button>
     <button class="btn" data-go="users">👥 ユーザー</button>
@@ -213,6 +253,30 @@ input.t{width:100%;font:inherit;font-size:17px;font-weight:700;padding:10px 12px
   </div>
 </section>
 
+<!-- ランキング -->
+<section id="rank" class="wrap" hidden>
+  <div class="top"><button class="back" data-go="menu">← もどる</button><h2>ランキング</h2></div>
+  <div class="tabs" id="rkTabs">
+    <button data-k="cleared" class="on">クリア Lv</button><button data-k="total_score">合計スコア</button><button data-k="quiz_best">試験</button>
+  </div>
+  <div class="panel">
+    <p class="small muted" id="rkNote" style="margin:0 0 8px"></p>
+    <div id="rkList"></div>
+  </div>
+</section>
+
+<!-- ユーザー情報 -->
+<section id="player" class="wrap" hidden>
+  <div class="top"><button class="back" id="plBack">← もどる</button><h2>ユーザー情報</h2></div>
+  <div id="plBody"></div>
+</section>
+
+<!-- 管理栄養士試験 -->
+<section id="quiz" class="wrap" hidden>
+  <div class="top"><button class="back" id="qzBack">← もどる</button><h2>管理栄養士試験</h2></div>
+  <div class="panel" id="qzBody"></div>
+</section>
+
 <!-- レベル選択 -->
 <section id="levels" class="wrap" hidden>
   <div class="top"><button class="back" data-go="menu">← もどる</button><h2>レベル選択</h2></div>
@@ -223,7 +287,7 @@ input.t{width:100%;font:inherit;font-size:17px;font-weight:700;padding:10px 12px
 <section id="records" class="wrap" hidden>
   <div class="top"><button class="back" data-go="menu">← もどる</button><h2>レースレコード</h2></div>
   <div class="panel">
-    <p class="small muted" style="margin:0 0 8px">この端末で遊んだ全員の中のベスト。緑の字は自分の記録。</p>
+    <p class="small muted" style="margin:0 0 8px" id="recNote"></p>
     <div class="rechead"><span style="text-align:center">Lv</span><span>🏆 ハイスコア</span><span>⏱ 最速タイム</span></div>
     <div id="recList"></div>
   </div>
@@ -440,17 +504,19 @@ const SND={
 };
 
 /* ------------ 画面遷移 ------------ */
-const SCREENS=['title','reg','users','menu','levels','records','profile','result'];
+const SCREENS=['title','reg','users','menu','levels','records','profile','result','rank','player','quiz'];
 function show(id){
   SCREENS.forEach(s=>$('#'+s).hidden=s!==id);
   $('#game').hidden=id!=='game';
   if(id!=='game')window.scrollTo(0,0);
   if(id==='menu')renderMenu();
   if(id==='levels')renderLevels();
-  if(id==='records')renderRecords();
+  if(id==='records'){renderRecords();fetchGrec()}
   if(id==='profile')renderProfile();
   if(id==='users')renderUsers();
   if(id==='title')titleAnim();
+  if(id==='rank')renderRank();
+  if(id==='quiz')quizIntro();
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)show(b.dataset.go)});
 
@@ -490,7 +556,7 @@ $('#rOk').onclick=()=>{
   if(!food){$('#rErr').textContent='好きな料理を入れてね';return}
   if(STORE.users.some(u=>u.name===name)){$('#rErr').textContent='その名前はこの端末ですでに使われているよ';return}
   const u={id:newId(),name,food,emo:regEmo,cleared:0,best:{},plays:0,created:Date.now()};
-  STORE.users.push(u);STORE.cur=u.id;save();show('menu');
+  STORE.users.push(u);STORE.cur=u.id;save();show('menu');syncUser(u,true);
 };
 
 /* ------------ ユーザー ------------ */
@@ -505,7 +571,7 @@ $('#uList').onclick=e=>{
   const d=e.target.closest('[data-del]');
   if(d){const u=STORE.users.find(x=>x.id===d.dataset.del);
     if(u&&confirm(`「${u.name}」のデータを消しますか？（もとに戻せません。レコードは残ります）`)){
-      STORE.users=STORE.users.filter(x=>x!==u);if(STORE.cur===u.id)STORE.cur=STORE.users[0]?.id||null;save();
+      hideUser(u);STORE.users=STORE.users.filter(x=>x!==u);if(STORE.cur===u.id)STORE.cur=STORE.users[0]?.id||null;save();
       if(!STORE.cur){openReg(false);return}renderUsers();}
     return}
   const b=e.target.closest('[data-u]');if(b){STORE.cur=b.dataset.u;save();show('menu')}
@@ -519,7 +585,7 @@ function renderMenu(){
   $('#mEmo').textContent=u.emo;$('#mName').textContent=u.name;
   $('#mFood').textContent='好きな料理：'+u.food;
   const got=SKILLS.filter(s=>u.cleared>=s.lv);
-  $('#mChips').innerHTML=`<span class="chip">Lv${u.cleared} クリア</span>`+(u.cleared>=MAXLV?'<span class="chip on">🌟 伝説の献ダテマン</span>':'')+
+  $('#mChips').innerHTML=`<span class="chip">Lv${u.cleared} クリア</span>`+(u.cleared>=MAXLV?'<span class="chip on">🌟 伝説の献ダテマン</span>':'')+(u.quizPass?`<span class="chip on">📝 試験合格 ×${u.quizPass}</span>`:'')+
     (got.length?got.map(s=>`<span class="chip on">${s.icon} ${s.name}</span>`).join(''):'<span class="chip">スキルなし（Lv10 のボスを倒すと手に入る）</span>');
   const L=nextLv(u);
   $('#mPlay').innerHTML=(isBoss(L)?'👊 ボス戦 ':'▶ ')+`Lv${L} に挑戦`;
@@ -549,9 +615,10 @@ $('#lvWrap').onclick=e=>{const b=e.target.closest('[data-lv]');if(b)startLevel(+
 /* ------------ レコード ------------ */
 function renderRecords(){
   const u=me();let h='';
+  $('#recNote').textContent=(ONLINE.ok?'みんなの中のベスト。':'この端末で遊んだ全員の中のベスト。')+'名前を押すとユーザー情報が見られる。緑の字は自分の記録。';
   for(let L=1;L<=MAXLV;L++){
-    const r=STORE.rec[L]||{},b=u.best[L];
-    const cell=(rec,mine,f)=>rec?`<div class="v">${f(rec.v)}</div><div class="w">${esc(rec.emo||'')} ${esc(rec.name)}</div>`+(mine!=null?`<div class="m">自分 ${f(mine)}</div>`:''):'<div class="w">—</div>';
+    const r=topOf(L),b=u.best[L];
+    const cell=(rec,mine,f)=>rec?`<div class="v">${f(rec.v)}</div><div class="w">${whoBtn(rec)}</div>`+(mine!=null?`<div class="m">自分 ${f(mine)}</div>`:''):'<div class="w">—</div>';
     h+=`<div class="rec"><div class="l">${L}${isBoss(L)?`<small>${BOSSES[L].emo}</small>`:''}</div>
       <div class="c">${cell(r.score,b&&b.score,fmtS)}</div><div class="c">${cell(r.time,b&&b.time,fmtT)}</div></div>`;
   }
@@ -563,7 +630,7 @@ function renderProfile(){
   const u=me();
   $('#pEmo').textContent=u.emo;$('#pName').textContent=u.name;$('#pFood').textContent='好きな料理：'+u.food;
   const tot=Object.values(u.best).reduce((a,b)=>a+(b.score||0),0);
-  let recs=0;for(const L in STORE.rec){const r=STORE.rec[L];if(r.score&&r.score.uid===u.id)recs++;if(r.time&&r.time.uid===u.id)recs++}
+  const ids=[u.id,u.cloud&&u.cloud.id];let recs=0;for(let L=1;L<=MAXLV;L++){const r=topOf(L);if(r.score&&ids.includes(r.score.id))recs++;if(r.time&&ids.includes(r.time.id))recs++}
   $('#pStat').innerHTML=`<div><b>${u.cleared}</b><span>クリア Lv</span></div><div><b>${tot.toLocaleString()}</b><span>合計ベスト</span></div><div><b>${recs}</b><span>レコード保持</span></div>`;
   $('#pSkills').innerHTML=SKILLS.map(s=>{const g=u.cleared>=s.lv;return `<div class="skill ${g?'got':'lock'}"><span class="i">${s.icon}</span><span><b>${s.name}</b><span class="small">${g?s.desc:`Lv${s.lv} の ${BOSSES[s.lv].name} を倒すと手に入る`}</span></span></div>`}).join('')+
     `<div class="skill ${u.cleared>=100?'got':'lock'}"><span class="i">🌟</span><span><b>伝説の献ダテマン</b><span class="small">${u.cleared>=100?'全 100 レベル制覇！':'Lv100 の偏食大魔王を倒すと手に入る称号'}</span></span></div>`;
@@ -914,14 +981,17 @@ function finish(win){
     if(b.score==null||total>b.score){b.score=total;newBestS=true}
     if(b.time==null||time<b.time){b.time=time;newBestT=true}
     u.best[L]=b;
-    // レコード（この端末の全員）
+    // レコード（オンラインのみんな＋この端末）
+    const prev=topOf(L);newScore=!prev.score||total>prev.score.v;newTime=!prev.time||time<prev.time.v;
+    if(ONLINE.ok)cloudOf(u);
     const r=STORE.rec[L]||(STORE.rec[L]={});
-    if(!r.score||total>r.score.v){r.score={v:total,name:u.name,emo:u.emo,uid:u.id};newScore=true}
-    if(!r.time||time<r.time.v){r.time={v:time,name:u.name,emo:u.emo,uid:u.id};newTime=true}
+    if(!r.score||total>r.score.v){r.score={v:total,name:u.name,emo:u.emo,uid:u.id,cid:u.cloud&&u.cloud.id}}
+    if(!r.time||time<r.time.v){r.time={v:time,name:u.name,emo:u.emo,uid:u.id,cid:u.cloud&&u.cloud.id}}
     if(L>u.cleared){u.cleared=L;newSkill=SKILLS.find(s=>s.lv===L)||(L===MAXLV?{icon:'🌟',name:'伝説の献ダテマン',desc:'全 100 レベル制覇！おめでとう！'}:null)}
     LAST={L,win,total,time};
   }else{total=Math.round(total);LAST={L,win,total}}
   save();
+  if(win)sendRecord(u,L).then(fetchGrec);else syncUser(u);
   // 表示
   const head=$('#resHead');head.className='res-h'+(win?' win':'');
   head.innerHTML=win?`<h2>${g.boss?g.boss.name+' 撃破！':'Lv'+L+' クリア！'}</h2><p class="muted" style="margin:0">${g.boss?'「'+esc(g.boss.lose)+'」':g.world.name}</p>`:
@@ -934,13 +1004,13 @@ function finish(win){
   if(m>1)rows.push(['（マイスター 1.5 倍こみ）','']);
   $('#resTbl').innerHTML=rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v===''?'':'+'+Math.round(v).toLocaleString()}</td></tr>`).join('')+
     extra.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
-  const b=u.best[L]||{},r=STORE.rec[L]||{};
+  const b=u.best[L]||{},r=topOf(L);
   $('#resRec').innerHTML=win?`
     <div><div class="k">自己ベスト スコア ${newBestS?'<span class="newrec">更新</span>':''}</div><div class="v">${fmtS(b.score)}</div></div>
     <div><div class="k">自己ベスト タイム ${newBestT?'<span class="newrec">更新</span>':''}</div><div class="v">${fmtT(b.time)}</div></div>
-    <div><div class="k">🏆 レコード ${newScore?'<span class="newrec">新記録</span>':''}</div><div class="v">${fmtS(r.score&&r.score.v)}</div><div class="w">${r.score?esc(r.score.emo+' '+r.score.name):''}</div></div>
-    <div><div class="k">⏱ レコード ${newTime?'<span class="newrec">新記録</span>':''}</div><div class="v">${fmtT(r.time&&r.time.v)}</div><div class="w">${r.time?esc(r.time.emo+' '+r.time.name):''}</div></div>`:
-    `<div><div class="k">自己ベスト スコア</div><div class="v">${fmtS(b.score)}</div></div><div><div class="k">🏆 レコード</div><div class="v">${fmtS(r.score&&r.score.v)}</div><div class="w">${r.score?esc(r.score.emo+' '+r.score.name):''}</div></div>`;
+    <div><div class="k">🏆 レコード ${newScore?'<span class="newrec">新記録</span>':''}</div><div class="v">${fmtS(r.score&&r.score.v)}</div><div class="w">${r.score?whoBtn(r.score):''}</div></div>
+    <div><div class="k">⏱ レコード ${newTime?'<span class="newrec">新記録</span>':''}</div><div class="v">${fmtT(r.time&&r.time.v)}</div><div class="w">${r.time?whoBtn(r.time):''}</div></div>`:
+    `<div><div class="k">自己ベスト スコア</div><div class="v">${fmtS(b.score)}</div></div><div><div class="k">🏆 レコード</div><div class="v">${fmtS(r.score&&r.score.v)}</div><div class="w">${r.score?whoBtn(r.score):''}</div></div>`;
   const nb=$('#resNext');
   if(win&&L<MAXLV){nb.hidden=false;nb.textContent=(isBoss(L+1)?'👊 次はボス戦！ ':'▶ 次へ ')+`Lv${L+1}`}
   else if(!win){nb.hidden=false;nb.textContent='もう一度挑戦'}
@@ -956,8 +1026,271 @@ $('#resNext').onclick=()=>{if(!LAST)return;startLevel(LAST.win?LAST.L+1:LAST.L)}
 $('#resRetry').onclick=()=>LAST&&startLevel(LAST.L);
 $('#resMenu').onclick=()=>show('menu');
 
+/* ------------ オンライン（Vercel の /api/config + Supabase） ------------ */
+// 各ユーザーは端末で作った cloud.id（UUID）と cloud.secret（合鍵）を持つ。書き込みは合鍵を確認する関数だけ
+const ONLINE={url:null,key:null,ok:false};
+let GREC=null; // サーバーのレコード：{L:{score:{v,name,emo,id},time:{...}}}
+const randHex=n=>{const a=new Uint8Array(n);crypto.getRandomValues(a);return [...a].map(b=>b.toString(16).padStart(2,'0')).join('')};
+const uuid=()=>crypto.randomUUID?crypto.randomUUID():(()=>{const h=randHex(16);return `${h.slice(0,8)}-${h.slice(8,12)}-4${h.slice(13,16)}-a${h.slice(17,20)}-${h.slice(20,32)}`})();
+const isUuid=s=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(s));
+function cloudOf(u){if(!u.cloud||!u.cloud.id){u.cloud={id:uuid(),secret:randHex(24)};save()}return u.cloud}
+function sbHeaders(){const h={apikey:ONLINE.key,'Content-Type':'application/json'};if(/^eyJ/.test(ONLINE.key))h.Authorization='Bearer '+ONLINE.key;return h}
+async function sbGet(q){const r=await fetch(`${ONLINE.url}/rest/v1/${q}`,{headers:sbHeaders()});if(!r.ok)throw new Error(r.status);return r.json()}
+async function sbRpc(name,body){const r=await fetch(`${ONLINE.url}/rest/v1/rpc/${name}`,{method:'POST',headers:sbHeaders(),body:JSON.stringify(body)});if(!r.ok)throw new Error(await r.text())}
+const totalOf=u=>Object.values(u.best||{}).reduce((a,b)=>a+(b.score||0),0);
+async function initOnline(){
+  try{
+    const r=await fetch('/api/config',{cache:'no-store'});if(!r.ok)return;
+    const c=await r.json();if(!c||!c.url||!c.anonKey)return;
+    ONLINE.url=String(c.url).replace(/\/$/,'');ONLINE.key=c.anonKey;ONLINE.ok=true;
+    for(const u of STORE.users)await syncUser(u,true);
+    fetchGrec();
+    if(!$('#rank').hidden)renderRank();
+  }catch(e){}
+}
+// 成績を送る。first=true なら、まだ送っていない自己ベストもまとめて送る
+async function syncUser(u,first){
+  if(!ONLINE.ok||!u)return;
+  const c=cloudOf(u);
+  try{
+    await sbRpc('kd_submit_player',{p_id:c.id,p_secret:c.secret,p_name:u.name.slice(0,12),p_food:u.food.slice(0,16),p_emo:[...u.emo].slice(0,8).join(''),
+      p_cleared:u.cleared,p_total:totalOf(u),p_quiz_best:u.quizBest||0,p_quiz_pass:u.quizPass||0});
+    if(first&&!u.recSent){
+      for(const L in u.best){const b=u.best[L];if(b.score!=null&&b.time!=null)await sbRpc('kd_submit_record',{p_id:c.id,p_secret:c.secret,p_level:+L,p_score:Math.round(b.score),p_time:b.time})}
+      u.recSent=true;save();
+    }
+  }catch(e){}
+}
+async function sendRecord(u,L){
+  if(!ONLINE.ok)return;const c=cloudOf(u),b=u.best[L];
+  try{await syncUser(u);await sbRpc('kd_submit_record',{p_id:c.id,p_secret:c.secret,p_level:L,p_score:Math.round(b.score),p_time:b.time});u.recSent=true;save()}catch(e){}
+}
+async function hideUser(u){
+  if(!ONLINE.ok||!u.cloud)return;
+  try{await sbRpc('kd_hide_player',{p_id:u.cloud.id,p_secret:u.cloud.secret})}catch(e){}
+}
+async function fetchGrec(){
+  if(!ONLINE.ok)return;
+  try{
+    const rows=await sbGet('kd_records?select=level,score,time,player_id,kd_players!inner(name,emo,hidden)&kd_players.hidden=is.false&limit=10000');
+    const g={};
+    for(const r of rows){
+      const p=r.kd_players||{},L=r.level,o=g[L]||(g[L]={});
+      const e=v=>({v,name:String(p.name||'?'),emo:String(p.emo||''),id:r.player_id});
+      if(!o.score||r.score>o.score.v)o.score=e(+r.score);
+      if(!o.time||+r.time<o.time.v)o.time=e(+r.time);
+    }
+    GREC=g;
+    if(!$('#records').hidden)renderRecords();
+  }catch(e){}
+}
+// レベル L の 1 位（サーバーと端末の両方から良いほう）
+function topOf(L){
+  const a=(GREC&&GREC[L])||{},b=STORE.rec[L]||{};
+  const loc=x=>x&&{v:x.v,name:x.name,emo:x.emo,id:x.cid||x.uid};
+  const sa=a.score,sb=loc(b.score),ta=a.time,tb=loc(b.time);
+  return {score:!sa?sb:!sb?sa:sb.v>sa.v?sb:sa,time:!ta?tb:!tb?ta:tb.v<ta.v?tb:ta};
+}
+// レコード保持者の名前（押すとユーザー情報）
+const whoBtn=r=>`<button class="who" data-pid="${esc(r.id||'')}">${esc(r.emo||'')} ${esc(r.name)}</button>`;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pid]');if(b&&b.dataset.pid)openPlayer(b.dataset.pid)});
+
+/* ------------ ランキング ------------ */
+let rkKey='cleared';
+$('#rkTabs').onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;rkKey=b.dataset.k;renderRank()};
+const RK_LABEL={cleared:'クリア Lv',total_score:'合計スコア',quiz_best:'試験の最高点'};
+function rkVal(p,k){return k==='cleared'?'Lv'+p.cleared:k==='total_score'?fmtS(p.total_score):p.quiz_best+'/10'}
+async function renderRank(){
+  document.querySelectorAll('#rkTabs button').forEach(b=>b.classList.toggle('on',b.dataset.k===rkKey));
+  const u=me(),mine=u&&u.cloud?u.cloud.id:null,k=rkKey;
+  let rows;
+  if(ONLINE.ok){
+    $('#rkNote').textContent='みんなのランキング（名前を押すとユーザー情報と好きな料理が見られるよ）';
+    $('#rkList').innerHTML='<p class="muted">読みこみ中…</p>';
+    try{
+      const ord=k==='cleared'?'cleared.desc,total_score.desc':k==='total_score'?'total_score.desc,cleared.desc':'quiz_best.desc,quiz_pass.desc';
+      rows=await sbGet(`kd_players?select=id,name,food,emo,cleared,total_score,quiz_best,quiz_pass&hidden=is.false&order=${ord},updated_at.asc&limit=100`);
+    }catch(e){$('#rkList').innerHTML='<p class="muted">つながりませんでした。あとでもう一度ためしてね</p>';return}
+    if(k!==rkKey)return;
+  }else{
+    $('#rkNote').textContent='オンラインにつながっていないので、この端末のユーザーだけのランキングです';
+    rows=STORE.users.map(x=>({id:x.id,name:x.name,food:x.food,emo:x.emo,cleared:x.cleared,total_score:totalOf(x),quiz_best:x.quizBest||0,quiz_pass:x.quizPass||0}));
+    rows.sort((a,b)=>(b[k]-a[k])||(b.cleared-a.cleared)||(b.total_score-a.total_score));
+  }
+  $('#rkList').innerHTML=rows.length?rows.map((p,i)=>{
+    const isMe=ONLINE.ok?p.id===mine:p.id===STORE.cur;
+    return `<button class="rk ${isMe?'mine':''}" data-pid="${esc(p.id)}">
+      <span class="no ${i<3?'g1':''}">${i<3?['🥇','🥈','🥉'][i]:i+1}</span><span class="e">${esc(p.emo)}</span>
+      <span class="nm"><b>${esc(p.name)}${isMe?'（自分）':''}</b><span>好きな料理：${esc(p.food)}</span></span>
+      <span class="v">${esc(rkVal(p,k))}<small>${RK_LABEL[k]}</small></span></button>`}).join(''):'<p class="muted">まだだれもいません</p>';
+}
+
+/* ------------ ユーザー情報 ------------ */
+let plFrom='rank';
+$('#plBack').onclick=()=>show(plFrom);
+async function openPlayer(id){
+  const cur=SCREENS.find(s=>!$('#'+s).hidden);if(cur&&cur!=='player')plFrom=cur;
+  show('player');
+  const local=STORE.users.find(x=>x.id===id||(x.cloud&&x.cloud.id===id));
+  if(ONLINE.ok&&isUuid(id)){
+    $('#plBody').innerHTML='<div class="panel"><p class="muted">読みこみ中…</p></div>';
+    try{
+      const [ps,rs]=await Promise.all([sbGet(`kd_players?select=*&id=eq.${id}`),sbGet(`kd_records?select=level,score,time&player_id=eq.${id}&order=level`)]);
+      if(ps[0]&&!ps[0].hidden){
+        const p=ps[0];
+        renderPlayer({name:p.name,food:p.food,emo:p.emo,cleared:clamp(+p.cleared||0,0,100),total:+p.total_score||0,quizBest:+p.quiz_best||0,quizPass:+p.quiz_pass||0,id},
+          rs.map(r=>({L:+r.level,score:+r.score,time:+r.time})),local&&local.id===STORE.cur);
+        return;
+      }
+    }catch(e){}
+  }
+  if(local){renderPlayer({name:local.name,food:local.food,emo:local.emo,cleared:local.cleared,total:totalOf(local),quizBest:local.quizBest||0,quizPass:local.quizPass||0,id:local.cloud?local.cloud.id:local.id},
+    Object.entries(local.best).map(([L,b])=>({L:+L,score:b.score,time:b.time})).sort((a,b)=>a.L-b.L),local.id===STORE.cur);return}
+  $('#plBody').innerHTML='<div class="panel"><p class="muted">このユーザーは見つかりませんでした</p></div>';
+}
+function renderPlayer(p,recs,isMe){
+  let holds=0;for(let L=1;L<=MAXLV;L++){const t=topOf(L);if(t.score&&t.score.id===p.id)holds++;if(t.time&&t.time.id===p.id)holds++}
+  const skills=SKILLS.filter(s=>p.cleared>=s.lv);
+  $('#plBody').innerHTML=`
+  <div class="panel">
+    <div class="me"><div class="e">${esc(p.emo)}</div><div style="flex:1;min-width:0"><b>${esc(p.name)}${isMe?'（自分）':''}</b><span class="small muted">${p.cleared>=MAXLV?'🌟 伝説の献ダテマン':p.cleared>=10?esc(skills[skills.length-1].name)+' もち':'見習いヒーロー'}</span></div></div>
+    <div class="pfood"><span class="e">${esc(p.emo)}</span><span><span class="small muted" style="display:block;line-height:1.2">好きな料理</span><b>${esc(p.food)}</b></span></div>
+    <div class="stat" style="margin-top:12px"><div><b>${p.cleared}</b><span>クリア Lv</span></div><div><b>${fmtS(p.total)}</b><span>合計スコア</span></div><div><b>${holds}</b><span>レコード保持</span></div></div>
+    <div class="stat" style="margin-top:8px;grid-template-columns:1fr 1fr"><div><b>${p.quizBest}/10</b><span>試験の最高点</span></div><div><b>${p.quizPass}</b><span>試験に合格した回数</span></div></div>
+  </div>
+  <div class="panel"><h2>スキル</h2>${skills.length?`<div class="chips" style="margin-top:0">${skills.map(s=>`<span class="chip on">${s.icon} ${s.name}</span>`).join('')}</div>`:'<p class="muted" style="margin:0">まだスキルなし</p>'}
+    <h2 style="margin-top:14px">倒したボス</h2><div class="chips" style="margin-top:0">${Object.keys(BOSSES).filter(L=>p.cleared>=+L).map(L=>`<span class="chip on">${BOSSES[L].emo} ${BOSSES[L].name}</span>`).join('')||'<span class="muted">まだなし</span>'}</div></div>
+  <div class="panel"><h2>レベルごとのベスト</h2>
+    ${recs.length?`<div class="lvbest" style="font-weight:800;color:var(--muted)"><span>Lv</span><span>スコア</span><span>タイム</span></div>`+recs.map(r=>`<div class="lvbest"><span>Lv${r.L}${isBoss(r.L)?' '+BOSSES[r.L].emo:''}</span><span>${fmtS(r.score)}</span><span>${fmtT(r.time)}</span></div>`).join(''):'<p class="muted" style="margin:0">まだ記録なし</p>'}
+  </div>`;
+}
+
+/* ------------ ミニゲーム：管理栄養士試験 ------------ */
+// c は正解の番号（a の 0 番目から）。出すときに選択肢の順番はシャッフルする
+const QUIZ=[
+  {q:'1g あたりのエネルギーがいちばん大きい栄養素は？',a:['脂質','炭水化物','たんぱく質','食物繊維'],c:0,e:'脂質は 1g で約 9kcal。炭水化物とたんぱく質は約 4kcal。'},
+  {q:'アルコール 1g のエネルギーはおよそ？',a:['約 7kcal','約 4kcal','約 9kcal','0kcal'],c:0,e:'アルコールは 1g で約 7kcal。お酒も意外とエネルギーがある。'},
+  {q:'ビタミン C が不足すると起こる病気は？',a:['壊血病','脚気','くる病','夜盲症'],c:0,e:'ビタミン C はコラーゲンをつくるのに必要。不足すると歯ぐきや皮膚から出血する壊血病に。'},
+  {q:'ビタミン B1 が不足すると起こる病気は？',a:['脚気','壊血病','ペラグラ','貧血'],c:0,e:'脚気は白米中心の食事で昔多かった。ビタミン B1 は豚肉や玄米に多い。'},
+  {q:'子どもでビタミン D が不足すると起こる病気は？',a:['くる病','脚気','壊血病','夜盲症'],c:0,e:'ビタミン D はカルシウムの吸収を助ける。不足すると骨が弱くなり、子どもではくる病に。'},
+  {q:'ナイアシンが不足すると起こる病気は？',a:['ペラグラ','脚気','くる病','壊血病'],c:0,e:'ペラグラは皮膚炎・下痢・認知症状が特徴。'},
+  {q:'ビタミン A が不足すると起こりやすいのは？',a:['夜盲症（暗いところで見えにくい）','脚気','壊血病','くる病'],c:0,e:'ビタミン A は目の網膜の働きに必要。'},
+  {q:'血液を固める働きに関わるビタミンは？',a:['ビタミン K','ビタミン C','ビタミン B1','ビタミン B12'],c:0,e:'ビタミン K は血液凝固因子をつくるのに必要。納豆に多い。'},
+  {q:'脂溶性ビタミン「ではない」ものは？',a:['ビタミン C','ビタミン A','ビタミン D','ビタミン E'],c:0,e:'脂溶性ビタミンは A・D・E・K。ビタミン C と B 群は水溶性。'},
+  {q:'鉄の吸収を高めるのに役立つのは？',a:['ビタミン C','タンニン（お茶）','食物繊維のとりすぎ','シュウ酸'],c:0,e:'ビタミン C は植物性食品の鉄（非ヘム鉄）の吸収を高める。'},
+  {q:'カルシウムの吸収を助けるビタミンは？',a:['ビタミン D','ビタミン C','ビタミン B1','ビタミン K'],c:0,e:'ビタミン D は腸でのカルシウム吸収を高める。日光を浴びると体内でもつくられる。'},
+  {q:'必須アミノ酸「ではない」ものは？',a:['グルタミン酸','リシン','トリプトファン','バリン'],c:0,e:'グルタミン酸は体内でつくれる。必須アミノ酸は 9 種類（ヒスチジン・イソロイシン・ロイシン・リシン・メチオニン・フェニルアラニン・トレオニン・トリプトファン・バリン）。'},
+  {q:'唾液に含まれる、でんぷんを分解する酵素は？',a:['α-アミラーゼ','ペプシン','リパーゼ','トリプシン'],c:0,e:'唾液の α-アミラーゼがでんぷんを分解しはじめる。よく噛むとごはんが甘く感じるのはこのため。'},
+  {q:'胃液に含まれる、たんぱく質を分解する酵素は？',a:['ペプシン','アミラーゼ','ラクターゼ','リパーゼ'],c:0,e:'ペプシンは強い酸性の胃の中で働く。'},
+  {q:'胆汁をつくる臓器は？',a:['肝臓','胆のう','すい臓','胃'],c:0,e:'胆汁は肝臓でつくられ、胆のうにためられる。脂肪の消化を助ける。'},
+  {q:'栄養素の吸収が主に行われる場所は？',a:['小腸','胃','大腸','食道'],c:0,e:'小腸の内側はひだと絨毛でとても広く、ここで栄養素の大部分が吸収される。'},
+  {q:'血糖値を下げるホルモンは？',a:['インスリン','グルカゴン','アドレナリン','成長ホルモン'],c:0,e:'インスリンはすい臓のランゲルハンス島 β 細胞から出る、血糖値を下げる唯一のホルモン。'},
+  {q:'インスリンを分泌する臓器は？',a:['すい臓','肝臓','腎臓','甲状腺'],c:0,e:'すい臓のランゲルハンス島 β 細胞から分泌される。'},
+  {q:'過去 1〜2 か月の平均的な血糖の状態がわかる検査値は？',a:['HbA1c','尿酸値','LDL コレステロール','クレアチニン'],c:0,e:'HbA1c（ヘモグロビンエーワンシー）は糖尿病の診断や管理に使われる。'},
+  {q:'BMI の計算式は？',a:['体重(kg) ÷ 身長(m)²','身長(cm) ÷ 体重(kg)','体重(kg) ÷ 身長(cm)','体重(kg) × 身長(m)'],c:0,e:'BMI＝体重(kg)÷身長(m)÷身長(m)。22 前後がもっとも病気になりにくいといわれる。'},
+  {q:'身長 1.6m・体重 64kg の人の BMI は？',a:['25.0','22.0','40.0','18.5'],c:0,e:'64 ÷ (1.6 × 1.6) ＝ 64 ÷ 2.56 ＝ 25.0。日本肥満学会の基準では 25 以上が肥満。'},
+  {q:'日本肥満学会の基準で「肥満」とされる BMI は？',a:['25 以上','22 以上','30 以上','18.5 以上'],c:0,e:'日本では BMI 25 以上を肥満、18.5 未満を低体重（やせ）としている。'},
+  {q:'日本人の食事摂取基準（2020 年版）で、成人男性の食塩相当量の目標量は？',a:['7.5g 未満','10g 未満','5g 未満','12g 未満'],c:0,e:'成人男性 7.5g 未満、成人女性 6.5g 未満。'},
+  {q:'食事摂取基準で、生活習慣病の予防を目的として決められている指標は？',a:['目標量','推奨量','推定平均必要量','耐容上限量'],c:0,e:'目標量（DG）は生活習慣病の発症予防のための指標。推奨量は不足を防ぐための指標。'},
+  {q:'骨や歯をつくる、体内にいちばん多いミネラルは？',a:['カルシウム','鉄','ナトリウム','亜鉛'],c:0,e:'カルシウムの約 99% は骨と歯にある。'},
+  {q:'赤血球のヘモグロビンに含まれ、酸素を運ぶミネラルは？',a:['鉄','カルシウム','マグネシウム','カリウム'],c:0,e:'鉄が不足すると鉄欠乏性貧血になる。'},
+  {q:'甲状腺ホルモンの材料になるミネラルは？',a:['ヨウ素','鉄','亜鉛','銅'],c:0,e:'ヨウ素は昆布などの海藻に多い。日本人はとりすぎに注意することも。'},
+  {q:'不足すると味覚障害の原因になりやすいミネラルは？',a:['亜鉛','カルシウム','ナトリウム','リン'],c:0,e:'亜鉛は味を感じる細胞の新陳代謝に必要。牡蠣に多い。'},
+  {q:'水溶性食物繊維はどれ？',a:['ペクチン','セルロース','リグニン','キチン'],c:0,e:'ペクチンは熟した果物に多い水溶性の食物繊維。セルロース・リグニン・キチンは不溶性。'},
+  {q:'5 つの基本味に「入らない」ものは？',a:['辛味','甘味','苦味','うま味'],c:0,e:'基本味は 甘味・酸味・塩味・苦味・うま味。辛味は痛みに近い感覚で基本味ではない。'},
+  {q:'昆布のうま味成分は？',a:['グルタミン酸','イノシン酸','グアニル酸','コハク酸'],c:0,e:'昆布はグルタミン酸、かつお節はイノシン酸、干ししいたけはグアニル酸。'},
+  {q:'かつお節のうま味成分は？',a:['イノシン酸','グルタミン酸','グアニル酸','クエン酸'],c:0,e:'イノシン酸と昆布のグルタミン酸を合わせると、うま味がぐっと強くなる（相乗効果）。'},
+  {q:'鶏肉の加熱不足で起こることが多い食中毒の原因菌は？',a:['カンピロバクター','ボツリヌス菌','腸炎ビブリオ','セレウス菌'],c:0,e:'鶏刺しや生焼けの鶏肉が原因になりやすい。中心までしっかり加熱を。'},
+  {q:'ふぐの毒の名前は？',a:['テトロドトキシン','ソラニン','アフラトキシン','ヒスタミン'],c:0,e:'テトロドトキシンは加熱しても壊れない。ふぐの調理は資格のある人だけ。'},
+  {q:'じゃがいもの芽や緑色の皮に含まれる毒は？',a:['ソラニン（チャコニン）','テトロドトキシン','シガテラ毒','アミグダリン'],c:0,e:'芽と緑色の部分は厚めに取りのぞこう。'},
+  {q:'ボツリヌス菌の特徴は？',a:['酸素のないところで増える','酸素がないと増えない','冷凍すると死ぬ','塩に弱い'],c:0,e:'ボツリヌス菌は嫌気性菌。真空パックや缶詰・びん詰めの不十分な処理で増えることがある。'},
+  {q:'1 歳未満の赤ちゃんに与えてはいけない食品は？',a:['はちみつ','おかゆ','にんじんのペースト','白身魚'],c:0,e:'はちみつにはボツリヌス菌の芽胞が入っていることがあり、乳児ボツリヌス症の原因になる。'},
+  {q:'ノロウイルス対策として、食品の中心をどう加熱する？',a:['85〜90℃ で 90 秒以上','60℃ で 1 分','75℃ で 10 秒','50℃ で 30 分'],c:0,e:'ノロウイルスは 85〜90℃ で 90 秒以上の加熱がすすめられている。アルコールは効きにくい。'},
+  {q:'黄色ブドウ球菌がつくる毒素（エンテロトキシン）の特徴は？',a:['加熱しても壊れにくい','加熱するとすぐ壊れる','冷蔵するとなくなる','水で洗うと落ちる'],c:0,e:'毒素は熱に強いので、つくらせないことが大事。手に傷がある人のおにぎりなどが原因になる。'},
+  {q:'妊娠を考えている女性に、赤ちゃんの神経管閉鎖障害のリスクを減らすためすすめられる栄養素は？',a:['葉酸','ビタミン A','ナトリウム','ビタミン K'],c:0,e:'妊娠前から葉酸をサプリメントなどで付加的にとることがすすめられている。'},
+  {q:'出産後すぐの母乳（初乳）に多く、赤ちゃんを感染から守る成分は？',a:['免疫グロブリン A（IgA）','乳糖','カゼイン','ビタミン K'],c:0,e:'初乳は IgA やラクトフェリンが多い。'},
+  {q:'高尿酸血症（痛風）の人がとりすぎに気をつけたい物質は？',a:['プリン体','食物繊維','ビタミン C','カリウム'],c:0,e:'プリン体は体内で尿酸になる。レバーや魚の干物、ビールなどに多い。'},
+  {q:'「食事バランスガイド」のイラストは何の形？',a:['コマ','ピラミッド','お弁当箱','信号機'],c:0,e:'食事バランスガイドはコマの形。バランスが悪いとコマが倒れる。運動はコマを回す軸。'},
+  {q:'管理栄養士の免許を与えるのは？',a:['厚生労働大臣','都道府県知事','市町村長','文部科学大臣'],c:0,e:'管理栄養士は厚生労働大臣、栄養士は都道府県知事の免許。'},
+  {q:'栄養士の免許を与えるのは？',a:['都道府県知事','厚生労働大臣','市町村長','内閣総理大臣'],c:0,e:'栄養士は都道府県知事の免許。管理栄養士は国家試験に合格して厚生労働大臣の免許を受ける。'},
+  {q:'健康増進法にもとづき、国民の身体や栄養摂取の状況を調べる調査は？',a:['国民健康・栄養調査','国勢調査','家計調査','学校保健統計調査'],c:0,e:'国民健康・栄養調査は毎年行われ、食事や体格などを調べている。'},
+  {q:'1 日あたり体重 1kg あたりの基礎代謝量（基礎代謝基準値）がいちばん大きい年代は？',a:['1〜2 歳','15〜17 歳','30〜49 歳','70 歳以上'],c:0,e:'体が小さい子どもほど体重あたりの基礎代謝は大きい。'},
+  {q:'慢性腎臓病（CKD）の食事で、一般的に制限することが多いのは？',a:['たんぱく質と食塩','食物繊維','ビタミン C','水溶性ビタミン'],c:0,e:'腎臓の負担を減らすため、病期に応じてたんぱく質と食塩を制限する。'},
+  {q:'エネルギーをつくるとき、糖質の代謝に特に必要なビタミンは？',a:['ビタミン B1','ビタミン D','ビタミン K','ビタミン A'],c:0,e:'ビタミン B1 は糖質をエネルギーに変えるのに必要。甘いものが多い人は不足しやすい。'},
+  {q:'LDL コレステロールについて正しいのは？',a:['多すぎると動脈硬化の原因になる','多いほど健康によい','食物繊維で増える','体内ではつくられない'],c:0,e:'LDL は「悪玉」、HDL は「善玉」コレステロールとよばれる。'}
+];
+const QN=10,QTIME=20,QPASS=6;
+let QZ=null,qzTimer=0;
+$('#qzBack').onclick=()=>{stopQuiz();show('menu')};
+function stopQuiz(){clearInterval(qzTimer);QZ=null}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function quizIntro(){
+  stopQuiz();const u=me();
+  $('#qzBody').innerHTML=`
+    <div style="text-align:center"><div style="font-size:56px;line-height:1.2">📝</div><h2>管理栄養士試験にチャレンジ！</h2></div>
+    <p style="margin:0">全 ${QN} 問・1 問 ${QTIME} 秒。${QPASS} 問以上正解で<b>合格</b>！<br>本物の国家試験に出るような、栄養・食べもの・体のしくみの問題が出るよ。</p>
+    <div class="stat" style="margin:12px 0;grid-template-columns:1fr 1fr"><div><b>${u.quizBest||0}/10</b><span>最高点</span></div><div><b>${u.quizPass||0}</b><span>合格した回数</span></div></div>
+    <button class="btn main" id="qzGo" style="width:100%">試験開始</button>`;
+  $('#qzGo').onclick=startQuiz;
+}
+function startQuiz(){
+  audio();
+  QZ={qs:shuffle(QUIZ).slice(0,QN).map(x=>{const o=shuffle(x.a.map((t,i)=>({t,ok:i===x.c})));return {...x,o}}),i:0,right:0,log:[]};
+  quizQ();
+}
+function quizQ(){
+  const z=QZ,q=z.qs[z.i];z.left=QTIME;z.done=false;
+  $('#qzBody').innerHTML=`
+    <div class="qhead"><span>第 ${z.i+1} 問 / ${QN}</span><span>正解 ${z.right}</span><span id="qzT">${QTIME} 秒</span></div>
+    <div class="qbar"><i id="qzBar" style="width:100%"></i></div>
+    <p class="qq">${esc(q.q)}</p>
+    <div class="qopts">${q.o.map((o,i)=>`<button data-i="${i}"><span class="k">${i+1}</span><span>${esc(o.t)}</span></button>`).join('')}</div>
+    <div id="qzExp"></div>`;
+  document.querySelectorAll('.qopts button').forEach(b=>b.onclick=()=>quizAnswer(+b.dataset.i));
+  clearInterval(qzTimer);
+  const t0=performance.now();
+  qzTimer=setInterval(()=>{
+    if(!QZ||QZ.done)return;
+    const left=QTIME-(performance.now()-t0)/1000;
+    const bar=$('#qzBar');if(bar){bar.style.width=clamp(left/QTIME*100,0,100)+'%';bar.style.background=left<5?'var(--silk)':''}
+    const t=$('#qzT');if(t)t.textContent=Math.max(0,Math.ceil(left))+' 秒';
+    if(left<=0)quizAnswer(-1);
+  },100);
+}
+function quizAnswer(i){
+  const z=QZ;if(!z||z.done)return;z.done=true;clearInterval(qzTimer);
+  const q=z.qs[z.i],ok=i>=0&&q.o[i].ok;
+  if(ok){z.right++;SND.get()}else SND.hit();
+  z.log.push(ok);
+  document.querySelectorAll('.qopts button').forEach((b,j)=>{b.disabled=true;if(q.o[j].ok)b.classList.add('ok');else if(j===i)b.classList.add('ng')});
+  $('#qzExp').innerHTML=`<div class="qexp"><b class="${ok?'ok':'ng'}">${ok?'⭕ 正解！':i<0?'⏰ 時間切れ…':'❌ ざんねん'}</b><br>${esc(q.e)}</div>
+    <button class="btn main" id="qzNext" style="width:100%;margin-top:12px">${z.i+1<QN?'次の問題へ':'結果を見る'}</button>`;
+  $('#qzNext').onclick=()=>{z.i++;if(z.i<QN)quizQ();else quizEnd()};
+}
+function quizEnd(){
+  const z=QZ,u=me(),pass=z.right>=QPASS;
+  const best=z.right>(u.quizBest||0);
+  u.quizBest=Math.max(u.quizBest||0,z.right);if(pass)u.quizPass=(u.quizPass||0)+1;u.quizPlays=(u.quizPlays||0)+1;save();syncUser(u);
+  if(pass)SND.clear();else SND.over();
+  const msg=z.right===QN?'満点！あなたこそ献ダテマンマイスター！':pass?'おめでとう！管理栄養士の仲間入り！':z.right>=4?'おしい！もう少しで合格！':'解説を読んでもう一度チャレンジ！';
+  $('#qzBody').innerHTML=`<div class="qres">
+    <div class="big num">${z.right}<span style="font-size:24px">/${QN}</span></div>
+    <div class="stamp ${pass?'':'ng'}">${pass?'合格':'不合格'}</div>
+    <p style="margin:6px 0 0;font-weight:800">${msg}</p>
+    ${best?'<p style="margin:4px 0 0"><span class="newrec">最高点更新</span></p>':''}
+    <p class="small muted" style="margin:8px 0 0">${z.log.map((o,i)=>`${i+1}${o?'⭕':'❌'}`).join(' ')}</p>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+    <button class="btn main" id="qzAgain">もう一度受ける</button>
+    <div class="row"><button class="btn" data-go="rank">👑 ランキング</button><button class="btn ghost" data-go="menu">メニュー</button></div>
+  </div>`;
+  $('#qzAgain').onclick=startQuiz;
+  QZ=null;
+}
+
 /* ------------ boot ------------ */
 show('title');
+initOnline();
 </script>
 </body>
 </html>

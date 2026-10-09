@@ -25,6 +25,8 @@
 - `supabase/migrations/20261011000000_race_top_jockey.sql` — `race_top` ビューに `jockey_id` を追加（本番に適用済み）
 - `supabase/migrations/20261010000000_race_records.sql` — レースレコード（`race_records`、ビュー `race_top`、関数 `submit_record`。本番に適用済み。`delete_jockey` を書きかえてレコードも消す案は、MCP の確認待ちで止まるので見送り）
 - `supabase/migrations/20261008000000_leaderboard_look.sql` — `look`（アバターと部屋の見た目）列と 12 引数版 `submit_jockey`（本番に適用済み。古い 11 引数版も残してある）
+- `kondate/index.html` — 別ゲーム「献ダテマン」（`/kondate/`）。空を飛んで料理をよける全 100 レベル（10 ごとにボス、ボスを倒すとスキル）。ユーザー登録（名前＋好きな料理＋アイコン）、レベルごとのスコア・タイムのレコード、ランキング（名前を押すとユーザー情報と好きな料理）、ミニゲーム「管理栄養士試験」（`QUIZ` 50 問から 10 問、6 問以上で合格）。localStorage キー `kondateman-v1`。オンラインは同じ `/api/config` を使う。
+- `supabase/migrations/20261013000000_kondate.sql` — 献ダテマン用（`kd_players` / `kd_records` / `kd_secrets`、関数 `kd_submit_player` / `kd_submit_record` / `kd_hide_player`。本番に適用済み。ユーザー削除は `hidden` を立てるだけ。動作テストで作ったユーザーは hidden 済み）
 - `tools/sim.mjs` — レースバランスのシミュレーター（`node tools/sim.mjs derby 100`）
 - `package.json` — `"type": "module"` のみ。依存パッケージなし
 
