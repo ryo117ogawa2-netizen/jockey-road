@@ -1,7 +1,7 @@
 # 使い方: python3 tools/final.py 2026-10-10 <状態JSON> [出力JSON]
 # 馬体重が発表されたレースだけ、体重の増減を加味した最終予想を出す。状態JSONに済んだレースを記録して二重に出さない。
 import json,re,sys,os,datetime,numpy as np
-sys.path.insert(0,os.path.dirname(__file__)); import scrape,feat
+sys.path.insert(0,os.path.dirname(__file__)); import scrape,feat,trainer
 W=json.load(open(os.path.dirname(__file__)+'/weights.json')); FK=W['FK']; w=np.array(W['w'])
 date=sys.argv[1]; stp=sys.argv[2]; out=sys.argv[3] if len(sys.argv)>3 else None
 state=json.load(open(stp)) if os.path.exists(stp) else {}
@@ -33,6 +33,8 @@ for rid in rids:
         g=OI.get(h['uma'],{}); gr=g.get('grade')
         v=np.array([1.0]+[float(f[k]) for k in FK]+[min(f['_best_diff'],2),f['jockey_score'],gr=='A',gr=='C',gr=='D'],float)
         p=float(1/(1+np.exp(-v@w)))
+        nb=f['_p1rank'] is None; tadj,ttxt=trainer.info(h.get('tid',''),ri['surf'],ri['dist'] or 0,nb)
+        if nb: p=min(0.95,max(0.01,p*(1+3*tadj)))
         wm=re.search(r'(\d{3})kg \(([+\-]?\d+)\)',h['info']); kg=int(wm[1]); wd=int(wm[2])
         ps=[x for x in (feat.parse_past(q) for q in h['past']) if x]
         gap=(ri['date']-ps[0]['date']).days if ps else None
@@ -55,7 +57,7 @@ for rid in rids:
             elif wd<=-4: note.append(f'叩き2戦目で{wd}kg絞れた（3着内19.3%、平均並み）')
             else: k*=0.7; note.append(f'⚠叩き2戦目でさらに+{wd}kg（3着内13.8%）')
         if good and abs(kg-good[0])<=2 and not note: k*=1.08; note.append(f'好走したときと同じ体重（{kg}kg）')
-        rows.append(dict(p=min(0.95,p*k),p0=p,uma=h['uma'],waku=int(h['waku'] or 0),name=h.get('name') or h['info'].split()[1],jockey=f['_jockey'],kg=kg,wd=wd,note=' / '.join(([f"調教{gr}「{g.get('tanpyo','')}」"] if gr in('A','C','D') else [])+note)))
+        rows.append(dict(p=min(0.95,p*k),p0=p,uma=h['uma'],waku=int(h['waku'] or 0),name=h.get('name') or h['info'].split()[1],jockey=f['_jockey'],kg=kg,wd=wd,note=' / '.join(([ttxt] if ttxt and (nb or tadj>=0.04) else [])+([f"調教{gr}「{g.get('tanpyo','')}」"] if gr in('A','C','D') else [])+note)))
     rows.sort(key=lambda r:-r['p'])
     marks=[dict(mark=mk,uma=r['uma'],waku=r['waku'],name=r['name'],jockey=r['jockey'],pct=round(r['p']*100),why=f"{r['kg']}kg({r['wd']:+d}) "+r['note']) for mk,r in zip('◎○▲',rows)]
     marks+=[dict(mark='紐',uma=r['uma'],waku=r['waku'],name=r['name'],jockey=r['jockey'],pct=round(r['p']*100),why=f"{r['kg']}kg({r['wd']:+d}) "+r['note']) for r in rows[3:5]]

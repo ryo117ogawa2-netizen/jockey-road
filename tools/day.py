@@ -1,7 +1,7 @@
 # 使い方: python3 tools/day.py 2026-10-10 [出力JSON]
 # その日のJRA全レース（1R〜12R）を、学習した重みで採点して印をつける。出走前の情報だけを使う。
 import json,re,sys,os,numpy as np
-sys.path.insert(0,os.path.dirname(__file__)); import scrape,feat
+sys.path.insert(0,os.path.dirname(__file__)); import scrape,feat,trainer
 W=json.load(open(os.path.dirname(__file__)+'/weights.json')); FK=W['FK']; w=np.array(W['w'])
 date=sys.argv[1]; out=sys.argv[2] if len(sys.argv)>2 else None
 C=scrape.C
@@ -31,12 +31,15 @@ for rid in rids:
         g=OI.get(h['uma'],{}); gr=g.get('grade')
         v=np.array([1.0]+[float(f[k]) for k in FK]+[min(f['_best_diff'],2),f['jockey_score'],gr=='A',gr=='C',gr=='D'],float)
         p=float(1/(1+np.exp(-v@w)))
+        nb=f['_p1rank'] is None; tadj,ttxt=trainer.info(h.get('tid',''),ri['surf'],ri['dist'] or 0,nb)
+        if nb: p=min(0.95,max(0.01,p*(1+3*tadj)))   # 新馬だけ調教師で補正（後半6か月の検証で◎3着内+3.6pt）
         name=h.get('name') or (h['info'].split()[1] if len(h['info'].split())>1 else '?')
         why=[SHORT[k] for k in SHORT if f.get(k)]
         if gr: why.insert(0,f"調教{gr}「{g.get('tanpyo','')}」")
+        if ttxt and (nb or tadj>=0.04): why.insert(0,ttxt)
         if ri['surf']=='ダ' and f['_sire'] in ANA: why.insert(0,f"父{f['_sire']}（{ANA[f['_sire']]}）")
         if f['_best_diff']<9: why.insert(0,f"近3走の最小着差{f['_best_diff']:+.1f}秒" if f['_best_diff']!=0 else '近走で勝ち負け')
-        rows.append(dict(ana=ri['surf']=='ダ' and f['_sire'] in ANA,p=p,uma=h['uma'],waku=int(h['waku'] or 0),name=name,jockey=f['_jockey'],why='・'.join(why[:4]),f=f,newbie=not h['past']))
+        rows.append(dict(ana=ri['surf']=='ダ' and f['_sire'] in ANA,p=p,uma=h['uma'],waku=int(h['waku'] or 0),name=name,jockey=f['_jockey'],why='・'.join(why[:4]),f=f,newbie=f['_p1rank'] is None))
     if not rows: continue
     rows.sort(key=lambda r:-r['p'])
     marks=[dict(mark=mk,uma=r['uma'],waku=r['waku'],name=r['name'],jockey=r['jockey'],pct=round(r['p']*100),why=r['why']) for mk,r in zip('◎○▲',rows)]

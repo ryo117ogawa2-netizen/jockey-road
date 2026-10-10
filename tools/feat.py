@@ -11,6 +11,7 @@ def parse_past(p):
     if not m: return None
     d=datetime.date(int(m[1]),int(m[2]),int(m[3]))
     rank=num(m[5])
+    if rank is None: return None   # 除外・取消・中止は走っていないので数えない
     sd=re.search(r' (芝|ダ|障)(\d{3,4})',p)
     nin=re.search(r' (\d+)人 ',p)
     pas=re.search(r' ([\d\-]+) \((\d\d\.\d)\)',p)
