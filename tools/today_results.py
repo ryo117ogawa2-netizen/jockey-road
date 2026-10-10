@@ -1,11 +1,16 @@
 # 使い方: python3 tools/today_results.py <日付> <days ドキュメントJSON> [出力JSON]
 # 終わったレースの結果を取り、アプリに出している印（最終予想）と照らし合わせる
-import re,html,json,sys,os,urllib.request
+import re,html,json,sys,os,urllib.request,time
 date=sys.argv[1]; d=json.load(open(sys.argv[2])); out=sys.argv[3] if len(sys.argv)>3 else None
 T=lambda x:' '.join(html.unescape(re.sub(r'<[^>]+>',' ',x)).split())
 def get(u):
-    b=urllib.request.urlopen(urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0'}),timeout=30).read()
-    return b.decode('utf-8','ignore')
+    import time
+    for i in range(5):
+        try:
+            b=urllib.request.urlopen(urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0'}),timeout=30).read(); return b.decode('utf-8','ignore')
+        except Exception:
+            time.sleep(3*(i+1))
+    raise RuntimeError(u)
 VEN={'05':'東京','08':'京都','06':'中山','09':'阪神','01':'札幌','02':'函館','03':'福島','04':'新潟','07':'中京','10':'小倉'}
 lst=get(f'https://race.netkeiba.com/top/race_list_sub.html?kaisai_date={date.replace("-","")}')
 res=[]; tot=dict(n=0,h1=0,h3=0,tan=0,fuku=0,uren=0,wide=0,f3=0,shobu=None)
