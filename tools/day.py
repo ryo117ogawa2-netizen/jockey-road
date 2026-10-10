@@ -14,6 +14,7 @@ SHORT={'前走人気で大敗（不利・出遅れ候補）':'前走人気で大
  'ダート外枠':'ダート外枠','前走3着内':'前走3着内','j_ルメール':'ルメール','j_川田':'川田','j_武豊':'武豊','j_松山岩田望津村':'信頼騎手',
  'j_丹内菊沢ローカル':'ローカルの丹内・菊沢','ダート替わり初戦':'ダート替わり初戦(減点)','短距離内枠逃げ先行':'短距離内枠の先行',
  'ノーザン休み明け体重増（不明含まず）':'ノーザン休み明け増'}
+ANA={'シニスターミニスター':'ダート穴血統','マジェスティックウォリアー':'ダート穴血統','ヘニーヒューズ':'オーナー注目・検証中'}  # ダートの父（過去1年10〜12Rの集計、lessons.md 参照）
 PREF=['前走人気で大敗（不利・出遅れ候補）','3歳（秋・古馬混合）','ダート外枠','短距離内枠逃げ先行','j_丹内菊沢ローカル']
 H={}; races=[]
 for rid in rids:
@@ -33,12 +34,13 @@ for rid in rids:
         name=h.get('name') or (h['info'].split()[1] if len(h['info'].split())>1 else '?')
         why=[SHORT[k] for k in SHORT if f.get(k)]
         if gr: why.insert(0,f"調教{gr}「{g.get('tanpyo','')}」")
+        if ri['surf']=='ダ' and f['_sire'] in ANA: why.insert(0,f"父{f['_sire']}（{ANA[f['_sire']]}）")
         if f['_best_diff']<9: why.insert(0,f"近3走の最小着差{f['_best_diff']:+.1f}秒" if f['_best_diff']!=0 else '近走で勝ち負け')
-        rows.append(dict(p=p,uma=h['uma'],waku=int(h['waku'] or 0),name=name,jockey=f['_jockey'],why='・'.join(why[:4]),f=f,newbie=not h['past']))
+        rows.append(dict(ana=ri['surf']=='ダ' and f['_sire'] in ANA,p=p,uma=h['uma'],waku=int(h['waku'] or 0),name=name,jockey=f['_jockey'],why='・'.join(why[:4]),f=f,newbie=not h['past']))
     if not rows: continue
     rows.sort(key=lambda r:-r['p'])
     marks=[dict(mark=mk,uma=r['uma'],waku=r['waku'],name=r['name'],jockey=r['jockey'],pct=round(r['p']*100),why=r['why']) for mk,r in zip('◎○▲',rows)]
-    himo=[r for r in rows[3:] if any(r['f'].get(k) for k in PREF)][:2]
+    himo=[r for r in rows[3:] if r['ana'] or any(r['f'].get(k) for k in PREF)][:2]
     if len(himo)<2: himo+= [r for r in rows[3:] if r not in himo][:2-len(himo)]
     marks+=[dict(mark='紐',uma=r['uma'],waku=r['waku'],name=r['name'],jockey=r['jockey'],pct=round(r['p']*100),why=r['why']) for r in himo]
     newbie=all(r['newbie'] for r in rows)
