@@ -129,8 +129,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .t-sub em{font-style:normal;color:var(--gold)}
 .t-start{font-family:var(--display);font-weight:400;font-size:22px;padding:14px 56px;border-radius:999px;margin-top:10px;background:var(--gold);color:#1b1404;box-shadow:0 0 0 0 rgba(220,173,66,.6);animation:pulse 1.8s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(220,173,66,.55)}70%{box-shadow:0 0 0 18px rgba(220,173,66,0)}100%{box-shadow:0 0 0 0 rgba(220,173,66,0)}}
-.t-music{background:transparent;border:1px solid var(--line);border-radius:999px;padding:4px 14px;font-size:13px;color:var(--ivory)}
-.t-hint{font-size:12px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.t-start{animation:none}}
 
 /* menu */
@@ -633,8 +631,6 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
 .t-sub{color:#fff;text-shadow:0 2px 0 var(--frame)}
 .t-sub em{color:var(--sun)}
 .t-start{background:var(--sun);color:var(--frame);border:4px solid var(--frame);box-shadow:0 5px 0 var(--frame)}
-.t-music{color:#fff;border:2px solid #fff;background:rgba(29,59,139,.45)}
-.t-hint{color:#e6f4ff}
 .title-over .label{color:#fff}
 </style>
 </head>
@@ -650,8 +646,6 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
       <h1 class="t-logo">ジョッキーロード</h1>
       <p class="t-sub">地方競馬から、<em>凱旋門</em>へ。</p>
       <button class="btn t-start" id="btnStart" type="button">スタート</button>
-      <button class="t-music" id="btnMusicT" type="button" aria-pressed="true">♪ 音楽 ON</button>
-      <span class="t-hint" id="tHint">画面をタップすると音楽が流れます</span>
     </div>
   </div>
 </section>
@@ -706,7 +700,6 @@ canvas#cv{background:#fff;border:3px solid var(--frame);border-radius:14px}
         </button>
       </div>
       <div class="menu-foot">
-        <button class="btn ghost" id="btnMusicM" type="button" aria-pressed="true">♪ 音楽 ON</button>
         <button class="btn ghost" type="button" data-go="records">🏆 コースレコード</button>
         <button class="btn ghost" id="btnTut2" type="button">チュートリアル</button>
         <button class="btn ghost" id="btnToTitle" type="button">タイトルへ</button>
@@ -2423,7 +2416,6 @@ function show(id){
   for(const s of ['title','home','card','raceScr','result'])$(s).hidden=s!==id;
   const mk=!!(curRace&&curRace.makai)&&['card','raceScr','result'].includes(id);
   document.body.classList.toggle('makai',mk);document.documentElement.classList.toggle('makai',mk);
-  if(id==='raceScr')Music.stop();else if(id==='title'||id==='home')Music.resume();
   if(id==='title')Title.start();else Title.stop();
   window.scrollTo(0,0);
 }
@@ -3585,78 +3577,6 @@ document.addEventListener('keydown',e=>{
   else if(k===' '){e.preventDefault();act('whip');}
 });
 
-/* ------------ 音楽（Web Audioでその場で演奏） ------------ */
-const Music={ctx:null,master:null,noise:null,on:true,unlocked:false,playing:false,timer:0,step:0,next:0,
-  init(){
-    if(this.ctx)return true;
-    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;
-    try{
-      this.ctx=new AC();this.master=this.ctx.createGain();this.master.gain.value=0.16;
-      const comp=this.ctx.createDynamicsCompressor();this.master.connect(comp);comp.connect(this.ctx.destination);
-      const len=this.ctx.sampleRate*0.2,buf=this.ctx.createBuffer(1,len,this.ctx.sampleRate),d=buf.getChannelData(0);
-      for(let i=0;i<len;i++)d[i]=Math.random()*2-1;this.noise=buf;
-    }catch(e){this.ctx=null;return false;}
-    return true;
-  },
-  unlock(){if(!this.init())return;try{this.ctx.resume();}catch(e){}this.unlocked=true;$('tHint').hidden=true;if(this.on)this.play();},
-  play(){
-    if(!this.on||!this.ctx||this.playing)return;
-    try{this.ctx.resume();}catch(e){}
-    this.playing=true;this.step=0;this.next=this.ctx.currentTime+0.08;
-    this.timer=setInterval(()=>this.sched(),25);
-  },
-  stop(){if(!this.playing)return;this.playing=false;clearInterval(this.timer);},
-  resume(){if(this.unlocked&&this.on)this.play();},
-  setOn(v){this.on=v;STORE.music=v;save();if(v){this.unlock();}else this.stop();renderMusicBtns();},
-  sched(){
-    const spb=60/156/4;
-    while(this.next<this.ctx.currentTime+0.15){this.note(this.step,this.next,spb);this.next+=spb;this.step=(this.step+1)%128;}
-  },
-  tone(type,midi,t,dur,gain,cut){
-    const c=this.ctx,o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();
-    o.type=type;o.frequency.value=440*Math.pow(2,(midi-69)/12);
-    f.type='lowpass';f.frequency.value=cut||3000;
-    g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(gain,t+0.012);
-    g.gain.setValueAtTime(gain,t+Math.max(0.02,dur-0.05));g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-    o.connect(f);f.connect(g);g.connect(this.master);o.start(t);o.stop(t+dur+0.02);
-  },
-  hit(t,freq,gain,dur){
-    const c=this.ctx,n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();
-    n.buffer=this.noise;f.type='bandpass';f.frequency.value=freq;f.Q.value=1.2;
-    g.gain.setValueAtTime(gain,t);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-    n.connect(f);f.connect(g);g.connect(this.master);n.start(t);n.stop(t+dur+0.02);
-  },
-  kick(t){
-    const c=this.ctx,o=c.createOscillator(),g=c.createGain();
-    o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(45,t+0.12);
-    g.gain.setValueAtTime(0.9,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.18);
-    o.connect(g);g.connect(this.master);o.start(t);o.stop(t+0.2);
-  },
-  note(step,t,spb){
-    const bar=Math.floor(step/16),s16=step%16;
-    const CH=[[48,[60,64,67]],[48,[60,64,67]],[53,[60,65,69]],[55,[59,62,67]],[57,[57,60,64]],[53,[60,65,69]],[55,[59,62,67]],[48,[60,64,67]]];
-    const MEL=[
-      [[0,67,2],[2,72,2],[4,76,2],[6,79,6],[12,76,2],[14,79,2]],
-      [[0,84,6],[6,83,2],[8,81,2],[10,79,6]],
-      [[0,81,2],[2,77,2],[4,81,2],[6,84,6],[12,81,2],[14,84,2]],
-      [[0,86,6],[6,84,2],[8,83,2],[10,81,2],[12,79,4]],
-      [[0,76,2],[2,81,2],[4,84,2],[6,88,6],[12,86,2],[14,84,2]],
-      [[0,86,4],[4,84,4],[8,81,4],[12,77,4]],
-      [[0,79,2],[2,83,2],[4,86,2],[6,91,6],[12,89,2],[14,86,2]],
-      [[0,88,4],[4,84,2],[6,79,2],[8,84,8]]];
-    const [root,chord]=CH[bar];
-    // 蹄の音（タタタン）
-    if([1,0,1,1][s16%4])this.hit(t,s16%4===0?2600:1800,s16%4===0?0.32:0.18,0.05);
-    if(s16===0||s16===8)this.kick(t);
-    // ベース（8分でルートとオクターブ）
-    if(s16%2===0)this.tone('triangle',root+(s16%4===2?12:0),t,spb*1.8,0.32,900);
-    // 和音（小節頭）
-    if(s16===0)for(const n of chord)this.tone('sawtooth',n,t,spb*15,0.035,1400);
-    // ファンファーレ
-    for(const [st0,m,len] of MEL[bar])if(st0===s16){this.tone('square',m,t,spb*len*0.95,0.07,2600);this.tone('sawtooth',m-12,t,spb*len*0.95,0.03,1800);}
-  }
-};
-function renderMusicBtns(){for(const id of ['btnMusicT','btnMusicM']){const b=$(id);b.textContent=Music.on?'♪ 音楽 ON':'♪ 音楽 OFF';b.setAttribute('aria-pressed',Music.on?'true':'false');}}
 
 /* ------------ タイトル映像（昼の競馬場を駆ける馬） ------------ */
 const Title={raf:0,running:false,W:0,H:0,
@@ -3750,8 +3670,7 @@ function drawTitle(t){
 }
 
 /* ------------ 画面遷移 ------------ */
-$('title').addEventListener('pointerdown',()=>{if(!Music.unlocked)Music.unlock();});
-$('btnStart').onclick=()=>{Music.unlock();showPanel(S.name==='若手騎手'&&S.starts===0?'name':'menu');};
+$('btnStart').onclick=()=>{showPanel(S.name==='若手騎手'&&S.starts===0?'name':'menu');};
 $('btnRename').onclick=()=>showPanel('name');
 $('nameForm').addEventListener('submit',e=>{
   e.preventDefault();const v=$('nameInput').value.trim().slice(0,12);
@@ -3759,15 +3678,12 @@ $('nameForm').addEventListener('submit',e=>{
   S.name=v;save();syncSave(S);showPanel('menu');
 });
 $('btnToTitle').onclick=()=>show('title');
-$('btnMusicT').onclick=e=>{e.stopPropagation();Music.setOn(!Music.on);};
-$('btnMusicM').onclick=()=>Music.setOn(!Music.on);
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b&&!$('home').hidden)showPanel(b.dataset.go);});
 
 /* ------------ boot ------------ */
 function boot(data){
   if(data&&data.store&&data.store.list){STORE=data.store;STORE.list.forEach(p=>p.save=norm(p.save));S=STORE.list.find(p=>p.id===STORE.current).save;}
   else S=load();
-  Music.on=STORE.music!==false;renderMusicBtns();
   renderHome();show('title');
   initOnline();
 }
