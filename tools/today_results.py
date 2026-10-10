@@ -13,13 +13,14 @@ for rid in sorted(set(re.findall(r'race_id=(\d{12})',lst))):
     key=f"{VEN.get(rid[4:6],'')}{int(rid[-2:])}R "
     race=next((r for r in d['races'] if r['course'].startswith(key)),None)
     if not race: continue
-    s=get(f'https://race.netkeiba.com/race/result.html?race_id={rid}')
+    try: s=get(f'https://race.netkeiba.com/race/result.html?race_id={rid}')
+    except Exception as e: continue
     tb=re.search(r'id="All_Result_Table".*?</table>',s,re.S)
     if not tb: continue
     rows=[]
     for tr in re.findall(r'<tr[^>]*>.*?</tr>',tb.group(0),re.S)[1:]:
         c=[T(x) for x in re.findall(r'<td[^>]*>(.*?)</td>',tr,re.S)]
-        if len(c)>10: rows.append(dict(rank=c[0],uma=c[2],name=c[3],nin=c[9],odds=c[10]))
+        if len(c)>10: rows.append(dict(rank=c[0],waku=c[1],uma=c[2],name=c[3],jockey=c[6],nin=c[9],odds=c[10],agari=c[11],pas=c[12] if len(c)>12 else '',stable=c[13] if len(c)>13 else '',wt=c[14] if len(c)>14 else ''))
     if not rows or not rows[0]['rank'].isdigit(): continue
     pay={}
     m=re.search(r'Payout_Detail_Table.*?(?=<div class="Result_Note|$)',s,re.S)
@@ -39,7 +40,7 @@ for rid in sorted(set(re.findall(r'race_id=(\d{12})',lst))):
     wn=pay.get('Wide',{}).get('nums',[]); wps=pay.get('Wide',{}).get('pay',[]); wpairs=[sorted(wn[i:i+2],key=int) for i in range(0,len(wn),2)]
     f3n=sorted(pay.get('Fuku3',{}).get('nums',[]),key=int); f3p=(pay.get('Fuku3',{}).get('pay') or [0])[0]
     a=top[0] if top else None
-    r=dict(key=key.strip(),name=race['name'],shobu=bool(race.get('shobu')),
+    r=dict(rid=rid,course=race['course'],rows=rows,key=key.strip(),name=race['name'],shobu=bool(race.get('shobu')),
         top3=[f"{x['rank']}着 {x['uma']}{x['name']}（{x['nin']}人気）" for x in rows[:3]],
         marks=[f"{m['mark']}{m['uma']}{m['name']}→{fin.get(m['uma'],'?')}着" for m in marks if m.get('uma')],
         tan=tan.get(a,0),fuku=fk.get(a,0),uren=sum(up for p in pairs if p==un),
