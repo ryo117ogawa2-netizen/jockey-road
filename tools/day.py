@@ -67,4 +67,6 @@ if cand:
         b['shobuWhy']=f"◎{b['marks'][0]['name']}の3着内確率{b['marks'][0]['pct']}%、○との差{b['gap']}pt（この日いちばん抜けている）"
 for r in races:
     print(('【勝負】' if r.get('shobu') else '')+f"{r['course']} {r['name']}  "+' '.join(f"{m['mark']}{m['uma']}{m['name']}({m['pct']}%)" for m in r['marks']))
+from bets import attach
+for r in races: attach(r)
 if out: json.dump(races,open(out,'w'),ensure_ascii=False)

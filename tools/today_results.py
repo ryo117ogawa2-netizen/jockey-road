@@ -1,6 +1,8 @@
 # 使い方: python3 tools/today_results.py <日付> <days ドキュメントJSON> [出力JSON]
 # 終わったレースの結果を取り、アプリに出している印（最終予想）と照らし合わせる
 import re,html,json,sys,os,urllib.request,time
+sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
+import bets as BT
 date=sys.argv[1]; d=json.load(open(sys.argv[2])); out=sys.argv[3] if len(sys.argv)>3 else None
 T=lambda x:' '.join(html.unescape(re.sub(r'<[^>]+>',' ',x)).split())
 def get(u):
@@ -54,10 +56,14 @@ for rid in sorted(set(re.findall(r'race_id=(\d{12})',lst))):
     res.append(r); tot['n']+=1; tot['h1']+=r['tan']>0; tot['h3']+=r['fuku']>0
     for k in ('tan','fuku','uren','wide','f3'): tot[k]+=r[k]
     hit=[f"{n}{r[k]:,}円" for k,n in (('tan','単勝'),('fuku','複勝'),('uren','馬連'),('wide','ワイド'),('f3','3連複')) if r[k]]
-    race['result']=dict(top3=' ／ '.join(r['top3']),hit=('的中：'+'・'.join(hit)) if hit else '印からの的中なし')
+    pl,_=BT.plan(race)
+    pp={k:(v['nums'],v['pay']) for k,v in pay.items()}
+    bc=100*len(pl); bg=sum(BT.ret(pp,k,h) for k,h,_ in pl); tot['bcost']=tot.get('bcost',0)+bc; tot['bret']=tot.get('bret',0)+bg
+    race['result']=dict(top3=' ／ '.join(r['top3']),hit=('的中：'+'・'.join(hit)) if hit else '印からの的中なし',bets=f"買い方の収支：{bc:,}円→{bg:,}円" if bc else '')
     print(('【勝負】' if r['shobu'] else '')+f"{r['key']} {r['name']}：{' '.join(r['marks'][:5])} ｜ 結果 {' / '.join(r['top3'])} ｜ {race['result']['hit']}")
 n=tot['n']
 if n:
+    if tot.get('bcost'): print(f"\n買い方どおり（各100円）：投資{tot['bcost']:,}円→払戻{tot['bret']:,}円（回収率{100*tot['bret']/tot['bcost']:.0f}%）")
     print(f"\n{n}R：◎勝率{tot['h1']}/{n}・◎3着内{tot['h3']}/{n}｜100円ずつ買った場合の回収率 ◎単勝{tot['tan']/n:.0f}% ◎複勝{tot['fuku']/n:.0f}% 馬連BOX{tot['uren']/(3*n):.0f}% ワイドBOX{tot['wide']/(3*n):.0f}% 3連複1点{tot['f3']/n:.0f}%")
 json.dump(d,open(sys.argv[2],'w'),ensure_ascii=False)
 if out: json.dump(dict(races=res,total=tot),open(out,'w'),ensure_ascii=False)

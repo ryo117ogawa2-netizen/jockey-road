@@ -66,6 +66,11 @@ section[role="tabpanel"]{display:grid;gap:16px}
 .result{margin:0 14px 12px;padding:10px 12px;border:1.5px solid var(--ink);border-radius:4px;font-size:.88rem;display:grid;gap:4px}
 .result h3{margin:0;font-size:.78rem;letter-spacing:.08em}
 .weight{padding:0 14px 12px;font-size:.82rem;color:var(--mute)}
+.bets{margin:0 14px 12px;padding:8px 12px;border:1.5px dashed var(--gold);border-radius:4px;font-size:.86rem;display:grid;gap:4px}
+.bets h3{margin:0;font-size:.78rem;letter-spacing:.08em;color:var(--gold)}
+.bets .t{display:flex;flex-wrap:wrap;gap:6px}
+.bets .t span{font-weight:700;font-variant-numeric:tabular-nums;border:1px solid var(--line);border-radius:3px;padding:1px 8px;background:var(--card)}
+.bets .k{font-size:.78rem;color:var(--mute)}
 .review{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--turf);border-radius:4px;padding:12px 14px;font-size:.9rem;white-space:pre-wrap}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:6px;padding:24px 16px;text-align:center;color:var(--mute)}
 .watch{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:4px}
@@ -160,7 +165,7 @@ function renderRaces(){
   const sb=(v.races||[]).findIndex(r=>r.shobu);
   let h='';
   if(sb>=0){const r=v.races[sb],m=(r.marks||[])[0]||{};
-    h+=`<a class="shobu-banner" href="#race-${sb}"><span class="k">今日の勝負レース</span><b>${esc(r.course.split(' ')[0])} ${esc(r.name)}　◎${esc(m.uma||'')} ${esc(m.name||'')}</b><span>${esc(r.shobuWhy||'')}</span></a>`}
+    h+=`<a class="shobu-banner" href="#race-${sb}"><span class="k">今日の勝負レース</span><b>${esc(r.course.split(' ')[0])} ${esc(r.name)}　◎${esc(m.uma||'')} ${esc(m.name||'')}</b><span>${esc(r.shobuWhy||'')}</span>${r.bets&&r.bets.tickets?`<span><b>買い方：</b>${esc(r.bets.tickets.join('・'))}</span>`:''}</a>`}
   h+=(v.races||[]).map((r,i)=>{
     const res=r.result;
     const marks=(r.marks||[]).map(m=>`<li><span class="mk ${m.mark==='紐'?'himo':''}">${esc(m.mark)}</span>${ban(m)}<span class="who"><b>${esc(m.name)}</b><span class="j">${esc(m.jockey)}</span>${fin(m)}${m.why?`<span class="why">${esc(m.why)}</span>`:''}</span><span class="pct">${m.pct!=null?esc(m.pct)+'%':''}</span></li>`).join('');
@@ -168,8 +173,9 @@ function renderRaces(){
       <div class="race-h">${r.shobu?'<span class="shobu-tag">勝負レース</span>':''}<span class="meta">${esc(r.course)}</span><h2>${esc(r.name)}</h2><span class="status ${res?'res':''}">${res?'結果確定':(r.status||'予想')}</span></div>
       ${r.net?`<div class="net">ネットの評価：${esc(r.net)}</div>`:''}
       <ul class="marks">${marks}</ul>
+      ${r.bets&&r.bets.tickets?`<div class="bets"><h3>おすすめの買い方（各100円・計${esc(r.bets.cost)}円）</h3><div class="t">${r.bets.tickets.map(t=>`<span>${esc(t)}</span>`).join('')}</div><div class="k">${esc(r.bets.type)}</div></div>`:''}
       ${r.partner?`<div class="partner"><h3>相棒の本命</h3><p>${esc(r.partner)}</p></div>`:''}
-      ${res?`<div class="result"><h3>結果</h3><div>${esc(res.top3)}</div>${res.hit?`<div><b>${esc(res.hit)}</b></div>`:''}${res.note?`<div class="note">${esc(res.note)}</div>`:''}</div>`:''}
+      ${res?`<div class="result"><h3>結果</h3><div>${esc(res.top3)}</div>${res.hit?`<div><b>${esc(res.hit)}</b></div>`:''}${res.bets?`<div>${esc(res.bets)}</div>`:''}${res.note?`<div class="note">${esc(res.note)}</div>`:''}</div>`:''}
       ${r.weight?`<div class="weight">馬体重チェック：${esc(r.weight)}</div>`:''}
     </article>`}).join('');
   if(v.review) h+=`<div class="review"><b>振り返り</b>\n${esc(v.review)}</div>`;
