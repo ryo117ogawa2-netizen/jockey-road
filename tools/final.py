@@ -49,17 +49,17 @@ for rid in rids:
         k=1.0; note=[]
         # 過去1年の集計（全体の3着内20.9%）にもとづく補正
         if wd<=-10:
-            if gap is not None and gap>=70: k*=0.5; note.append(f'⚠休み明けで{wd}kg（同条件の3着内9.9%）')
-            elif trip: k*=0.65; note.append(f'⚠遠征で{wd}kg。輸送で減った可能性（3着内13.1%）')
-            elif gap is not None and gap<=21: k*=0.75; note.append(f'⚠間隔が詰まって{wd}kg。疲れに注意')
-            else: k*=0.7; note.append(f'⚠{wd}kgの大幅減（3着内14.2%）')
+            if gap is not None and gap>=70: k*=0.85; note.append(f'⚠休み明けで{wd}kg（同条件の3着内9.9%）')
+            elif trip: k*=0.9; note.append(f'⚠遠征で{wd}kg。輸送で減った可能性（3着内13.1%）')
+            elif gap is not None and gap<=21: k*=0.9; note.append(f'⚠間隔が詰まって{wd}kg。疲れに注意')
+            else: k*=0.9; note.append(f'⚠{wd}kgの大幅減（3着内14.2%）')
         elif wd>=10:
             if gap is not None and gap>=70: note.append(f'休み明けで+{wd}kg。成長分なら問題なし（3着内19.7%・単回103%）')
             else: note.append(f'+{wd}kgの大幅増。成長分か太めかパドックで確認（増えても成績は平均並み）')
         if t2:
             if -2<=wd<=2: k*=1.25; note.append(f'叩き2戦目で体重維持（{wd:+d}）＝いちばん良いパターン（3着内27.4%）')
             elif wd<=-4: note.append(f'叩き2戦目で{wd}kg絞れた（3着内19.3%、平均並み）')
-            else: k*=0.7; note.append(f'⚠叩き2戦目でさらに+{wd}kg（3着内13.8%）')
+            else: k*=0.9; note.append(f'⚠叩き2戦目でさらに+{wd}kg（3着内13.8%）')
         if good and abs(kg-good[0])<=2 and not note: k*=1.08; note.append(f'好走したときと同じ体重（{kg}kg）')
         rows.append(dict(p=min(0.95,p*k),p0=p,uma=h['uma'],waku=int(h['waku'] or 0),name=h.get('name') or h['info'].split()[1],jockey=f['_jockey'],kg=kg,wd=wd,note=' / '.join(([f"父{f['_sire']}（{sb[1]}）"] if sb else [])+([ttxt] if ttxt and (nb or tadj>=0.04) else [])+([f"調教{gr}「{g.get('tanpyo','')}」"] if gr in('A','C','D') else [])+note)))
     rows.sort(key=lambda r:-r['p'])
