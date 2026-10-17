@@ -32,9 +32,18 @@ nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--turf
 nav button:focus-visible,.chip:focus-visible{outline:2px solid var(--turf);outline-offset:2px}
 section[role="tabpanel"]{display:grid;gap:16px}
 .daybar{display:flex;gap:6px;flex-wrap:wrap}
+.rfilter{position:sticky;top:calc(env(safe-area-inset-top,0px) + 48px);z-index:4;background:var(--paper);display:grid;gap:6px;padding:8px 0 10px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.rfilter .row{display:flex;gap:6px;flex-wrap:wrap}
+.rfilter .chip{padding:4px 11px}
+.rfilter .chip .n{font-weight:400;font-size:.75rem;opacity:.8;margin-left:3px}
+.rfilter .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1.5px solid var(--turf);border-radius:6px;overflow:hidden}
+.rfilter .seg button{font:inherit;font-size:.85rem;font-weight:700;background:var(--card);color:var(--turf);border:0;padding:6px 4px;cursor:pointer}
+.rfilter .seg button+button{border-left:1.5px solid var(--turf)}
+.rfilter .seg button[aria-pressed="true"]{background:var(--turf);color:var(--card)}
+.rfilter .seg button .d{display:block;font-size:.7rem;font-weight:400;opacity:.85}
 .chip{font:inherit;font-size:.85rem;font-weight:700;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--turf);border-color:var(--turf);color:var(--card)}
-.race{background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.race{scroll-margin-top:170px;background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .race-h{padding:12px 14px 10px;border-bottom:1px solid var(--line);display:grid;gap:2px}
 .race-h .meta{font-size:.78rem;color:var(--mute);letter-spacing:.05em}
 .race-h h2{font-family:var(--f-disp);font-size:1.3rem;margin:0;line-height:1.3}
@@ -46,6 +55,8 @@ section[role="tabpanel"]{display:grid;gap:16px}
 .shobu-banner .k{font-family:var(--f-disp);color:var(--red);letter-spacing:.12em;font-size:.85rem}
 .shobu-banner b{font-size:1.05rem}
 .shobu-banner span{font-size:.82rem;color:var(--mute)}
+.shobu-banner{margin-bottom:12px}
+.shobu-banner.compact{padding:6px 12px}.shobu-banner.compact span:not(.k){display:none}.shobu-banner.compact b{font-size:.92rem}
 .net{padding:8px 14px;font-size:.85rem;color:var(--mute);border-bottom:1px dashed var(--line)}
 .marks{list-style:none;margin:0;padding:4px 0}
 .marks li{display:grid;grid-template-columns:2.2rem 2rem minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 14px}
@@ -110,6 +121,7 @@ footer{margin-top:24px;font-size:.75rem;color:var(--mute)}
 
 <section role="tabpanel" id="p-yoso" aria-labelledby="t-yoso">
   <div class="daybar" id="days"></div>
+  <div class="rfilter" id="rfilter" hidden></div>
   <div id="races"><div class="empty">予想はまだありません。毎週土・日の朝9時ごろに、その日の重賞の予想がここに届きます。</div></div>
 </section>
 <section role="tabpanel" id="p-watch" aria-labelledby="t-watch" hidden>
@@ -128,7 +140,13 @@ footer{margin-top:24px;font-size:.75rem;color:var(--mute)}
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let DAYS=[],WATCH=[],SUMMARY=null,curDay=null;
+let DAYS=[],WATCH=[],SUMMARY=null,curDay=null,curVen=null,curGrp=null;
+try{curVen=localStorage.getItem('yoso-ven');curGrp=localStorage.getItem('yoso-grp')}catch(e){}
+// レースを競馬場と前半・中盤・後半に分けて表示する
+const GRPS=[{k:'a',t:'1〜4R',lo:1,hi:4},{k:'b',t:'5〜8R',lo:5,hi:8},{k:'c',t:'9〜12R',lo:9,hi:12}];
+function raceKey(r){const m=String(r.course||'').match(/^(\D+?)(\d+)R/);return m?{ven:m[1],no:+m[2]}:{ven:r.venue||'その他',no:r.R||0}}
+function grpOf(no){return (GRPS.find(g=>no>=g.lo&&no<=g.hi)||GRPS[2]).k}
+function saveFilter(){try{localStorage.setItem('yoso-ven',curVen);localStorage.setItem('yoso-grp',curGrp)}catch(e){}}
 try{curDay=localStorage.getItem('yoso-day')}catch(e){}
 
 // タブ
@@ -163,10 +181,28 @@ function renderRaces(){
   if(!d){box.innerHTML='<div class="empty">予想はまだありません。毎週土・日の朝9時ごろに、その日の重賞の予想がここに届きます。</div>';return}
   const v=d.data;
   const sb=(v.races||[]).findIndex(r=>r.shobu);
+  const all=(v.races||[]).map((r,i)=>({r,i,...raceKey(r)}));
+  const vens=[...new Set(all.map(x=>x.ven))];
+  const fb=$('#rfilter');
+  let list=all;
+  if(all.length>4){
+    if(!vens.includes(curVen)) curVen=vens[0];
+    const inV=all.filter(x=>x.ven===curVen);
+    if(!GRPS.some(g=>g.k===curGrp&&inV.some(x=>grpOf(x.no)===g.k))){
+      const nx=inV.find(x=>!x.r.result)||inV[inV.length-1]; curGrp=nx?grpOf(nx.no):'a';
+    }
+    const cnt=g=>{const a=inV.filter(x=>grpOf(x.no)===g.k);return {n:a.length,done:a.filter(x=>x.r.result).length}};
+    fb.hidden=false;
+    fb.innerHTML=`<div class="row">${vens.map(vn=>{const a=all.filter(x=>x.ven===vn),dn=a.filter(x=>x.r.result).length;return `<button class="chip" aria-pressed="${vn===curVen}" data-v="${esc(vn)}">${esc(vn)}<span class="n">${dn}/${a.length}</span></button>`}).join('')}</div>
+      <div class="seg">${GRPS.map(g=>{const c=cnt(g);return `<button aria-pressed="${g.k===curGrp}" data-g="${g.k}" ${c.n?'':'disabled'}>${g.t}<span class="d">${c.n?(c.done===c.n?'結果確定':c.done?`確定 ${c.done}/${c.n}`:'これから'):'なし'}</span></button>`}).join('')}</div>`;
+    fb.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{curVen=b.dataset.v;curGrp=null;saveFilter();renderRaces()});
+    fb.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{curGrp=b.dataset.g;saveFilter();renderRaces()});
+    list=inV.filter(x=>grpOf(x.no)===curGrp);
+  } else {fb.hidden=true;fb.innerHTML=''}
   let h='';
   if(sb>=0){const r=v.races[sb],m=(r.marks||[])[0]||{};
-    h+=`<a class="shobu-banner" href="#race-${sb}"><span class="k">今日の勝負レース</span><b>${esc(r.course.split(' ')[0])} ${esc(r.name)}　◎${esc(m.uma||'')} ${esc(m.name||'')}</b><span>${esc(r.shobuWhy||'')}</span>${r.bets&&r.bets.tickets?`<span><b>買い方：</b>${esc(r.bets.tickets.join('・'))}</span>`:''}</a>`}
-  h+=(v.races||[]).map((r,i)=>{
+    const sk=raceKey(r);h+=`<a class="shobu-banner ${list.some(x=>x.i===sb)?'':'compact'}" href="#race-${sb}" data-ven="${esc(sk.ven)}" data-grp="${grpOf(sk.no)}"><span class="k">今日の勝負レース</span><b>${esc(r.course.split(' ')[0])} ${esc(r.name)}　◎${esc(m.uma||'')} ${esc(m.name||'')}</b><span>${esc(r.shobuWhy||'')}</span>${r.bets&&r.bets.tickets?`<span><b>買い方：</b>${esc(r.bets.tickets.join('・'))}</span>`:''}</a>`}
+  h+=list.map(({r,i})=>{
     const res=r.result;
     const marks=(r.marks||[]).map(m=>`<li><span class="mk ${m.mark==='紐'?'himo':''}">${esc(m.mark)}</span>${ban(m)}<span class="who"><b>${esc(m.name)}</b><span class="j">${esc(m.jockey)}</span>${fin(m)}${m.why?`<span class="why">${esc(m.why)}</span>`:''}</span><span class="pct">${m.pct!=null?esc(m.pct)+'%':''}</span></li>`).join('');
     return `<article class="race ${r.shobu?'shobu':''}" id="race-${i}">
@@ -180,6 +216,8 @@ function renderRaces(){
     </article>`}).join('');
   if(v.review) h+=`<div class="review"><b>振り返り</b>\n${esc(v.review)}</div>`;
   box.innerHTML=h||'<div class="empty">この日の予想はまだ入っていません。</div>';
+  const bn=box.querySelector('.shobu-banner');
+  if(bn) bn.onclick=e=>{e.preventDefault();curVen=bn.dataset.ven;curGrp=bn.dataset.grp;saveFilter();renderRaces();const t=document.getElementById(bn.getAttribute('href').slice(1));if(t)t.scrollIntoView({behavior:'smooth',block:'start'})};
 }
 function renderWatch(){
   const box=$('#watchlist');
