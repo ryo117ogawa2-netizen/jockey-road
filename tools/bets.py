@@ -11,7 +11,12 @@ def plan(race):
     if '◎' not in mk: return [],''
     a=mk['◎']['uma']; p=mk['◎'].get('pct',0); o=[mk[k]['uma'] for k in '○▲' if k in mk]
     t=[]
-    if p>=50:
+    nm=str(race.get('name',''))
+    if ('1勝' in nm or '１勝' in nm) and len(o)==2:
+        # 10/17 の教訓：1勝クラスの◎は11戦0勝・3着内2 → ◎を軸にしない
+        kind='1勝クラス型：◎を信用しすぎない → ◎の複勝とワイド○-▲の少額'
+        t+=[('複勝',(a,),'◎の複勝'),('ワイド',tuple(o),'○-▲')]
+    elif p>=50:
         kind='軸型：◎は3着内に来やすいが勝ち切れないことも多い → 複勝と3連複1点'
         t+=[('複勝',(a,),'◎の複勝'),('3連複',tuple([a]+o),'◎○▲の1点')]
     elif p>=35:
