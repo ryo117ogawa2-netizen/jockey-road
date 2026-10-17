@@ -57,7 +57,7 @@ def ret(pay,kind,horses):
 if __name__=='__main__':
     date=sys.argv[1]; d=json.load(open(sys.argv[2]))
     lst=get(f'https://race.netkeiba.com/top/race_list_sub.html?kaisai_date={date.replace("-","")}',f'list{date}')
-    VEN={'05':'東京','08':'京都'}
+    VEN={'05':'東京','08':'京都','04':'新潟','06':'中山','09':'阪神'}
     tot=collections.defaultdict(lambda:[0,0]); 
     for rid in sorted(set(re.findall(r'race_id=(\d{12})',lst))):
         key=f"{VEN.get(rid[4:6],'')}{int(rid[-2:])}R "
@@ -72,7 +72,7 @@ if __name__=='__main__':
         tot['提案'+band][0]+=100*len(t); tot['提案'+band][1]+=got
         a=race['marks'][0]['uma']; o=[m['uma'] for m in race['marks'][1:3]]; hm=[m['uma'] for m in race['marks'][3:]]
         alt={'単勝◎':[('単勝',(a,))],'複勝◎':[('複勝',(a,))],'ワイド◎-○▲':[('ワイド',(a,b)) for b in o],'馬連◎-○▲':[('馬連',(a,b)) for b in o],
-             '3連複◎1頭軸(○▲紐)':[('3連複',(a,)+x) for x in itertools.combinations(o+hm,2)],'3連複◎○▲1点':[('3連複',tuple([a]+o))],'ワイドBOX◎○▲':[('ワイド',x) for x in itertools.combinations([a]+o,2)]}
+             '3連複◎1頭軸(○▲紐)':[('3連複',(a,)+x) for x in itertools.combinations(o+hm,2)],'3連複◎○▲1点':[('3連複',tuple([a]+o))],'ワイドBOX◎○▲':[('ワイド',x) for x in itertools.combinations([a]+o,2)],'単勝◎＋ワイド◎-○▲':[('単勝',(a,))]+[('ワイド',(a,b)) for b in o],'複勝◎＋ワイド○-▲':[('複勝',(a,))]+([('ワイド',tuple(o))] if len(o)==2 else [])}
         for nm,tk in alt.items():
             for kk in (nm,nm+'|'+band):
                 tot[kk][0]+=100*len(tk); tot[kk][1]+=sum(ret(pay,k,h) for k,h in tk)
