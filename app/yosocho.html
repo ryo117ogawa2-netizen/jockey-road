@@ -77,6 +77,10 @@ section[role="tabpanel"]{display:grid;gap:16px}
 .result{margin:0 14px 12px;padding:10px 12px;border:1.5px solid var(--ink);border-radius:4px;font-size:.88rem;display:grid;gap:4px}
 .result h3{margin:0;font-size:.78rem;letter-spacing:.08em}
 .weight{padding:0 14px 12px;font-size:.82rem;color:var(--mute)}
+.biasline{padding:0 14px 10px;font-size:.82rem;color:var(--turf)}
+.trend{background:var(--turf-soft);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:.82rem;line-height:1.55}
+.trend b{color:var(--turf)}
+.trend ul{margin:4px 0 0;padding-left:1.1em}
 .bets{margin:0 14px 12px;padding:8px 12px;border:1.5px dashed var(--gold);border-radius:4px;font-size:.86rem;display:grid;gap:4px}
 .bets h3{margin:0;font-size:.78rem;letter-spacing:.08em;color:var(--gold)}
 .bets .t{display:flex;flex-wrap:wrap;gap:6px}
@@ -202,6 +206,7 @@ function renderRaces(){
   let h='';
   if(sb>=0){const r=v.races[sb],m=(r.marks||[])[0]||{};
     const sk=raceKey(r);h+=`<a class="shobu-banner ${list.some(x=>x.i===sb)?'':'compact'}" href="#race-${sb}" data-ven="${esc(sk.ven)}" data-grp="${grpOf(sk.no)}"><span class="k">今日の勝負レース</span><b>${esc(r.course.split(' ')[0])} ${esc(r.name)}　◎${esc(m.uma||'')} ${esc(m.name||'')}</b><span>${esc(r.shobuWhy||'')}</span>${r.bets&&r.bets.tickets?`<span><b>買い方：</b>${esc(r.bets.tickets.join('・'))}</span>`:''}</a>`}
+  if(v.trend){const tl=String(v.trend).split(' ／ ').filter(t=>!curVen||t.startsWith(curVen));if(tl.length)h+=`<div class="trend"><b>馬場の傾向（内前／外差し）</b><ul>${tl.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`}
   h+=list.map(({r,i})=>{
     const res=r.result;
     const marks=(r.marks||[]).map(m=>`<li><span class="mk ${m.mark==='紐'?'himo':''}">${esc(m.mark)}</span>${ban(m)}<span class="who"><b>${esc(m.name)}</b><span class="j">${esc(m.jockey)}</span>${fin(m)}${m.why?`<span class="why">${esc(m.why)}</span>`:''}</span><span class="pct">${m.pct!=null?esc(m.pct)+'%':''}</span></li>`).join('');
@@ -212,6 +217,7 @@ function renderRaces(){
       ${r.bets&&r.bets.tickets?`<div class="bets"><h3>おすすめの買い方（各100円・計${esc(r.bets.cost)}円）</h3><div class="t">${r.bets.tickets.map(t=>`<span>${esc(t)}</span>`).join('')}</div><div class="k">${esc(r.bets.type)}</div></div>`:''}
       ${r.partner?`<div class="partner"><h3>相棒の本命</h3><p>${esc(r.partner)}</p></div>`:''}
       ${res?`<div class="result"><h3>結果</h3><div>${esc(res.top3)}</div>${res.hit?`<div><b>${esc(res.hit)}</b></div>`:''}${res.bets?`<div>${esc(res.bets)}</div>`:''}${res.note?`<div class="note">${esc(res.note)}</div>`:''}</div>`:''}
+      ${r.bias?`<div class="biasline">馬場の傾向：${esc(r.bias)}</div>`:''}
       ${r.weight?`<div class="weight">馬体重チェック：${esc(r.weight)}</div>`:''}
     </article>`}).join('');
   if(v.review) h+=`<div class="review"><b>振り返り</b>\n${esc(v.review)}</div>`;
