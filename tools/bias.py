@@ -130,6 +130,11 @@ def apply(bias,day):
                 mk['why']=(mk.get('why','')+f" ／ 馬場傾向（{'・'.join(b['tag'])}）とは逆の脚質・枠なので割り引き気味").strip(' ／')
         if cand:
             o,u,x=sorted(cand)[0]
+            if not x['name']:   # 馬柱から名前が取れなかったときは出馬表から
+                try:
+                    import scrape
+                    x['name']=next((h.get('name') or '' for h in scrape.pre(r['rid'])['horses'] if h['uma']==u),'')
+                except Exception: pass
             if not any(mm.get('bias') for mm in r['marks']):
                 r['marks'].append(dict(mark='紐',uma=u,waku=x['waku'],name=x['name'],jockey='',pct=None,bias=True,
                     why=f"馬場傾向で追加：{'・'.join(b['tag'])}（近3走の4角位置 平均{round(100*x['style'])}%地点・{u}番、単勝{o}倍）"))
