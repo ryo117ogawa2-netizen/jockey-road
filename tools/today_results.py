@@ -60,7 +60,7 @@ for rid in sorted(set(re.findall(r'race_id=(\d{12})',lst))):
     pp={k:(v['nums'],v['pay']) for k,v in pay.items()}
     bc=100*len(pl); bg=sum(BT.ret(pp,k,h) for k,h,_ in pl); tot['bcost']=tot.get('bcost',0)+bc; tot['bret']=tot.get('bret',0)+bg
     race['result']=dict(top3=' ／ '.join(r['top3']),hit=('的中：'+'・'.join(hit)) if hit else '印からの的中なし',bets=f"買い方の収支：{bc:,}円→{bg:,}円" if bc else '')
-    print(('【勝負】' if r['shobu'] else '')+f"{r['key']} {r['name']}：{' '.join(r['marks'][:5])} ｜ 結果 {' / '.join(r['top3'])} ｜ {race['result']['hit']}")
+    print(('【勝負】' if r['shobu'] else '')+f"{r['key']} {r['name']}：{' '.join(r['marks'])} ｜ 結果 {' / '.join(r['top3'])} ｜ {race['result']['hit']}")
 n=tot['n']
 if n:
     if tot.get('bcost'): print(f"\n買い方どおり（各100円）：投資{tot['bcost']:,}円→払戻{tot['bret']:,}円（回収率{100*tot['bret']/tot['bcost']:.0f}%）")

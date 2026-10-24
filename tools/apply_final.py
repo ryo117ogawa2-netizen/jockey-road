@@ -11,7 +11,10 @@ for f in fin:
         if not r['course'].startswith(key): continue
         old=[(m['mark'],m['uma']) for m in r['marks'][:3]]; new=[(m['mark'],m['uma']) for m in f['marks'][:3]]
         hand=bool(r.get('partner'))   # 重賞・メインの手作り予想は印を残し、体重だけ足す
-        if not hand: r['marks']=f['marks']
+        if not hand:
+            # 注目馬・馬場傾向で足した紐は最終予想でも残す
+            keep=[m for m in r['marks'] if (m.get('watch') or m.get('bias')) and m['uma'] not in {x['uma'] for x in f['marks']}]
+            r['marks']=f['marks']+keep
         r['status']=f"最終予想（馬体重反映）{f['post']}"
         b=attach(r)
         w=[l for l in f['weight'].split('\n') if '⚠' in l or '維持' in l]
