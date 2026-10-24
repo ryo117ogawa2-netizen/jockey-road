@@ -45,7 +45,8 @@ for rid in rids:
         if ri['surf']=='ダ' and f['_sire'] in ANA: why.insert(0,f"父{f['_sire']}（{ANA[f['_sire']]}）")
         if f['_best_diff']<9: why.insert(0,f"近3走の最小着差{f['_best_diff']:+.1f}秒" if f['_best_diff']!=0 else '近走で勝ち負け')
         rows.append(dict(ana=ri['surf']=='ダ' and f['_sire'] in ANA,p=p,uma=h['uma'],waku=int(h['waku'] or 0),name=name,jockey=f['_jockey'],why='・'.join(why[:4]),f=f,newbie=f['_p1rank'] is None))
-    if not rows: continue
+    if not rows:
+        print(f'⚠ {rid} は出走馬を読めず飛ばした（取り直すときはキャッシュを消さずに再実行）',file=sys.stderr); continue
     rows.sort(key=lambda r:-r['p'])
     marks=[dict(mark=mk,uma=r['uma'],waku=r['waku'],name=r['name'],jockey=r['jockey'],pct=round(r['p']*100),why=r['why']) for mk,r in zip('◎○▲',rows)]
     himo=[r for r in rows[3:] if r['ana'] or any(r['f'].get(k) for k in PREF)][:2]
