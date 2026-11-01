@@ -24,7 +24,9 @@ for rid in rids:
     post=datetime.datetime.combine(ri['date'],datetime.time(int(tm[1]),int(tm[2]))) if tm else None
     if post and post<now: state[rid]='過ぎた'; continue
     hs=[h for h in pre['horses'] if h['hid'] and h['uma']]
-    if not hs or not all(re.search(r'\d{3}kg \([+\-]?\d+\)',h['info']) for h in hs): continue   # 馬体重がまだ
+    wok=[h for h in hs if re.search(r'\d{3}kg \([+\-]?\d+\)',h['info'])]
+    if not wok or len(wok)<len(hs)-2: continue   # 馬体重がまだ（体重のない1〜2頭は出走取消とみなす）
+    hs=wok
     rows=[]
     for h in hs:
         if h['hid'] not in H:
