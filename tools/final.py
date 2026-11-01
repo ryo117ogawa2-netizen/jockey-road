@@ -24,7 +24,7 @@ for rid in rids:
     post=datetime.datetime.combine(ri['date'],datetime.time(int(tm[1]),int(tm[2]))) if tm else None
     if post and post<now: state[rid]='過ぎた'; continue
     hs=[h for h in pre['horses'] if h['hid'] and h['uma']]
-    wok=[h for h in hs if re.search(r'\d{3}kg \([+\-]?\d+\)',h['info'])]
+    wok=[h for h in hs if re.search(r'\d{3}kg \(([+\-]?\d+|前計不)\)',h['info'])]
     if not wok or len(wok)<len(hs)-2: continue   # 馬体重がまだ（体重のない1〜2頭は出走取消とみなす）
     hs=wok
     rows=[]
@@ -41,7 +41,7 @@ for rid in rids:
         if nb: p=min(0.95,max(0.01,p*(1+3*tadj)))
         sb=BOOST.get(f['_sire']) if ri['surf']=='芝' else None
         if sb: p=min(0.95,p*sb[0])
-        wm=re.search(r'(\d{3})kg \(([+\-]?\d+)\)',h['info']); kg=int(wm[1]); wd=int(wm[2])
+        wm=re.search(r'(\d{3})kg \(([+\-]?\d+|前計不)\)',h['info']); kg=int(wm[1]); wd=0 if wm[2]=='前計不' else int(wm[2])   # 前計不＝前走が海外などで体重なし
         ps=[x for x in (feat.parse_past(q) for q in h['past']) if x]
         gap=(ri['date']-ps[0]['date']).days if ps else None
         base='美浦' if '美浦' in h['info'] else '栗東' if '栗東' in h['info'] else ''
