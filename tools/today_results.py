@@ -57,6 +57,8 @@ for rid in sorted(set(re.findall(r'race_id=(\d{12})',lst))):
     for k in ('tan','fuku','uren','wide','f3'): tot[k]+=r[k]
     hit=[f"{n}{r[k]:,}円" for k,n in (('tan','単勝'),('fuku','複勝'),('uren','馬連'),('wide','ワイド'),('f3','3連複')) if r[k]]
     pl,_=BT.plan(race)
+    if (race.get('bets') or {}).get('tickets'):  # 手で直した買い目（勝負レースなど）があればそれで精算する
+        pl=[(k,tuple(h.split('-')),'') for k,h in (x.split() for x in race['bets']['tickets'])]
     pp={k:(v['nums'],v['pay']) for k,v in pay.items()}
     bc=100*len(pl); bg=sum(BT.ret(pp,k,h) for k,h,_ in pl); tot['bcost']=tot.get('bcost',0)+bc; tot['bret']=tot.get('bret',0)+bg
     race['result']=dict(top3=' ／ '.join(r['top3']),hit=('的中：'+'・'.join(hit)) if hit else '印からの的中なし',bets=f"買い方の収支：{bc:,}円→{bg:,}円" if bc else '')
